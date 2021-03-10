@@ -10,6 +10,8 @@
     <extensions defaultExtensionNs="com.intellij">
         <applicationService serviceImplementation="com.github.rey5137.robotrunnerplugin.services.MyApplicationService"/>
         <projectService serviceImplementation="com.github.rey5137.robotrunnerplugin.services.MyProjectService"/>
+
+        <configurationType implementation="com.github.rey5137.robotrunnerplugin.runconfigurations.RobotRunConfigurationType"/>
     </extensions>
 
     <applicationListeners>

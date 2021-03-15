@@ -12,11 +12,10 @@ import com.intellij.openapi.options.SettingsEditor
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.projectRoots.ProjectJdkTable
 import com.intellij.openapi.projectRoots.Sdk
+import com.intellij.openapi.roots.OrderRootType
+import com.intellij.openapi.vfs.VirtualFile
 import org.jetbrains.annotations.NotNull
 import org.jetbrains.annotations.Nullable
-
-
-private const val KEY_SDK = "sdk"
 
 @State(
     name = "RobotRunConfiguration",
@@ -34,10 +33,20 @@ class RobotRunConfiguration(
         get() = robotOptions.sdkHomePath.toSdk()
         set(value) { robotOptions.sdkHomePath = value?.homePath ?: "" }
 
+    var suitePaths: List<String>
+        get() = robotOptions.suitePaths
+        set(value) { robotOptions.suitePaths = value }
+
     override fun getState(executor: Executor, environment: ExecutionEnvironment): RunProfileState? {
+        val sdk = sdk ?: return null
+
+        val robotRunFile = sdk.sdkModificator.getRoots(OrderRootType.CLASSES)
+            .mapNotNull { it.findRobotRunFile() }
+            .firstOrNull() ?: return null
+
         return object : CommandLineState(environment) {
             override fun startProcess(): ProcessHandler {
-                val commandLine = GeneralCommandLine("ls")
+                val commandLine = GeneralCommandLine(sdk.homePath!!, robotRunFile.path, *suitePaths.toTypedArray())
                 val processHandler = ProcessHandlerFactory.getInstance().createColoredProcessHandler(commandLine)
                 ProcessTerminatedListener.attach(processHandler)
                 return processHandler
@@ -54,4 +63,10 @@ class RobotRunConfiguration(
     override fun checkConfiguration() {}
 
     private fun String?.toSdk(): Sdk? = ProjectJdkTable.getInstance().allJdks.firstOrNull { it.homePath == this }
+
+    private fun VirtualFile.findRobotRunFile(): VirtualFile? {
+        if(!isDirectory || name != "site-packages")
+            return null
+        return this.findChild("robot")?.findChild("run.py")
+    }
 }

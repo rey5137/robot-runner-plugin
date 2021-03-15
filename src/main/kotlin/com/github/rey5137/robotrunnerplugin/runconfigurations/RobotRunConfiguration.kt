@@ -37,6 +37,22 @@ class RobotRunConfiguration(
         get() = robotOptions.suitePaths
         set(value) { robotOptions.suitePaths = value }
 
+    var testNames: List<String>
+        get() = robotOptions.testNames
+        set(value) { robotOptions.testNames = value }
+
+    var suiteNames: List<String>
+        get() = robotOptions.suiteNames
+        set(value) { robotOptions.suiteNames = value }
+
+    var includeTags: List<String>
+        get() = robotOptions.includeTags
+        set(value) { robotOptions.includeTags = value }
+
+    var excludeTags: List<String>
+        get() = robotOptions.excludeTags
+        set(value) { robotOptions.excludeTags = value }
+
     override fun getState(executor: Executor, environment: ExecutionEnvironment): RunProfileState? {
         val sdk = sdk ?: return null
 

@@ -15,12 +15,15 @@ import com.intellij.openapi.util.Disposer
 import com.intellij.ui.SimpleListCellRenderer
 import com.intellij.ui.ToolbarDecorator
 import com.intellij.ui.components.JBList
+import com.intellij.ui.components.JBTextField
 import com.intellij.ui.layout.CCFlags
 import com.intellij.ui.layout.panel
+import com.intellij.ui.table.JBTable
 import com.intellij.ui.tabs.JBTabsFactory
 import com.intellij.ui.tabs.TabInfo
 import java.awt.Dimension
 import javax.swing.*
+import javax.swing.table.DefaultTableModel
 
 class RobotSettingsEditor : SettingsEditor<RobotRunConfiguration>() {
 
@@ -29,11 +32,17 @@ class RobotSettingsEditor : SettingsEditor<RobotRunConfiguration>() {
     private lateinit var sdkComboBox: ComboBox<Sdk>
     private lateinit var outputDirTextField: TextFieldWithBrowseButton
     private lateinit var outputFileTextField: TextFieldWithBrowseButton
-    private val suitePathModel: DefaultListModel<String> by lazy { DefaultListModel() }
-    private val testNameModel: DefaultListModel<String> by lazy { DefaultListModel() }
-    private val suiteNameModel: DefaultListModel<String> by lazy { DefaultListModel() }
-    private val includeTagModel: DefaultListModel<String> by lazy { DefaultListModel() }
-    private val excludeTagModel: DefaultListModel<String> by lazy { DefaultListModel() }
+    private lateinit var logFileTextField: TextFieldWithBrowseButton
+    private lateinit var logTitleTextField: JBTextField
+    private lateinit var reportFileTextField: TextFieldWithBrowseButton
+    private lateinit var reportTitleTextField: JBTextField
+
+    private val suitePathModel = DefaultListModel<String>()
+    private val testNameModel = DefaultListModel<String>()
+    private val suiteNameModel = DefaultListModel<String>()
+    private val includeTagModel = DefaultListModel<String>()
+    private val excludeTagModel = DefaultListModel<String>()
+    private val variablesModel = DefaultTableModel()
 
     private val pythonSdks = ProjectJdkTable.getInstance().allJdks.filter { it.sdkType.name == "Python SDK" }
 
@@ -52,6 +61,12 @@ class RobotSettingsEditor : SettingsEditor<RobotRunConfiguration>() {
         excludeTagModel.addAll(options.excludeTags)
         outputDirTextField.text = options.outputDirPath ?: ""
         outputFileTextField.text = options.outputFilePath ?: ""
+        logFileTextField.text = options.logFilePath ?: ""
+        logTitleTextField.text = options.logTitle ?: ""
+        reportFileTextField.text = options.reportFilePath ?: ""
+        reportTitleTextField.text = options.reportTitle ?: ""
+        ((variablesModel.rowCount -1) downTo 0).forEach { variablesModel.removeRow(it) }
+        options.variables.forEach { (key, value) -> variablesModel.addRow(arrayOf(key, value)) }
     }
 
     override fun applyEditorTo(configuration: RobotRunConfiguration) {
@@ -64,6 +79,17 @@ class RobotSettingsEditor : SettingsEditor<RobotRunConfiguration>() {
         options.excludeTags = excludeTagModel.elements().toList().toMutableList()
         options.outputDirPath = outputDirTextField.text
         options.outputFilePath = outputFileTextField.text
+        options.logFilePath = logFileTextField.text
+        options.logTitle = logTitleTextField.text
+        options.reportFilePath = reportFileTextField.text
+        options.reportTitle = reportTitleTextField.text
+        options.variables.clear()
+        (0 until variablesModel.rowCount).forEach {
+            val key = variablesModel.getValueAt(it, 0) as String?
+            val value = variablesModel.getValueAt(it, 1) as String?
+            if(!key.isNullOrEmpty() && !value.isNullOrEmpty())
+                options.variables[key] = value
+        }
     }
 
     override fun createEditor(): JComponent = mainPanel
@@ -74,6 +100,7 @@ class RobotSettingsEditor : SettingsEditor<RobotRunConfiguration>() {
 
         tabs.addTab(TabInfo(buildTestSuitesPanel()).setText("Test Suites"))
         tabs.addTab(TabInfo(buildOutputPanel()).setText("Output"))
+        tabs.addTab(TabInfo(buildVariablesPanel()).setText("Variables"))
 
         return panel {
             row(label = "Python interpreter") {
@@ -153,6 +180,41 @@ class RobotSettingsEditor : SettingsEditor<RobotRunConfiguration>() {
                 fileChooserDescriptor = FileChooserDescriptorFactory.createSingleFolderDescriptor(),
             ).component
         }
+        row {
+            label("Log file")
+            logFileTextField = textFieldWithBrowseButton(
+                browseDialogTitle = "Log file",
+                value = null,
+                project = null,
+                fileChooserDescriptor = FileChooserDescriptorFactory.createSingleFolderDescriptor(),
+            ).component
+        }
+        row {
+            label("Log title")
+            logTitleTextField = textField({ "" }, {}).component
+        }
+        row {
+            label("Report file")
+            reportFileTextField = textFieldWithBrowseButton(
+                browseDialogTitle = "Report file",
+                value = null,
+                project = null,
+                fileChooserDescriptor = FileChooserDescriptorFactory.createSingleFolderDescriptor(),
+            ).component
+        }
+        row {
+            label("Report title")
+            reportTitleTextField = textField({ "" }, {}).component
+        }
+    }
+
+    private fun buildVariablesPanel() = panel {
+        row {
+            cell(isVerticalFlow = true, isFullWidth = true) {
+                label("")
+                variablesPanel(variablesModel)().constraints(CCFlags.pushX, CCFlags.pushY)
+            }
+        }
     }
 
     private fun suitePanel(): JPanel {
@@ -177,24 +239,37 @@ class RobotSettingsEditor : SettingsEditor<RobotRunConfiguration>() {
     }
 
     private fun namePanel(model: DefaultListModel<String>, title: String, message: String): JPanel {
-        val table = JBList(model)
-        val decorator = ToolbarDecorator.createDecorator(table)
+        val list = JBList(model)
+        val decorator = ToolbarDecorator.createDecorator(list)
         decorator.setPreferredSize(Dimension(20000, 50))
         decorator.setAddAction {
-            val name = Messages.showInputDialog(null, "Name is case- and space-insensitive", title, null) ?: ""
+            val name = Messages.showInputDialog(null, message, title, null) ?: ""
             if(name.isNotBlank())
                 model.addElement(name)
         }
         decorator.setEditAction {
-            val name = Messages.showInputDialog(null, "Name is case- and space-insensitive", title, null, table.selectedValue, null) ?: ""
+            val name = Messages.showInputDialog(null, message, title, null, list.selectedValue, null) ?: ""
             if(name.isNotBlank())
-                model.setElementAt(name, table.selectedIndex)
+                model.setElementAt(name, list.selectedIndex)
         }
         decorator.setToolbarPosition(ActionToolbarPosition.RIGHT)
         decorator.disableUpAction()
         decorator.disableDownAction()
         return decorator.createPanel()
     }
+
+    private fun variablesPanel(model: DefaultTableModel): JPanel {
+        val table = JBTable(model)
+        model.addColumn("Key")
+        model.addColumn("Value")
+        val decorator = ToolbarDecorator.createDecorator(table)
+        decorator.setAddAction { model.addRow(arrayOf("", "")) }
+        decorator.setRemoveAction { table.selectedRows.reversed().forEach { model.removeRow(it) } }
+        decorator.setToolbarPosition(ActionToolbarPosition.RIGHT)
+        decorator.setPreferredSize(Dimension(200000, 200))
+        return decorator.createPanel()
+    }
+
 
     private fun String?.toSdk(): Sdk? = ProjectJdkTable.getInstance().allJdks.firstOrNull { it.homePath == this }
 }

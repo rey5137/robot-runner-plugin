@@ -1,8 +1,6 @@
 package com.github.rey5137.robotrunnerplugin.runconfigurations
 
 import com.intellij.execution.configurations.RunConfigurationOptions
-import com.intellij.openapi.projectRoots.ProjectJdkTable
-import com.intellij.openapi.projectRoots.Sdk
 import com.intellij.util.xmlb.annotations.OptionTag
 
 open class RobotRunConfigurationOptions : RunConfigurationOptions() {
@@ -30,5 +28,20 @@ open class RobotRunConfigurationOptions : RunConfigurationOptions() {
 
     @get:OptionTag("outputFilePath")
     var outputFilePath by string("")
+
+    @get:OptionTag("logFilePath")
+    var logFilePath by string("")
+
+    @get:OptionTag("logTitle")
+    var logTitle by string("")
+
+    @get:OptionTag("reportFilePath")
+    var reportFilePath by string("")
+
+    @get:OptionTag("reportTitle")
+    var reportTitle by string("")
+
+    @get:OptionTag("variables")
+    var variables by linkedMap<String, String>()
 
 }

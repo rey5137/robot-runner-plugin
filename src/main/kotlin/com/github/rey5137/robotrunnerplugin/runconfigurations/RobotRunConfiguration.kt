@@ -27,34 +27,8 @@ class RobotRunConfiguration(
     name: @Nullable String?
 ) : RunConfigurationBase<RobotRunConfigurationOptions>(project, factory, name) {
 
-    private val robotOptions = options as RobotRunConfigurationOptions
-
-    var sdk: Sdk?
-        get() = robotOptions.sdkHomePath.toSdk()
-        set(value) { robotOptions.sdkHomePath = value?.homePath ?: "" }
-
-    var suitePaths: List<String>
-        get() = robotOptions.suitePaths
-        set(value) { robotOptions.suitePaths = value }
-
-    var testNames: List<String>
-        get() = robotOptions.testNames
-        set(value) { robotOptions.testNames = value }
-
-    var suiteNames: List<String>
-        get() = robotOptions.suiteNames
-        set(value) { robotOptions.suiteNames = value }
-
-    var includeTags: List<String>
-        get() = robotOptions.includeTags
-        set(value) { robotOptions.includeTags = value }
-
-    var excludeTags: List<String>
-        get() = robotOptions.excludeTags
-        set(value) { robotOptions.excludeTags = value }
-
     override fun getState(executor: Executor, environment: ExecutionEnvironment): RunProfileState? {
-        val sdk = sdk ?: return null
+        val sdk = options.sdkHomePath.toSdk() ?: return null
 
         val robotRunFile = sdk.sdkModificator.getRoots(OrderRootType.CLASSES)
             .mapNotNull { it.findRobotRunFile() }
@@ -62,7 +36,7 @@ class RobotRunConfiguration(
 
         return object : CommandLineState(environment) {
             override fun startProcess(): ProcessHandler {
-                val commandLine = GeneralCommandLine(sdk.homePath!!, robotRunFile.path, *suitePaths.toTypedArray())
+                val commandLine = GeneralCommandLine(sdk.homePath!!, robotRunFile.path, *options.suitePaths.toTypedArray())
                 val processHandler = ProcessHandlerFactory.getInstance().createColoredProcessHandler(commandLine)
                 ProcessTerminatedListener.attach(processHandler)
                 return processHandler
@@ -72,17 +46,21 @@ class RobotRunConfiguration(
 
     override fun getOptionsClass(): Class<out RunConfigurationOptions> = RobotRunConfigurationOptions::class.java
 
+    public override fun getOptions(): RobotRunConfigurationOptions {
+        return super.getOptions() as RobotRunConfigurationOptions
+    }
+    
     override fun getConfigurationEditor(): SettingsEditor<out RunConfiguration> {
         return RobotSettingsEditor()
     }
 
     override fun checkConfiguration() {}
 
-    private fun String?.toSdk(): Sdk? = ProjectJdkTable.getInstance().allJdks.firstOrNull { it.homePath == this }
-
     private fun VirtualFile.findRobotRunFile(): VirtualFile? {
         if(!isDirectory || name != "site-packages")
             return null
         return this.findChild("robot")?.findChild("run.py")
     }
+
+    private fun String?.toSdk(): Sdk? = ProjectJdkTable.getInstance().allJdks.firstOrNull { it.homePath == this }
 }

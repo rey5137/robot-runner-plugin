@@ -1,50 +1,34 @@
 package com.github.rey5137.robotrunnerplugin.runconfigurations
 
 import com.intellij.execution.configurations.RunConfigurationOptions
-import com.intellij.openapi.components.StoredProperty
+import com.intellij.openapi.projectRoots.ProjectJdkTable
+import com.intellij.openapi.projectRoots.Sdk
+import com.intellij.util.xmlb.annotations.OptionTag
 
-class RobotRunConfigurationOptions : RunConfigurationOptions() {
+open class RobotRunConfigurationOptions : RunConfigurationOptions() {
 
-    private val sdkHomePathProperty: StoredProperty<String?> = string("").provideDelegate(this, "sdkHomePath")
-    private val suitePathsProperty: StoredProperty<MutableList<String>> = list<String>().provideDelegate(this, "suitePaths")
-    private val testNamesProperty: StoredProperty<MutableList<String>> = list<String>().provideDelegate(this, "testNames")
-    private val suiteNamesProperty: StoredProperty<MutableList<String>> = list<String>().provideDelegate(this, "suiteNames")
-    private val includeTagsProperty: StoredProperty<MutableList<String>> = list<String>().provideDelegate(this, "includeTags")
-    private val excludeTagsProperty: StoredProperty<MutableList<String>> = list<String>().provideDelegate(this, "excludeTags")
+    @get:OptionTag("sdkHomePath")
+    var sdkHomePath by string("")
 
-    var sdkHomePath: String?
-        get() = sdkHomePathProperty.getValue(this)
-        set(value) {
-            sdkHomePathProperty.setValue(this, value)
-        }
+    @get:OptionTag("suitePaths")
+    var suitePaths by list<String>()
 
-    var suitePaths: List<String>
-        get() = suitePathsProperty.getValue(this)
-        set(value) {
-            suitePathsProperty.setValue(this, value.toMutableList())
-        }
+    @get:OptionTag("testNames")
+    var testNames by list<String>()
 
-    var testNames: List<String>
-        get() = testNamesProperty.getValue(this)
-        set(value) {
-            testNamesProperty.setValue(this, value.toMutableList())
-        }
+    @get:OptionTag("suiteNames")
+    var suiteNames by list<String>()
 
-    var suiteNames: List<String>
-        get() = suiteNamesProperty.getValue(this)
-        set(value) {
-            suiteNamesProperty.setValue(this, value.toMutableList())
-        }
+    @get:OptionTag("includeTags")
+    var includeTags by list<String>()
 
-    var includeTags: List<String>
-        get() = includeTagsProperty.getValue(this)
-        set(value) {
-            includeTagsProperty.setValue(this, value.toMutableList())
-        }
+    @get:OptionTag("excludeTags")
+    var excludeTags by list<String>()
 
-    var excludeTags: List<String>
-        get() = excludeTagsProperty.getValue(this)
-        set(value) {
-            excludeTagsProperty.setValue(this, value.toMutableList())
-        }
+    @get:OptionTag("outputDirPath")
+    var outputDirPath by string("")
+
+    @get:OptionTag("outputFilePath")
+    var outputFilePath by string("")
+
 }

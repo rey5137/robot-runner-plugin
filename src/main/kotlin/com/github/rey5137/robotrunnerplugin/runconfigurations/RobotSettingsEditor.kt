@@ -3,12 +3,14 @@ package com.github.rey5137.robotrunnerplugin.runconfigurations
 import com.intellij.openapi.actionSystem.ActionToolbarPosition
 import com.intellij.openapi.fileChooser.FileChooser
 import com.intellij.openapi.fileChooser.FileChooserDescriptor
+import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory
 import com.intellij.openapi.options.SettingsEditor
 import com.intellij.openapi.projectRoots.ProjectJdkTable
 import com.intellij.openapi.projectRoots.Sdk
 import com.intellij.openapi.ui.ComboBox
 import com.intellij.openapi.ui.DialogPanel
 import com.intellij.openapi.ui.Messages
+import com.intellij.openapi.ui.TextFieldWithBrowseButton
 import com.intellij.openapi.util.Disposer
 import com.intellij.ui.SimpleListCellRenderer
 import com.intellij.ui.ToolbarDecorator
@@ -25,38 +27,43 @@ class RobotSettingsEditor : SettingsEditor<RobotRunConfiguration>() {
     private val mainPanel by lazy { buildMainPanel() }
 
     private lateinit var sdkComboBox: ComboBox<Sdk>
+    private lateinit var outputDirTextField: TextFieldWithBrowseButton
+    private lateinit var outputFileTextField: TextFieldWithBrowseButton
     private val suitePathModel: DefaultListModel<String> by lazy { DefaultListModel() }
     private val testNameModel: DefaultListModel<String> by lazy { DefaultListModel() }
     private val suiteNameModel: DefaultListModel<String> by lazy { DefaultListModel() }
     private val includeTagModel: DefaultListModel<String> by lazy { DefaultListModel() }
     private val excludeTagModel: DefaultListModel<String> by lazy { DefaultListModel() }
 
-    private var configuration: RobotRunConfiguration? = null
-
     private val pythonSdks = ProjectJdkTable.getInstance().allJdks.filter { it.sdkType.name == "Python SDK" }
 
     override fun resetEditorFrom(configuration: RobotRunConfiguration) {
-        this.configuration = configuration
-        sdkComboBox.selectedItem = configuration.sdk
+        val options = configuration.options
+        sdkComboBox.selectedItem = options.sdkHomePath.toSdk()
         suitePathModel.clear()
-        suitePathModel.addAll(configuration.suitePaths)
+        suitePathModel.addAll(options.suitePaths)
         testNameModel.clear()
-        testNameModel.addAll(configuration.testNames)
+        testNameModel.addAll(options.testNames)
         suiteNameModel.clear()
-        suiteNameModel.addAll(configuration.suiteNames)
+        suiteNameModel.addAll(options.suiteNames)
         includeTagModel.clear()
-        includeTagModel.addAll(configuration.includeTags)
+        includeTagModel.addAll(options.includeTags)
         excludeTagModel.clear()
-        excludeTagModel.addAll(configuration.excludeTags)
+        excludeTagModel.addAll(options.excludeTags)
+        outputDirTextField.text = options.outputDirPath ?: ""
+        outputFileTextField.text = options.outputFilePath ?: ""
     }
 
     override fun applyEditorTo(configuration: RobotRunConfiguration) {
-        configuration.sdk = sdkComboBox.selectedItem as Sdk?
-        configuration.suitePaths = suitePathModel.elements().toList()
-        configuration.testNames = testNameModel.elements().toList()
-        configuration.suiteNames = suiteNameModel.elements().toList()
-        configuration.includeTags = includeTagModel.elements().toList()
-        configuration.excludeTags = excludeTagModel.elements().toList()
+        val options = configuration.options
+        options.sdkHomePath = (sdkComboBox.selectedItem as Sdk?)?.homePath
+        options.suitePaths = suitePathModel.elements().toList().toMutableList()
+        options.testNames = testNameModel.elements().toList().toMutableList()
+        options.suiteNames = suiteNameModel.elements().toList().toMutableList()
+        options.includeTags = includeTagModel.elements().toList().toMutableList()
+        options.excludeTags = excludeTagModel.elements().toList().toMutableList()
+        options.outputDirPath = outputDirTextField.text
+        options.outputFilePath = outputFileTextField.text
     }
 
     override fun createEditor(): JComponent = mainPanel
@@ -65,16 +72,14 @@ class RobotSettingsEditor : SettingsEditor<RobotRunConfiguration>() {
         val disposable = Disposer.newDisposable()
         val tabs = JBTabsFactory.createEditorTabs(null, disposable)
 
-        tabs.addTab(TabInfo(buildTestSuitesPanel()).setText("Test Suites") )
-        tabs.addTab(TabInfo(panel {
-
-        }).setText("Output"))
+        tabs.addTab(TabInfo(buildTestSuitesPanel()).setText("Test Suites"))
+        tabs.addTab(TabInfo(buildOutputPanel()).setText("Output"))
 
         return panel {
             row(label = "Python interpreter") {
                 sdkComboBox = comboBox(
                     DefaultComboBoxModel(pythonSdks.toTypedArray()),
-                    { configuration?.sdk },
+                    { null },
                     { },
                     object : SimpleListCellRenderer<Sdk>() {
                         override fun customize(
@@ -90,7 +95,9 @@ class RobotSettingsEditor : SettingsEditor<RobotRunConfiguration>() {
                 ).component
             }
 
-            row { tabs.component() }
+            row {
+                tabs.component().constraints(CCFlags.pushX)
+            }
         }
     }
 
@@ -121,6 +128,30 @@ class RobotSettingsEditor : SettingsEditor<RobotRunConfiguration>() {
                 label("Exclude tags")
                 namePanel(excludeTagModel, "Tag", "Use tag pattern to match more tag")().constraints(CCFlags.pushX)
             }
+        }
+    }
+
+    private fun buildOutputPanel() = panel {
+        row {
+            label("")
+        }
+        row {
+            label("Output directory")
+            outputDirTextField = textFieldWithBrowseButton(
+                browseDialogTitle = "Output directory",
+                value = null,
+                project = null,
+                fileChooserDescriptor = FileChooserDescriptorFactory.createSingleFolderDescriptor(),
+            ).component
+        }
+        row {
+            label("Output file")
+            outputFileTextField = textFieldWithBrowseButton(
+                browseDialogTitle = "Output file",
+                value = null,
+                project = null,
+                fileChooserDescriptor = FileChooserDescriptorFactory.createSingleFolderDescriptor(),
+            ).component
         }
     }
 
@@ -164,4 +195,6 @@ class RobotSettingsEditor : SettingsEditor<RobotRunConfiguration>() {
         decorator.disableDownAction()
         return decorator.createPanel()
     }
+
+    private fun String?.toSdk(): Sdk? = ProjectJdkTable.getInstance().allJdks.firstOrNull { it.homePath == this }
 }

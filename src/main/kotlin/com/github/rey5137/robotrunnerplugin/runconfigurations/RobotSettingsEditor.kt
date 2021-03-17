@@ -14,9 +14,11 @@ import com.intellij.openapi.ui.TextFieldWithBrowseButton
 import com.intellij.openapi.util.Disposer
 import com.intellij.ui.SimpleListCellRenderer
 import com.intellij.ui.ToolbarDecorator
+import com.intellij.ui.components.JBCheckBox
 import com.intellij.ui.components.JBList
 import com.intellij.ui.components.JBTextField
 import com.intellij.ui.layout.CCFlags
+import com.intellij.ui.layout.GrowPolicy
 import com.intellij.ui.layout.panel
 import com.intellij.ui.table.JBTable
 import com.intellij.ui.tabs.JBTabsFactory
@@ -36,6 +38,12 @@ class RobotSettingsEditor : SettingsEditor<RobotRunConfiguration>() {
     private lateinit var logTitleTextField: JBTextField
     private lateinit var reportFileTextField: TextFieldWithBrowseButton
     private lateinit var reportTitleTextField: JBTextField
+    private lateinit var timestampOutputsCheckBox: JBCheckBox
+    private lateinit var splitLogsCheckBox: JBCheckBox
+    private lateinit var logLevelBox: ComboBox<String>
+    private lateinit var defaultLogLevelBox: ComboBox<String>
+    private lateinit var dryRunCheckBox: JBCheckBox
+    private lateinit var runEmptySuiteCheckBox: JBCheckBox
 
     private val suitePathModel = DefaultListModel<String>()
     private val testNameModel = DefaultListModel<String>()
@@ -65,8 +73,14 @@ class RobotSettingsEditor : SettingsEditor<RobotRunConfiguration>() {
         logTitleTextField.text = options.logTitle ?: ""
         reportFileTextField.text = options.reportFilePath ?: ""
         reportTitleTextField.text = options.reportTitle ?: ""
+        timestampOutputsCheckBox.isSelected = options.timestampOutputs
+        splitLogsCheckBox.isSelected = options.splitLog
         ((variablesModel.rowCount -1) downTo 0).forEach { variablesModel.removeRow(it) }
         options.variables.forEach { (key, value) -> variablesModel.addRow(arrayOf(key, value)) }
+        logLevelBox.selectedItem = options.logLevel
+        defaultLogLevelBox.selectedItem = options.defaultLogLevel
+        dryRunCheckBox.isSelected = options.dryRun
+        runEmptySuiteCheckBox.isSelected = options.runEmptySuite
     }
 
     override fun applyEditorTo(configuration: RobotRunConfiguration) {
@@ -83,6 +97,8 @@ class RobotSettingsEditor : SettingsEditor<RobotRunConfiguration>() {
         options.logTitle = logTitleTextField.text
         options.reportFilePath = reportFileTextField.text
         options.reportTitle = reportTitleTextField.text
+        options.timestampOutputs = timestampOutputsCheckBox.isSelected
+        options.splitLog = splitLogsCheckBox.isSelected
         options.variables.clear()
         (0 until variablesModel.rowCount).forEach {
             val key = variablesModel.getValueAt(it, 0) as String?
@@ -90,6 +106,10 @@ class RobotSettingsEditor : SettingsEditor<RobotRunConfiguration>() {
             if(!key.isNullOrEmpty() && !value.isNullOrEmpty())
                 options.variables[key] = value
         }
+        options.logLevel = logLevelBox.selectedItem as String ?: "INFO"
+        options.defaultLogLevel = defaultLogLevelBox.selectedItem as String ?: "INFO"
+        options.dryRun = dryRunCheckBox.isSelected
+        options.runEmptySuite = runEmptySuiteCheckBox.isSelected
     }
 
     override fun createEditor(): JComponent = mainPanel
@@ -101,6 +121,7 @@ class RobotSettingsEditor : SettingsEditor<RobotRunConfiguration>() {
         tabs.addTab(TabInfo(buildTestSuitesPanel()).setText("Test Suites"))
         tabs.addTab(TabInfo(buildOutputPanel()).setText("Output"))
         tabs.addTab(TabInfo(buildVariablesPanel()).setText("Variables"))
+        tabs.addTab(TabInfo(buildExecutionPanel()).setText("Execution"))
 
         return panel {
             row(label = "Python interpreter") {
@@ -206,6 +227,12 @@ class RobotSettingsEditor : SettingsEditor<RobotRunConfiguration>() {
             label("Report title")
             reportTitleTextField = textField({ "" }, {}).component
         }
+        row {
+            cell(isVerticalFlow = true) {
+                timestampOutputsCheckBox = checkBox("Adds a timestamp to all output files").component
+                splitLogsCheckBox = checkBox("Split log file into smaller pieces").component
+            }
+        }
     }
 
     private fun buildVariablesPanel() = panel {
@@ -214,6 +241,34 @@ class RobotSettingsEditor : SettingsEditor<RobotRunConfiguration>() {
                 label("")
                 variablesPanel(variablesModel)().constraints(CCFlags.pushX, CCFlags.pushY)
             }
+        }
+    }
+
+    private fun buildExecutionPanel() = panel {
+        row { label("") }
+        row {
+            cell(isVerticalFlow = true) {
+                label("Log level")
+                logLevelBox = comboBox(
+                    DefaultComboBoxModel(arrayOf("INFO", "DEBUG", "TRACE")),
+                    { "INFO" },
+                    { }
+                ).component
+            }
+            cell(isVerticalFlow = true) {
+                label("Default log level")
+                defaultLogLevelBox = comboBox(
+                    DefaultComboBoxModel(arrayOf("INFO", "DEBUG", "TRACE")),
+                    { "INFO" },
+                    { }
+                ).component
+            }
+        }
+        row {
+            dryRunCheckBox = checkBox("Dry run", false, "Run tests without executing keywords from test libraries").component
+        }
+        row {
+            runEmptySuiteCheckBox = checkBox("Run Empty suite", false, "Run tests even if the test suites are empty").component
         }
     }
 

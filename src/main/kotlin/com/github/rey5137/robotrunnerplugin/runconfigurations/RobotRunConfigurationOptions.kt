@@ -41,7 +41,25 @@ open class RobotRunConfigurationOptions : RunConfigurationOptions() {
     @get:OptionTag("reportTitle")
     var reportTitle by string("")
 
+    @get:OptionTag("timestampOutputs")
+    var timestampOutputs by property(false)
+
+    @get:OptionTag("splitLog")
+    var splitLog by property(false)
+
     @get:OptionTag("variables")
     var variables by linkedMap<String, String>()
+
+    @get:OptionTag("logLevel")
+    var logLevel by string("INFO")
+
+    @get:OptionTag("defaultLogLevel")
+    var defaultLogLevel by string("INFO")
+
+    @get:OptionTag("dryRun")
+    var dryRun by property(false)
+
+    @get:OptionTag("runEmptySuite")
+    var runEmptySuite by property(false)
 
 }

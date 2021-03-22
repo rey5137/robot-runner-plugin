@@ -1,6 +1,6 @@
 <idea-plugin>
     <id>com.github.rey5137.robotrunnerplugin</id>
-    <name>robot-runner-plugin</name>
+    <name>Robot Runner</name>
     <vendor>rey5137</vendor>
 
     <!-- Product and plugin compatibility requirements -->
@@ -12,6 +12,13 @@
         <projectService serviceImplementation="com.github.rey5137.robotrunnerplugin.services.MyProjectService"/>
 
         <configurationType implementation="com.github.rey5137.robotrunnerplugin.runconfigurations.RobotRunConfigurationType"/>
+        <projectConfigurable parentId="tools"
+                             instance="com.github.rey5137.robotrunnerplugin.configurables.RobotRunProjectSettingsConfigurable"
+                             provider="com.github.rey5137.robotrunnerplugin.configurables.RobotRunProjectSettingsConfigurableProvider"
+                             id="com.github.rey5137.robotrunnerplugin.RobotRunApplicationSettingsConfigurable"
+                             displayName="Robot Runner Settings"
+                             nonDefaultProject="true"/>
+        <projectService serviceImplementation="com.github.rey5137.robotrunnerplugin.configurables.RobotRunProjectSettingsState" />
     </extensions>
 
     <applicationListeners>

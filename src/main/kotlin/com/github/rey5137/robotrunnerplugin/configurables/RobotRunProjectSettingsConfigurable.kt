@@ -18,20 +18,17 @@ class RobotRunProjectSettingsConfigurable(private val project: Project) : Config
     }
 
     override fun isModified(): Boolean {
-//        settingsComponent?.let {
-//            val oldSettings = RobotRunProjectSettingsState.getInstance(project).settings
-//            val newSettings = it.getSettings()
-//            if(newSettings.size != oldSettings.size)
-//                return false
-//            newSettings.forEach { newSetting ->
-//                val oldSetting = oldSettings.find { it.runConfigurationId == newSetting.runConfigurationId }
-//                if(newSetting != oldSetting)
-//                    return false
-//            }
-//            return true
-//        }
-//        return false
-        return true
+        settingsComponent?.let { component ->
+            val oldSettings = RobotRunProjectSettingsState.getInstance(project).settings
+            val newSettings = component.getSettings()
+            if(newSettings.size != oldSettings.size)
+                return true
+            newSettings.forEach {
+                if(oldSettings.indexOf(it) < 0)
+                    return true
+            }
+        }
+        return false
     }
 
     override fun apply() {
@@ -39,8 +36,6 @@ class RobotRunProjectSettingsConfigurable(private val project: Project) : Config
             val state = RobotRunProjectSettingsState.getInstance(project)
             state.settings.clear()
             state.settings.addAll(it.getSettings())
-
-            println("asd apply ${state.settings}")
         }
     }
 

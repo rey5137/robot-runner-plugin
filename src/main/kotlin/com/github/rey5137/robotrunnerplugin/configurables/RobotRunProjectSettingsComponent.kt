@@ -33,11 +33,11 @@ class RobotRunProjectSettingsComponent(private val project: Project) {
     private val settingModel = RobotRunSettingModel()
     private val table by lazy { JBTable(settingModel) }
 
-    fun resetSettings(settings: List<RobotRunSetting>) {
-        settingModel.reset(settings)
+    fun resetSettings(settingMap: Map<String, RobotRunSetting>) {
+        settingModel.reset(settingMap)
     }
 
-    fun getSettings() = settingModel.getSettings()
+    fun getSettings() = settingModel.getSettingMap()
 
     private fun buildMainPanel(): JPanel {
         table.setShowGrid(false)
@@ -57,8 +57,8 @@ class RobotRunProjectSettingsComponent(private val project: Project) {
                 append(configuration.name)
             }
         }
-        setUpCheckBoxColumn(table, table.columnModel.getColumn(RobotRunSettingModel.INDEX_FILE))
-        setUpCheckBoxColumn(table, table.columnModel.getColumn(RobotRunSettingModel.INDEX_TEXT))
+        setUpCheckBoxColumn(table, table.columnModel.getColumn(RobotRunSettingModel.INDEX_TEST_SUITE))
+        setUpCheckBoxColumn(table, table.columnModel.getColumn(RobotRunSettingModel.INDEX_TEST_CASE))
         table.addMouseListener(object : MouseAdapter() {
             override fun mouseClicked(e: MouseEvent) {
                 if (e.clickCount >= 2)
@@ -78,8 +78,7 @@ class RobotRunProjectSettingsComponent(private val project: Project) {
                 val factory = RobotRunConfigurationFactory(configurationType as RobotRunConfigurationType)
                 ApplicationManager.getApplication().invokeLater(
                     {
-                        val dialog = EditConfigurationsDialog(project, factory)
-                        if (dialog.showAndGet()) {
+                        if (EditConfigurationsDialog(project, factory).showAndGet()) {
                             ApplicationManager.getApplication().invokeLater({
                                 RunManager.getInstance(project).selectedConfiguration?.let { addConfiguration(it) }
                             }, project.disposed)
@@ -94,20 +93,18 @@ class RobotRunProjectSettingsComponent(private val project: Project) {
     }
 
     private fun populateSettingModel() {
-        val settings = RobotRunProjectSettingsState.getInstance(project).settings
+        val settingMap = RobotRunProjectSettingsState.getInstance(project).settingMap
         RunManager.getInstance(project).getConfigurationSettingsList(RobotRunConfigurationType::class.java)
             .forEach { runConfigurationsSetting ->
-                val setting = settings.find { it.runConfigurationId == runConfigurationsSetting.configuration.uniqueID } ?:
-                    RobotRunSetting(runConfigurationId = runConfigurationsSetting.configuration.uniqueID, fileEnable = false, textEnable = false)
+                val setting = settingMap[runConfigurationsSetting.uniqueID] ?: RobotRunSetting()
                 settingModel.addRow(setting, runConfigurationsSetting)
             }
     }
 
     private fun addConfiguration(runConfigurationsSetting: RunnerAndConfigurationSettings) {
         val setting =  RobotRunSetting(
-            runConfigurationId = runConfigurationsSetting.configuration.uniqueID,
-            fileEnable = false,
-            textEnable = false,
+            testSuiteEnable = false,
+            testCaseEnable = false,
         )
         settingModel.addRow(setting, runConfigurationsSetting)
     }
@@ -135,7 +132,9 @@ class RobotRunProjectSettingsComponent(private val project: Project) {
         val was = runManager.selectedConfiguration
         try {
             runManager.selectedConfiguration = selected
-            EditConfigurationsDialog(project).showAndGet()
+            if(EditConfigurationsDialog(project).showAndGet()) {
+                runManager.selectedConfiguration?.let { settingModel.updateRow(row, it) }
+            }
         } finally {
             runManager.selectedConfiguration = was
         }

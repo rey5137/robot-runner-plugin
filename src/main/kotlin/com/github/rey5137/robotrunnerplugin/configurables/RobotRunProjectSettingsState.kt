@@ -2,6 +2,8 @@ package com.github.rey5137.robotrunnerplugin.configurables
 
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
+import com.intellij.execution.RunManagerListener
+import com.intellij.execution.RunnerAndConfigurationSettings
 import com.intellij.openapi.components.PersistentStateComponent
 import com.intellij.openapi.components.State
 import com.intellij.openapi.components.Storage
@@ -14,15 +16,20 @@ import com.intellij.util.xmlb.annotations.OptionTag
     name = "RobotRunProjectSettingsState",
     storages = [Storage("robot-runner-plugin__project_settings.xml")]
 )
-class RobotRunProjectSettingsState: PersistentStateComponent<RobotRunProjectSettingsState> {
+class RobotRunProjectSettingsState: PersistentStateComponent<RobotRunProjectSettingsState>, RunManagerListener {
 
-    @OptionTag(converter = RobotRunSettingsConverter::class)
-    var settings: MutableList<RobotRunSetting> = mutableListOf()
+    @OptionTag(converter = RobotRunSettingsMapConverter::class)
+    var settingMap: LinkedHashMap<String, RobotRunSetting> = LinkedHashMap()
 
     override fun getState(): RobotRunProjectSettingsState = this
 
     override fun loadState(state: RobotRunProjectSettingsState) {
         XmlSerializerUtil.copyBean(state, this)
+    }
+
+    override fun runConfigurationChanged(runConfigurationSetting: RunnerAndConfigurationSettings, existingId: String?) {
+        if(existingId != null)
+            settingMap.remove(existingId)?.let { settingMap[runConfigurationSetting.uniqueID] = it }
     }
 
     companion object {
@@ -32,16 +39,16 @@ class RobotRunProjectSettingsState: PersistentStateComponent<RobotRunProjectSett
 
     }
 
-    class RobotRunSettingsConverter : Converter<MutableList<RobotRunSetting>>() {
+    class RobotRunSettingsMapConverter : Converter<LinkedHashMap<String, RobotRunSetting>>() {
 
-        override fun toString(value: MutableList<RobotRunSetting>): String {
+        override fun toString(value: LinkedHashMap<String, RobotRunSetting>): String {
             val gson = Gson()
             return gson.toJson(value)
         }
 
-        override fun fromString(value: String): MutableList<RobotRunSetting> {
+        override fun fromString(value: String): LinkedHashMap<String, RobotRunSetting> {
             val gson = Gson()
-            val type = object : TypeToken<MutableList<RobotRunSetting>>() {}.type
+            val type = object : TypeToken<LinkedHashMap<String, RobotRunSetting>>() {}.type
             return gson.fromJson(value, type)
         }
 

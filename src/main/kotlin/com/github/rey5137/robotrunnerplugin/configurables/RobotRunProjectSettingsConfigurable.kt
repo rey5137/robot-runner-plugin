@@ -19,12 +19,12 @@ class RobotRunProjectSettingsConfigurable(private val project: Project) : Config
 
     override fun isModified(): Boolean {
         settingsComponent?.let { component ->
-            val oldSettings = RobotRunProjectSettingsState.getInstance(project).settings
-            val newSettings = component.getSettings()
-            if(newSettings.size != oldSettings.size)
+            val oldSettingMap = RobotRunProjectSettingsState.getInstance(project).settingMap
+            val newSettingMap = component.getSettings()
+            if(newSettingMap.size != oldSettingMap.size)
                 return true
-            newSettings.forEach {
-                if(oldSettings.indexOf(it) < 0)
+            newSettingMap.forEach { (key, value) ->
+                if(value != oldSettingMap[key])
                     return true
             }
         }
@@ -34,15 +34,14 @@ class RobotRunProjectSettingsConfigurable(private val project: Project) : Config
     override fun apply() {
         settingsComponent?.let {
             val state = RobotRunProjectSettingsState.getInstance(project)
-            state.settings.clear()
-            state.settings.addAll(it.getSettings())
+            state.settingMap = it.getSettings()
         }
     }
 
     override fun reset() {
         settingsComponent?.let {
             val state = RobotRunProjectSettingsState.getInstance(project)
-            it.resetSettings(state.settings)
+            it.resetSettings(state.settingMap)
         }
     }
 

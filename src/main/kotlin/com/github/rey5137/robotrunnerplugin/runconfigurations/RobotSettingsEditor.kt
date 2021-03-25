@@ -18,7 +18,6 @@ import com.intellij.ui.components.JBCheckBox
 import com.intellij.ui.components.JBList
 import com.intellij.ui.components.JBTextField
 import com.intellij.ui.layout.CCFlags
-import com.intellij.ui.layout.GrowPolicy
 import com.intellij.ui.layout.panel
 import com.intellij.ui.table.JBTable
 import com.intellij.ui.tabs.JBTabsFactory
@@ -325,6 +324,9 @@ class RobotSettingsEditor : SettingsEditor<RobotRunConfiguration>() {
         return decorator.createPanel()
     }
 
-
     private fun String?.toSdk(): Sdk? = ProjectJdkTable.getInstance().allJdks.firstOrNull { it.homePath == this }
+
+    private fun <T> DefaultListModel<T>.addAll(values: List<T>) {
+        values.forEach { this.addElement(it) }
+    }
 }

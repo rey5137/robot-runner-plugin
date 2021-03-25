@@ -95,6 +95,7 @@ class RobotRunProjectSettingsComponent(private val project: Project) {
     private fun populateSettingModel() {
         val settingMap = RobotRunProjectSettingsState.getInstance(project).settingMap
         RunManager.getInstance(project).getConfigurationSettingsList(RobotRunConfigurationType::class.java)
+            .filter { !it.isTemporary }
             .forEach { runConfigurationsSetting ->
                 val setting = settingMap[runConfigurationsSetting.uniqueID] ?: RobotRunSetting()
                 settingModel.addRow(setting, runConfigurationsSetting)

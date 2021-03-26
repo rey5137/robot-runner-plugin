@@ -87,7 +87,7 @@ class RobotRunProjectSettingsComponent(private val project: Project) {
             }
         val panel = decorator.createPanel()
         return FormBuilder.createFormBuilder()
-            .addComponent(JBLabel("Base Run Configuration"), 1)
+            .addComponent(JBLabel("Template Configuration to use with \"Run Robot ..\" actions"), 1)
             .addComponentFillVertically(panel, 0)
             .panel
     }

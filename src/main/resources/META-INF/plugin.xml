@@ -32,14 +32,6 @@
                class="com.github.rey5137.robotrunnerplugin.actions.RunRobotTestSuiteActionGroup"
                text="Run Robot Test Suite"
                popup="true">
-            <add-to-group group-id="RunMenu" anchor="last"/>
-        </group>
-
-        <group id="com.github.rey5137.robotrunnerplugin.actions.RunRobotTestSuiteActionGroupInProjectView"
-               text="Run Robot Test Suite"
-               popup="false">
-            <add-to-group group-id="ProjectViewPopupMenuRunGroup" anchor="last"/>
-            <reference ref="com.github.rey5137.robotrunnerplugin.actions.RunRobotTestSuiteActionGroup"/>
         </group>
 
         <action id="com.github.rey5137.robotrunnerplugin.actions.RunRobotTestCaseAction"
@@ -49,13 +41,29 @@
                class="com.github.rey5137.robotrunnerplugin.actions.RunRobotTestCaseActionGroup"
                text="Run Robot Test Case"
                popup="true">
-            <add-to-group group-id="RunMenu" anchor="last"/>
+        </group>
+
+        <group id="com.github.rey5137.robotrunnerplugin.actions.RunRobotTestSuiteActionGroupInProjectView"
+               text="Run Robot Test Suite"
+               popup="false">
+            <add-to-group group-id="ProjectViewPopupMenuRunGroup" anchor="last"/>
+            <separator/>
+            <reference ref="com.github.rey5137.robotrunnerplugin.actions.RunRobotTestSuiteActionGroup"/>
+        </group>
+
+        <group id="com.github.rey5137.robotrunnerplugin.actions.RunRobotActionGroupInRunMenu"
+               popup="false">
+            <add-to-group group-id="RunMenu" anchor="after" relative-to-action="RunnerActions"/>
+            <separator/>
+            <reference ref="com.github.rey5137.robotrunnerplugin.actions.RunRobotTestSuiteActionGroup"/>
+            <reference ref="com.github.rey5137.robotrunnerplugin.actions.RunRobotTestCaseActionGroup"/>
         </group>
 
         <group id="com.github.rey5137.robotrunnerplugin.actions.RunRobotTestCaseActionGroupInEditorView"
                text="Run Robot Test Case"
                popup="false">
             <add-to-group group-id="EditorPopupMenu.Run" anchor="last"/>
+            <separator/>
             <reference ref="com.github.rey5137.robotrunnerplugin.actions.RunRobotTestCaseActionGroup"/>
         </group>
 

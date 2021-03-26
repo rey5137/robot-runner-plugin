@@ -1,5 +1,6 @@
 package com.github.rey5137.robotrunnerplugin.runconfigurations
 
+import com.github.rey5137.robotrunnerplugin.MyBundle
 import com.intellij.openapi.actionSystem.ActionToolbarPosition
 import com.intellij.openapi.fileChooser.FileChooser
 import com.intellij.openapi.fileChooser.FileChooserDescriptor
@@ -117,13 +118,13 @@ class RobotSettingsEditor : SettingsEditor<RobotRunConfiguration>() {
         val disposable = Disposer.newDisposable()
         val tabs = JBTabsFactory.createEditorTabs(null, disposable)
 
-        tabs.addTab(TabInfo(buildTestSuitesPanel()).setText("Test Suites"))
-        tabs.addTab(TabInfo(buildOutputPanel()).setText("Output"))
-        tabs.addTab(TabInfo(buildVariablesPanel()).setText("Variables"))
-        tabs.addTab(TabInfo(buildExecutionPanel()).setText("Execution"))
+        tabs.addTab(TabInfo(buildTestSuitesPanel()).setText(MyBundle.message("robot.run.configuration.section.suites")))
+        tabs.addTab(TabInfo(buildOutputPanel()).setText(MyBundle.message("robot.run.configuration.section.output")))
+        tabs.addTab(TabInfo(buildVariablesPanel()).setText(MyBundle.message("robot.run.configuration.section.variables")))
+        tabs.addTab(TabInfo(buildExecutionPanel()).setText(MyBundle.message("robot.run.configuration.section.execution")))
 
         return panel {
-            row(label = "Python interpreter") {
+            row(label = MyBundle.message("robot.run.configuration.label.interpreter")) {
                 sdkComboBox = comboBox(
                     DefaultComboBoxModel(pythonSdks.toTypedArray()),
                     { null },
@@ -152,27 +153,27 @@ class RobotSettingsEditor : SettingsEditor<RobotRunConfiguration>() {
         row {
             cell(isVerticalFlow = true, isFullWidth = true) {
                 label("")
-                label("Paths")
+                label(MyBundle.message("robot.run.configuration.label.paths"))
                 suitePanel()()
             }
         }
         row {
             cell(isVerticalFlow = true) {
-                label("Test names")
+                label(MyBundle.message("robot.run.configuration.label.test-names"))
                 namePanel(testNameModel, "Test name", "Name is case- and space-insensitive")().constraints(CCFlags.pushX)
             }
             cell(isVerticalFlow = true) {
-                label("Suite names")
+                label(MyBundle.message("robot.run.configuration.label.suite-names"))
                 namePanel(suiteNameModel, "Suite name", "Name is case- and space-insensitive")().constraints(CCFlags.pushX)
             }
         }
         row {
             cell(isVerticalFlow = true) {
-                label("Include tags")
+                label(MyBundle.message("robot.run.configuration.label.included-tags"))
                 namePanel(includeTagModel, "Tag", "Use tag pattern to match more tag")().constraints(CCFlags.pushX)
             }
             cell(isVerticalFlow = true) {
-                label("Exclude tags")
+                label(MyBundle.message("robot.run.configuration.label.excluded-tags"))
                 namePanel(excludeTagModel, "Tag", "Use tag pattern to match more tag")().constraints(CCFlags.pushX)
             }
         }
@@ -183,7 +184,7 @@ class RobotSettingsEditor : SettingsEditor<RobotRunConfiguration>() {
             label("")
         }
         row {
-            label("Output directory")
+            label(MyBundle.message("robot.run.configuration.label.output-dir"))
             outputDirTextField = textFieldWithBrowseButton(
                 browseDialogTitle = "Output directory",
                 value = null,
@@ -192,7 +193,7 @@ class RobotSettingsEditor : SettingsEditor<RobotRunConfiguration>() {
             ).component
         }
         row {
-            label("Output file")
+            label(MyBundle.message("robot.run.configuration.label.output-file"))
             outputFileTextField = textFieldWithBrowseButton(
                 browseDialogTitle = "Output file",
                 value = null,
@@ -201,7 +202,7 @@ class RobotSettingsEditor : SettingsEditor<RobotRunConfiguration>() {
             ).component
         }
         row {
-            label("Log file")
+            label(MyBundle.message("robot.run.configuration.label.log-file"))
             logFileTextField = textFieldWithBrowseButton(
                 browseDialogTitle = "Log file",
                 value = null,
@@ -210,11 +211,11 @@ class RobotSettingsEditor : SettingsEditor<RobotRunConfiguration>() {
             ).component
         }
         row {
-            label("Log title")
+            label(MyBundle.message("robot.run.configuration.label.log-title"))
             logTitleTextField = textField({ "" }, {}).component
         }
         row {
-            label("Report file")
+            label(MyBundle.message("robot.run.configuration.label.report-file"))
             reportFileTextField = textFieldWithBrowseButton(
                 browseDialogTitle = "Report file",
                 value = null,
@@ -223,13 +224,13 @@ class RobotSettingsEditor : SettingsEditor<RobotRunConfiguration>() {
             ).component
         }
         row {
-            label("Report title")
+            label(MyBundle.message("robot.run.configuration.label.report-title"))
             reportTitleTextField = textField({ "" }, {}).component
         }
         row {
             cell(isVerticalFlow = true) {
-                timestampOutputsCheckBox = checkBox("Adds a timestamp to all output files").component
-                splitLogsCheckBox = checkBox("Split log file into smaller pieces").component
+                timestampOutputsCheckBox = checkBox(MyBundle.message("robot.run.configuration.label.output-timestamp")).component
+                splitLogsCheckBox = checkBox(MyBundle.message("robot.run.configuration.label.log-split")).component
             }
         }
     }
@@ -247,7 +248,7 @@ class RobotSettingsEditor : SettingsEditor<RobotRunConfiguration>() {
         row { label("") }
         row {
             cell(isVerticalFlow = true) {
-                label("Log level")
+                label(MyBundle.message("robot.run.configuration.label.log-level"))
                 logLevelBox = comboBox(
                     DefaultComboBoxModel(arrayOf("INFO", "DEBUG", "TRACE")),
                     { "INFO" },
@@ -255,7 +256,7 @@ class RobotSettingsEditor : SettingsEditor<RobotRunConfiguration>() {
                 ).component
             }
             cell(isVerticalFlow = true) {
-                label("Default log level")
+                label(MyBundle.message("robot.run.configuration.label.default-log-level"))
                 defaultLogLevelBox = comboBox(
                     DefaultComboBoxModel(arrayOf("INFO", "DEBUG", "TRACE")),
                     { "INFO" },
@@ -264,10 +265,10 @@ class RobotSettingsEditor : SettingsEditor<RobotRunConfiguration>() {
             }
         }
         row {
-            dryRunCheckBox = checkBox("Dry run", false, "Run tests without executing keywords from test libraries").component
+            dryRunCheckBox = checkBox(MyBundle.message("robot.run.configuration.label.dry-run"), false, MyBundle.message("robot.run.configuration.desc.dry-run")).component
         }
         row {
-            runEmptySuiteCheckBox = checkBox("Run Empty suite", false, "Run tests even if the test suites are empty").component
+            runEmptySuiteCheckBox = checkBox(MyBundle.message("robot.run.configuration.label.run-empty"), false, MyBundle.message("robot.run.configuration.desc.run-empty")).component
         }
     }
 
@@ -314,8 +315,8 @@ class RobotSettingsEditor : SettingsEditor<RobotRunConfiguration>() {
 
     private fun variablesPanel(model: DefaultTableModel): JPanel {
         val table = JBTable(model)
-        model.addColumn("Key")
-        model.addColumn("Value")
+        model.addColumn(MyBundle.message("robot.run.configuration.label.key"))
+        model.addColumn(MyBundle.message("robot.run.configuration.label.value"))
         val decorator = ToolbarDecorator.createDecorator(table)
         decorator.setAddAction { model.addRow(arrayOf("", "")) }
         decorator.setRemoveAction { table.selectedRows.reversed().forEach { model.removeRow(it) } }

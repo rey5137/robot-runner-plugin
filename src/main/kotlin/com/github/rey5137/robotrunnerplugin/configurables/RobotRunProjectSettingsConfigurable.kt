@@ -1,5 +1,6 @@
 package com.github.rey5137.robotrunnerplugin.configurables
 
+import com.github.rey5137.robotrunnerplugin.MyBundle
 import com.intellij.openapi.options.Configurable
 import com.intellij.openapi.project.Project
 import javax.swing.JComponent
@@ -45,7 +46,7 @@ class RobotRunProjectSettingsConfigurable(private val project: Project) : Config
         }
     }
 
-    override fun getDisplayName(): String = "Robot Runner Settings"
+    override fun getDisplayName(): String = MyBundle.getMessage("robot.run.settings.name")
 
     override fun disposeUIResources() {
         settingsComponent = null

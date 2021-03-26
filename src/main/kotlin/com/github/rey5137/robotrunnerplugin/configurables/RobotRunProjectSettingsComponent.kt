@@ -1,5 +1,6 @@
 package com.github.rey5137.robotrunnerplugin.configurables
 
+import com.github.rey5137.robotrunnerplugin.MyBundle
 import com.github.rey5137.robotrunnerplugin.runconfigurations.ROBOT_RUN_CONFIGURATION_TYPE_ID
 import com.github.rey5137.robotrunnerplugin.runconfigurations.RobotRunConfigurationFactory
 import com.github.rey5137.robotrunnerplugin.runconfigurations.RobotRunConfigurationType
@@ -87,7 +88,7 @@ class RobotRunProjectSettingsComponent(private val project: Project) {
             }
         val panel = decorator.createPanel()
         return FormBuilder.createFormBuilder()
-            .addComponent(JBLabel("Template Configuration to use with \"Run Robot ..\" actions"), 1)
+            .addComponent(JBLabel(MyBundle.message("robot.run.settings.label")), 1)
             .addComponentFillVertically(panel, 0)
             .panel
     }

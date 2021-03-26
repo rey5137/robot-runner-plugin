@@ -1,5 +1,6 @@
 package com.github.rey5137.robotrunnerplugin.configurables
 
+import com.github.rey5137.robotrunnerplugin.MyBundle
 import com.intellij.execution.RunnerAndConfigurationSettings
 import com.intellij.util.ui.EditableModel
 import javax.swing.table.AbstractTableModel
@@ -45,9 +46,9 @@ class RobotRunSettingModel: AbstractTableModel(), EditableModel {
     override fun getColumnCount(): Int = 3
 
     override fun getColumnName(column: Int): String = when(column) {
-        INDEX_NAME -> "Run Configuration"
-        INDEX_TEST_SUITE -> "Test Suite"
-        INDEX_TEST_CASE -> "Test Case"
+        INDEX_NAME -> MyBundle.message("robot.run.settings.column.name")
+        INDEX_TEST_SUITE -> MyBundle.message("robot.run.settings.column.test-suite")
+        INDEX_TEST_CASE -> MyBundle.message("robot.run.settings.column.test-case")
         else -> ""
     }
 

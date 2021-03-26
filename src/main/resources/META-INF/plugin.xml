@@ -38,9 +38,27 @@
         <group id="com.github.rey5137.robotrunnerplugin.actions.RunRobotTestSuiteActionGroupInProjectView"
                text="Run Robot Test Suite"
                popup="false">
-            <add-to-group group-id="ProjectViewPopupMenu" anchor="last"/>
+            <add-to-group group-id="ProjectViewPopupMenuRunGroup" anchor="last"/>
             <reference ref="com.github.rey5137.robotrunnerplugin.actions.RunRobotTestSuiteActionGroup"/>
         </group>
+
+        <action id="com.github.rey5137.robotrunnerplugin.actions.RunRobotTestCaseAction"
+                class="com.github.rey5137.robotrunnerplugin.actions.RunRobotTestCaseAction"/>
+
+        <group id="com.github.rey5137.robotrunnerplugin.actions.RunRobotTestCaseActionGroup"
+               class="com.github.rey5137.robotrunnerplugin.actions.RunRobotTestCaseActionGroup"
+               text="Run Robot Test Case"
+               popup="true">
+            <add-to-group group-id="RunMenu" anchor="last"/>
+        </group>
+
+        <group id="com.github.rey5137.robotrunnerplugin.actions.RunRobotTestCaseActionGroupInEditorView"
+               text="Run Robot Test Case"
+               popup="false">
+            <add-to-group group-id="EditorPopupMenu.Run" anchor="last"/>
+            <reference ref="com.github.rey5137.robotrunnerplugin.actions.RunRobotTestCaseActionGroup"/>
+        </group>
+
     </actions>
 
     <applicationListeners>

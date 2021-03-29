@@ -1,5 +1,5 @@
-<idea-plugin>
-    <id>com.github.rey5137.robotrunnerplugin</id>
+<idea-plugin url="https://github.com/rey5137/robot-runner-plugin">
+    <id>com.github.rey5137.robot-runner-plugin</id>
     <name>Robot Runner</name>
     <vendor>rey5137</vendor>
 
@@ -26,7 +26,8 @@
     <actions>
 
         <action id="com.github.rey5137.robotrunnerplugin.actions.RunRobotTestSuiteAction"
-                class="com.github.rey5137.robotrunnerplugin.actions.RunRobotTestSuiteAction"/>
+                class="com.github.rey5137.robotrunnerplugin.actions.RunRobotTestSuiteAction"
+                icon="MyIcons.RunRobot"/>
 
         <group id="com.github.rey5137.robotrunnerplugin.actions.RunRobotTestSuiteActionGroup"
                class="com.github.rey5137.robotrunnerplugin.actions.RunRobotTestSuiteActionGroup"
@@ -35,7 +36,8 @@
         </group>
 
         <action id="com.github.rey5137.robotrunnerplugin.actions.RunRobotTestCaseAction"
-                class="com.github.rey5137.robotrunnerplugin.actions.RunRobotTestCaseAction"/>
+                class="com.github.rey5137.robotrunnerplugin.actions.RunRobotTestCaseAction"
+                icon="MyIcons.RunRobot"/>
 
         <group id="com.github.rey5137.robotrunnerplugin.actions.RunRobotTestCaseActionGroup"
                class="com.github.rey5137.robotrunnerplugin.actions.RunRobotTestCaseActionGroup"
@@ -73,4 +75,5 @@
         <listener class="com.github.rey5137.robotrunnerplugin.listeners.MyProjectManagerListener"
                   topic="com.intellij.openapi.project.ProjectManagerListener"/>
     </applicationListeners>
+
 </idea-plugin>

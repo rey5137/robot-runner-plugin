@@ -15,7 +15,12 @@ class RunRobotTestSuiteActionGroup : ActionGroup() {
                 .toMap()
         return RobotRunProjectSettingsState.getInstance(project).settingMap.entries.filter { it.value.testSuiteEnable }
             .mapNotNull { configurationMap[it.key] }
-            .map { RunRobotTestSuiteAction(it) }
+            .map { RunRobotTestSuiteAction(it) as AnAction }
+            .toMutableList()
+            .apply {
+                add(Separator(null))
+                add(CreateRunRobotTestSuiteConfigAction())
+            }
             .toTypedArray()
     }
 

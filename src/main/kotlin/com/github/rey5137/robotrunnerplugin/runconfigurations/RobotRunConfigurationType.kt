@@ -14,7 +14,7 @@ class RobotRunConfigurationType :
         MyBundle.message("robot.run.configuration.type.desc"),
         MyIcons.RunRobot) {
 
-    private val configurationFactory: RobotRunConfigurationFactory = RobotRunConfigurationFactory(this)
+    val configurationFactory: RobotRunConfigurationFactory = RobotRunConfigurationFactory(this)
 
     init {
         addFactory(configurationFactory)

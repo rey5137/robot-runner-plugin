@@ -29,6 +29,9 @@
                 class="com.github.rey5137.robotrunnerplugin.actions.RunRobotTestSuiteAction"
                 icon="MyIcons.RunRobot"/>
 
+        <action id="com.github.rey5137.robotrunnerplugin.actions.CreateRunRobotTestSuiteConfigAction"
+                class="com.github.rey5137.robotrunnerplugin.actions.CreateRunRobotTestSuiteConfigAction"/>
+
         <group id="com.github.rey5137.robotrunnerplugin.actions.RunRobotTestSuiteActionGroup"
                class="com.github.rey5137.robotrunnerplugin.actions.RunRobotTestSuiteActionGroup"
                text="Run Robot Test Suite"
@@ -38,6 +41,9 @@
         <action id="com.github.rey5137.robotrunnerplugin.actions.RunRobotTestCaseAction"
                 class="com.github.rey5137.robotrunnerplugin.actions.RunRobotTestCaseAction"
                 icon="MyIcons.RunRobot"/>
+
+        <action id="com.github.rey5137.robotrunnerplugin.actions.CreateRunRobotTestCaseConfigAction"
+                class="com.github.rey5137.robotrunnerplugin.actions.CreateRunRobotTestCaseConfigAction"/>
 
         <group id="com.github.rey5137.robotrunnerplugin.actions.RunRobotTestCaseActionGroup"
                class="com.github.rey5137.robotrunnerplugin.actions.RunRobotTestCaseActionGroup"

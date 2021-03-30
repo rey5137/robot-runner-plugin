@@ -15,6 +15,29 @@
 
 <!-- Plugin description -->
 Run Configuration to run Robot Framework test suites
+
+## How to
+
+### New Robot Run Configuration
+
+- Open Edit Run Configurations dialog.
+
+- Click Add New Configuration button (plus icon at the top left panel).
+
+- Choose Robot Runner option.
+
+- Choose a Python interpreter from dropdown list (you must setup Python SDK beforehand).
+
+- Setup other options as you want.
+
+- Click Apply button.
+
+### Setup Configuration to use with "Run Robot ..." menu
+
+- Open Settings/Preferences > Tools > Robot Runner Settings.
+
+- Tick checkbox at column "Test Suite" / "Test Case" to select which configuration will be shown in "Run Robot ..." menu.
+
 <!-- Plugin description end -->
 
 ## Installation

@@ -1,6 +1,6 @@
-<idea-plugin>
-    <id>com.github.rey5137.robotrunnerplugin</id>
-    <name>robot-runner-plugin</name>
+<idea-plugin url="https://github.com/rey5137/robot-runner-plugin">
+    <id>com.github.rey5137.robot-runner-plugin</id>
+    <name>Robot Runner</name>
     <vendor>rey5137</vendor>
 
     <!-- Product and plugin compatibility requirements -->
@@ -10,10 +10,76 @@
     <extensions defaultExtensionNs="com.intellij">
         <applicationService serviceImplementation="com.github.rey5137.robotrunnerplugin.services.MyApplicationService"/>
         <projectService serviceImplementation="com.github.rey5137.robotrunnerplugin.services.MyProjectService"/>
+
+        <configurationType
+                implementation="com.github.rey5137.robotrunnerplugin.runconfigurations.RobotRunConfigurationType"/>
+        <projectConfigurable parentId="tools"
+                             instance="com.github.rey5137.robotrunnerplugin.configurables.RobotRunProjectSettingsConfigurable"
+                             provider="com.github.rey5137.robotrunnerplugin.configurables.RobotRunProjectSettingsConfigurableProvider"
+                             id="com.github.rey5137.robotrunnerplugin.RobotRunApplicationSettingsConfigurable"
+                             displayName="Robot Runner Settings"
+                             nonDefaultProject="true"/>
+        <projectService
+                serviceImplementation="com.github.rey5137.robotrunnerplugin.configurables.RobotRunProjectSettingsState"/>
     </extensions>
+
+    <actions>
+
+        <action id="com.github.rey5137.robotrunnerplugin.actions.RunRobotTestSuiteAction"
+                class="com.github.rey5137.robotrunnerplugin.actions.RunRobotTestSuiteAction"
+                icon="MyIcons.RunRobot"/>
+
+        <action id="com.github.rey5137.robotrunnerplugin.actions.CreateRunRobotTestSuiteConfigAction"
+                class="com.github.rey5137.robotrunnerplugin.actions.CreateRunRobotTestSuiteConfigAction"/>
+
+        <group id="com.github.rey5137.robotrunnerplugin.actions.RunRobotTestSuiteActionGroup"
+               class="com.github.rey5137.robotrunnerplugin.actions.RunRobotTestSuiteActionGroup"
+               text="Run Robot Test Suite"
+               popup="true">
+        </group>
+
+        <action id="com.github.rey5137.robotrunnerplugin.actions.RunRobotTestCaseAction"
+                class="com.github.rey5137.robotrunnerplugin.actions.RunRobotTestCaseAction"
+                icon="MyIcons.RunRobot"/>
+
+        <action id="com.github.rey5137.robotrunnerplugin.actions.CreateRunRobotTestCaseConfigAction"
+                class="com.github.rey5137.robotrunnerplugin.actions.CreateRunRobotTestCaseConfigAction"/>
+
+        <group id="com.github.rey5137.robotrunnerplugin.actions.RunRobotTestCaseActionGroup"
+               class="com.github.rey5137.robotrunnerplugin.actions.RunRobotTestCaseActionGroup"
+               text="Run Robot Test Case"
+               popup="true">
+        </group>
+
+        <group id="com.github.rey5137.robotrunnerplugin.actions.RunRobotTestSuiteActionGroupInProjectView"
+               text="Run Robot Test Suite"
+               popup="false">
+            <add-to-group group-id="ProjectViewPopupMenuRunGroup" anchor="last"/>
+            <separator/>
+            <reference ref="com.github.rey5137.robotrunnerplugin.actions.RunRobotTestSuiteActionGroup"/>
+        </group>
+
+        <group id="com.github.rey5137.robotrunnerplugin.actions.RunRobotActionGroupInRunMenu"
+               popup="false">
+            <add-to-group group-id="RunMenu" anchor="after" relative-to-action="RunnerActions"/>
+            <separator/>
+            <reference ref="com.github.rey5137.robotrunnerplugin.actions.RunRobotTestSuiteActionGroup"/>
+            <reference ref="com.github.rey5137.robotrunnerplugin.actions.RunRobotTestCaseActionGroup"/>
+        </group>
+
+        <group id="com.github.rey5137.robotrunnerplugin.actions.RunRobotTestCaseActionGroupInEditorView"
+               text="Run Robot Test Case"
+               popup="false">
+            <add-to-group group-id="EditorPopupMenu.Run" anchor="last"/>
+            <separator/>
+            <reference ref="com.github.rey5137.robotrunnerplugin.actions.RunRobotTestCaseActionGroup"/>
+        </group>
+
+    </actions>
 
     <applicationListeners>
         <listener class="com.github.rey5137.robotrunnerplugin.listeners.MyProjectManagerListener"
                   topic="com.intellij.openapi.project.ProjectManagerListener"/>
     </applicationListeners>
+
 </idea-plugin>

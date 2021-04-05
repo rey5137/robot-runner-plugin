@@ -160,21 +160,21 @@ class RobotSettingsEditor : SettingsEditor<RobotRunConfiguration>() {
         row {
             cell(isVerticalFlow = true) {
                 label(MyBundle.message("robot.run.configuration.label.test-names"))
-                namePanel(testNameModel, "Test name", "Name is case- and space-insensitive")().constraints(CCFlags.pushX)
+                namePanel(testNameModel, "Test name", MyBundle.message("robot.run.configuration.desc.multi.test-names"), MyBundle.message("robot.run.configuration.desc.single.test-names"))().constraints(CCFlags.pushX)
             }
             cell(isVerticalFlow = true) {
                 label(MyBundle.message("robot.run.configuration.label.suite-names"))
-                namePanel(suiteNameModel, "Suite name", "Name is case- and space-insensitive")().constraints(CCFlags.pushX)
+                namePanel(suiteNameModel, "Suite name", MyBundle.message("robot.run.configuration.desc.multi.test-names"), MyBundle.message("robot.run.configuration.desc.single.test-names"))().constraints(CCFlags.pushX)
             }
         }
         row {
             cell(isVerticalFlow = true) {
                 label(MyBundle.message("robot.run.configuration.label.included-tags"))
-                namePanel(includeTagModel, "Tag", "Use tag pattern to match more tag")().constraints(CCFlags.pushX)
+                namePanel(includeTagModel, "Tag", MyBundle.message("robot.run.configuration.desc.multi.tags"), MyBundle.message("robot.run.configuration.desc.single.tags"))().constraints(CCFlags.pushX)
             }
             cell(isVerticalFlow = true) {
                 label(MyBundle.message("robot.run.configuration.label.excluded-tags"))
-                namePanel(excludeTagModel, "Tag", "Use tag pattern to match more tag")().constraints(CCFlags.pushX)
+                namePanel(excludeTagModel, "Tag", MyBundle.message("robot.run.configuration.desc.multi.tags"), MyBundle.message("robot.run.configuration.desc.single.tags"))().constraints(CCFlags.pushX)
             }
         }
     }
@@ -293,17 +293,17 @@ class RobotSettingsEditor : SettingsEditor<RobotRunConfiguration>() {
         return decorator.createPanel()
     }
 
-    private fun namePanel(model: DefaultListModel<String>, title: String, message: String): JPanel {
+    private fun namePanel(model: DefaultListModel<String>, title: String, addMessage: String, editMessage: String): JPanel {
         val list = JBList(model)
         val decorator = ToolbarDecorator.createDecorator(list)
         decorator.setPreferredSize(Dimension(20000, 50))
         decorator.setAddAction {
-            val name = Messages.showInputDialog(null, message, title, null) ?: ""
+            val name = Messages.showMultilineInputDialog(null, addMessage, title, null, null, null) ?: ""
             if(name.isNotBlank())
-                model.addElement(name)
+                model.addAll(name.split("\n").filter { it.isNotBlank() })
         }
         decorator.setEditAction {
-            val name = Messages.showInputDialog(null, message, title, null, list.selectedValue, null) ?: ""
+            val name = Messages.showInputDialog(null, editMessage, title, null, list.selectedValue, null) ?: ""
             if(name.isNotBlank())
                 model.setElementAt(name, list.selectedIndex)
         }

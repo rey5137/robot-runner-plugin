@@ -21,6 +21,9 @@
                              nonDefaultProject="true"/>
         <projectService
                 serviceImplementation="com.github.rey5137.robotrunnerplugin.configurables.RobotRunProjectSettingsState"/>
+
+        <fileEditorProvider
+                implementation="com.github.rey5137.robotrunnerplugin.editors.RobotOutputFileEditorProvider"/>
     </extensions>
 
     <actions>

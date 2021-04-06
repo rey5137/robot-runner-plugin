@@ -70,11 +70,12 @@
             <reference ref="com.github.rey5137.robotrunnerplugin.actions.RunRobotTestCaseActionGroup"/>
         </group>
 
-        <group id="com.github.rey5137.robotrunnerplugin.actions.RunRobotTestCaseActionGroupInEditorView"
+        <group id="com.github.rey5137.robotrunnerplugin.actions.RunRobotActionGroupInEditorView"
                text="Run Robot Test Case"
                popup="false">
             <add-to-group group-id="EditorPopupMenu.Run" anchor="last"/>
             <separator/>
+            <reference ref="com.github.rey5137.robotrunnerplugin.actions.RunRobotTestSuiteActionGroup"/>
             <reference ref="com.github.rey5137.robotrunnerplugin.actions.RunRobotTestCaseActionGroup"/>
         </group>
 

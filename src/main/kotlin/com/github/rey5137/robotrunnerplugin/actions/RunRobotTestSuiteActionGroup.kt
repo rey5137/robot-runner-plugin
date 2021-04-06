@@ -25,14 +25,7 @@ class RunRobotTestSuiteActionGroup : ActionGroup() {
     }
 
     override fun update(e: AnActionEvent) {
-        val editor = e.getData(CommonDataKeys.EDITOR)
-        e.presentation.isEnabledAndVisible = e.project != null
-                && e.files.isNotEmpty()
-                && (
-                !ActionPlaces.isPopupPlace(e.place)
-                        || editor == null
-                        || !editor.selectionModel.hasSelection()
-                )
+        e.presentation.isEnabledAndVisible = e.project != null && e.files.isNotEmpty()
     }
 
 }

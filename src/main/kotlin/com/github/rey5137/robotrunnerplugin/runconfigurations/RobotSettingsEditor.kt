@@ -13,16 +13,20 @@ import com.intellij.openapi.ui.DialogPanel
 import com.intellij.openapi.ui.Messages
 import com.intellij.openapi.ui.TextFieldWithBrowseButton
 import com.intellij.openapi.util.Disposer
+import com.intellij.openapi.util.Pair
 import com.intellij.ui.SimpleListCellRenderer
 import com.intellij.ui.ToolbarDecorator
 import com.intellij.ui.components.JBCheckBox
 import com.intellij.ui.components.JBList
+import com.intellij.ui.components.JBTabbedPane
 import com.intellij.ui.components.JBTextField
 import com.intellij.ui.layout.CCFlags
 import com.intellij.ui.layout.panel
 import com.intellij.ui.table.JBTable
 import com.intellij.ui.tabs.JBTabsFactory
 import com.intellij.ui.tabs.TabInfo
+import java.awt.BorderLayout
+import java.awt.Color
 import java.awt.Dimension
 import javax.swing.*
 import javax.swing.table.DefaultTableModel
@@ -114,14 +118,13 @@ class RobotSettingsEditor : SettingsEditor<RobotRunConfiguration>() {
 
     override fun createEditor(): JComponent = mainPanel
 
-    private fun buildMainPanel(): DialogPanel {
-        val disposable = Disposer.newDisposable()
-        val tabs = JBTabsFactory.createEditorTabs(null, disposable)
+    private fun buildMainPanel(): JComponent {
+        val tabs = JBTabbedPane()
 
-        tabs.addTab(TabInfo(buildTestSuitesPanel()).setText(MyBundle.message("robot.run.configuration.section.suites")))
-        tabs.addTab(TabInfo(buildOutputPanel()).setText(MyBundle.message("robot.run.configuration.section.output")))
-        tabs.addTab(TabInfo(buildVariablesPanel()).setText(MyBundle.message("robot.run.configuration.section.variables")))
-        tabs.addTab(TabInfo(buildExecutionPanel()).setText(MyBundle.message("robot.run.configuration.section.execution")))
+        tabs.add(MyBundle.message("robot.run.configuration.section.suites"), buildTestSuitesPanel())
+        tabs.add(MyBundle.message("robot.run.configuration.section.output"), buildOutputPanel())
+        tabs.add(MyBundle.message("robot.run.configuration.section.variables"), buildVariablesPanel())
+        tabs.add(MyBundle.message("robot.run.configuration.section.execution"), buildExecutionPanel())
 
         return panel {
             row(label = MyBundle.message("robot.run.configuration.label.interpreter")) {
@@ -140,11 +143,11 @@ class RobotSettingsEditor : SettingsEditor<RobotRunConfiguration>() {
                             text = if (sdk == null) "" else "${sdk.name} (${sdk.homePath})"
                         }
                     }
-                ).component
+                ).constraints(CCFlags.growX, CCFlags.pushX).component
             }
 
             row {
-                tabs.component().constraints(CCFlags.pushX)
+                tabs().constraints(CCFlags.growX, CCFlags.pushX)
             }
         }
     }

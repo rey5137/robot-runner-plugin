@@ -1,7 +1,13 @@
 package com.github.rey5137.robotrunnerplugin.editors
 
-import com.github.rey5137.robotrunnerplugin.editors.tree.NodeFilter
-import com.github.rey5137.robotrunnerplugin.editors.tree.TreeNodeWrapper
+import com.github.rey5137.robotrunnerplugin.editors.ui.DetailsPanel
+import com.github.rey5137.robotrunnerplugin.editors.ui.NodeFilter
+import com.github.rey5137.robotrunnerplugin.editors.ui.TreeNodeWrapper
+import com.github.rey5137.robotrunnerplugin.editors.xml.*
+import com.intellij.execution.configurations.ConfigurationFactory
+import com.intellij.execution.configurations.ConfigurationType
+import com.intellij.execution.configurations.RunConfiguration
+import com.intellij.execution.impl.SingleConfigurationConfigurable
 import com.intellij.icons.AllIcons
 import com.intellij.openapi.actionSystem.ActionToolbarPosition
 import com.intellij.openapi.actionSystem.AnActionEvent
@@ -18,6 +24,7 @@ import com.intellij.ui.treeStructure.Tree
 import com.intellij.util.ui.JBDimension
 import com.intellij.util.ui.JBUI
 import com.intellij.util.ui.tree.TreeUtil
+import com.intellij.util.xml.DomElement
 import com.intellij.util.xml.DomManager
 import java.awt.BorderLayout
 import java.beans.PropertyChangeListener
@@ -37,6 +44,7 @@ class RobotOutputFileEditor(private val project: Project, private val srcFile: V
     private val myComponent by lazy { buildComponent() }
     private val treeModel by lazy { DefaultTreeModel(robotTreeNodeWrapper.node) }
     private val tree by lazy { Tree(treeModel) }
+    private val detailsPanel by lazy { DetailsPanel() }
 
     private var nodeFilter: NodeFilter = ShowAllFilter
 
@@ -66,18 +74,13 @@ class RobotOutputFileEditor(private val project: Project, private val srcFile: V
         return null
     }
 
-    private fun getRootNodeWrapper(): TreeNodeWrapper {
-        val manager = DomManager.getDomManager(project)
-        val xmlFile = PsiManager.getInstance(project).findFile(srcFile) as XmlFile
-        val robotDomElement = manager.getFileElement(xmlFile, RobotDomElement::class.java)!!.rootElement
-        return robotDomElement.toNode()
-    }
+    private fun getRootNodeWrapper(): TreeNodeWrapper = srcFile.parseXml().toNode()
 
     private fun buildComponent(): JComponent {
         val rootPanel = JPanel(BorderLayout())
         val splitter = JBSplitter(0.3F)
         val leftPanel = buildLeftPanel()
-        val rightPanel = buildRightPanel()
+        val rightPanel = detailsPanel
 
         leftPanel.border = IdeBorderFactory.createBorder(SideBorder.RIGHT)
         splitter.firstComponent = leftPanel
@@ -100,10 +103,18 @@ class RobotOutputFileEditor(private val project: Project, private val srcFile: V
         TreeSpeedSearch(tree) { o ->
             val node = o.lastPathComponent as DefaultMutableTreeNode
             when (val userObject = node.userObject) {
-                is SuiteDomElement -> userObject.name.value ?: ""
-                is TestDomElement -> userObject.name.value ?: ""
-                is KeywordDomElement -> userObject.name.value ?: ""
+                is SuiteElement -> userObject.name
+                is TestElement -> userObject.name
+                is KeywordElement -> userObject.name
                 else -> o.toString()
+            }
+        }
+
+        tree.addTreeSelectionListener {
+            val selectionPath = tree.selectionPath
+            if (selectionPath != null) {
+                val node = selectionPath.lastPathComponent as DefaultMutableTreeNode
+                detailsPanel.showDetails(node.userObject as Element)
             }
         }
 
@@ -129,10 +140,6 @@ class RobotOutputFileEditor(private val project: Project, private val srcFile: V
         return panel
     }
 
-    private fun buildRightPanel(): JPanel {
-        return JPanel()
-    }
-
     private fun populateTree(keepExpanded: Boolean) {
         var expandedPaths = emptyList<TreePath>()
         if(keepExpanded)
@@ -156,26 +163,26 @@ class RobotOutputFileEditor(private val project: Project, private val srcFile: V
         return node
     }
 
-    private fun RobotDomElement.toNode(): TreeNodeWrapper {
+    private fun RobotElement.toNode(): TreeNodeWrapper {
         val children = mutableListOf<TreeNodeWrapper>()
         suites.forEach { children.add(it.toNode()) }
         return TreeNodeWrapper(node = DefaultMutableTreeNode(this), children = children)
     }
 
-    private fun SuiteDomElement.toNode(): TreeNodeWrapper {
+    private fun SuiteElement.toNode(): TreeNodeWrapper {
         val children = mutableListOf<TreeNodeWrapper>()
         suites.forEach { children.add(it.toNode()) }
         tests.forEach { children.add(it.toNode()) }
         return TreeNodeWrapper(node = DefaultMutableTreeNode(this), children = children)
     }
 
-    private fun TestDomElement.toNode(): TreeNodeWrapper {
+    private fun TestElement.toNode(): TreeNodeWrapper {
         val children = mutableListOf<TreeNodeWrapper>()
         keywords.forEach { children.add(it.toNode()) }
         return TreeNodeWrapper(node = DefaultMutableTreeNode(this), children = children)
     }
 
-    private fun KeywordDomElement.toNode(): TreeNodeWrapper {
+    private fun KeywordElement.toNode(): TreeNodeWrapper {
         val children = mutableListOf<TreeNodeWrapper>()
         keywords.forEach { children.add(it.toNode()) }
         return TreeNodeWrapper(node = DefaultMutableTreeNode(this), children = children)
@@ -196,20 +203,18 @@ class RobotOutputFileEditor(private val project: Project, private val srcFile: V
                 return
             }
             when (val userObject = value.userObject) {
-                is RobotDomElement -> {
-                    append("Robot", SimpleTextAttributes.REGULAR_ATTRIBUTES)
+                is SuiteElement -> {
+                    append(userObject.name, SimpleTextAttributes.REGULAR_ATTRIBUTES)
                     icon = AllIcons.Nodes.Package
                 }
-                is SuiteDomElement -> {
-                    append(userObject.name.value ?: "", SimpleTextAttributes.REGULAR_ATTRIBUTES)
-                    icon = AllIcons.Nodes.Package
-                }
-                is TestDomElement -> {
-                    append(userObject.name.value ?: "", SimpleTextAttributes.REGULAR_ATTRIBUTES)
+                is TestElement -> {
+                    append(userObject.name, SimpleTextAttributes.REGULAR_ATTRIBUTES)
                     icon = AllIcons.Nodes.Class
                 }
-                is KeywordDomElement -> {
-                    append(userObject.name.value ?: "", SimpleTextAttributes.REGULAR_ATTRIBUTES)
+                is KeywordElement -> {
+                    if(userObject.library.isNotBlank())
+                        append("${userObject.library}.", SimpleTextAttributes.GRAY_SMALL_ATTRIBUTES)
+                    append(userObject.name, SimpleTextAttributes.REGULAR_ATTRIBUTES)
                     icon = AllIcons.Nodes.Method
                 }
             }
@@ -225,7 +230,7 @@ class RobotOutputFileEditor(private val project: Project, private val srcFile: V
 
     object HideKeywordFilter : NodeFilter {
 
-        override fun accept(nodeWrapper: TreeNodeWrapper) = nodeWrapper.node.userObject !is KeywordDomElement
+        override fun accept(nodeWrapper: TreeNodeWrapper) = nodeWrapper.node.userObject !is KeywordElement
 
     }
 

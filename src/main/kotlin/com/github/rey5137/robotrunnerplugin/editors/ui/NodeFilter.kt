@@ -1,4 +1,4 @@
-package com.github.rey5137.robotrunnerplugin.editors.tree
+package com.github.rey5137.robotrunnerplugin.editors.ui
 
 interface NodeFilter {
 

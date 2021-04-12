@@ -25,9 +25,6 @@
         <fileEditorProvider
                 implementation="com.github.rey5137.robotrunnerplugin.editors.RobotOutputFileEditorProvider"/>
 
-        <dom.fileMetaData
-                implementation="com.github.rey5137.robotrunnerplugin.editors.RobotOutputDomFileDescription"
-                rootTagName="robot"/>
     </extensions>
 
     <actions>

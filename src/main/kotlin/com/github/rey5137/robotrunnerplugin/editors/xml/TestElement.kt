@@ -4,6 +4,6 @@ data class TestElement(
     var id: String = "",
     override var name: String = "",
     var keywords: MutableList<KeywordElement> = ArrayList(),
-    var tags: MutableList<String> = ArrayList(),
+    override var tags: MutableList<String> = ArrayList(),
     override var status: StatusElement = StatusElement(),
-) : Element, HasCommonField
+) : Element, HasCommonField, HasTagsField

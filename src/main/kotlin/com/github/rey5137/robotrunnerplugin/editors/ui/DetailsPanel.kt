@@ -2,6 +2,7 @@ package com.github.rey5137.robotrunnerplugin.editors.ui
 
 import com.github.rey5137.robotrunnerplugin.editors.xml.Element
 import com.github.rey5137.robotrunnerplugin.editors.xml.HasCommonField
+import com.github.rey5137.robotrunnerplugin.editors.xml.HasTagsField
 import com.github.rey5137.robotrunnerplugin.editors.xml.KeywordElement
 import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBTextField
@@ -37,7 +38,7 @@ class DetailsPanel : JPanel(MigLayout(createLayoutConstraints(10, 10))) {
                 statusLabel.icon = MyIcons.TestFail
         }
 
-        if(element is KeywordElement) {
+        if(element is HasTagsField) {
             tagsField.text = element.tags.joinToString(separator = ",")
         }
         else {

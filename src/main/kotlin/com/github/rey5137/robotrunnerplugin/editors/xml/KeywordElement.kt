@@ -5,8 +5,9 @@ data class KeywordElement(
     var library: String = "",
     var document: String = "",
     var arguments: MutableList<String> = ArrayList(),
-    var tags: MutableList<String> = ArrayList(),
+    var assigns: MutableList<String> = ArrayList(),
+    override var tags: MutableList<String> = ArrayList(),
     var messages: MutableList<MessageElement> = ArrayList(),
     var keywords: MutableList<KeywordElement> = ArrayList(),
     override var status: StatusElement = StatusElement(),
-) : Element, HasCommonField
+) : Element, HasCommonField, HasTagsField

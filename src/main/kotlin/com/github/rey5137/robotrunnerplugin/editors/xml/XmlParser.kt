@@ -32,6 +32,13 @@ fun VirtualFile.parseXml(): RobotElement {
                     TAG_STATUS -> startElement.toStatusElement().apply {
                         currentElement.addStatus(this)
                     }
+                    TAG_MESSAGE -> startElement.toMessageElement().apply {
+                        this.value = reader.nextEvent().asCharacters().data
+                    }
+                    TAG_ARGUMENTS -> ArgumentsElement()
+                    TAG_ASSIGN -> AssignsElement()
+                    TAG_TAGS -> TagsElement()
+                    TAG_ARGUMENT, TAG_VAR, TAG_TAG -> StringElement(value = reader.nextEvent().asCharacters().data)
                     else -> {
                         skipCount++
                         continue
@@ -45,9 +52,18 @@ fun VirtualFile.parseXml(): RobotElement {
             if (skipCount > 0)
                 skipCount--
             else {
-                stack.removeAt(stack.size - 1)
-                if (stack.isNotEmpty())
+                val element = stack.removeAt(stack.size - 1)
+                if (stack.isNotEmpty()) {
                     currentElement = stack.last()
+                    when(element) {
+                        is StringElement -> currentElement.addString(element)
+                        is ArgumentsElement -> (currentElement as KeywordElement).arguments = element.arguments
+                        is AssignsElement -> (currentElement as KeywordElement).assigns = element.vars
+                        is TagsElement -> currentElement.addTags(element)
+                        is MessageElement -> (currentElement as KeywordElement).messages.add(element)
+                    }
+                }
+
             }
         }
     }
@@ -82,30 +98,66 @@ private fun StartElement.toStatusElement() = StatusElement(
     endTime = getAttributeByName(QName(TAG_END_TIME))?.value ?: "",
 )
 
+private fun StartElement.toMessageElement() = MessageElement(
+    timestamp = getAttributeByName(QName(TAG_TIMESTAMP))?.value ?: "",
+    level = getAttributeByName(QName(TAG_LEVEL))?.value ?: "",
+)
+
 private fun Element.addSuite(suite: SuiteElement) {
-    when(this) {
+    when (this) {
         is SuiteElement -> suites.add(suite)
         is RobotElement -> suites.add(suite)
     }
 }
 
 private fun Element.addTest(test: TestElement) {
-    when(this) {
+    when (this) {
         is SuiteElement -> tests.add(test)
     }
 }
 
 private fun Element.addKeyword(keyword: KeywordElement) {
-    when(this) {
+    when (this) {
         is TestElement -> keywords.add(keyword)
         is KeywordElement -> keywords.add(keyword)
     }
 }
 
 private fun Element.addStatus(status: StatusElement) {
-    when(this) {
+    when (this) {
         is SuiteElement -> this.status = status
         is TestElement -> this.status = status
         is KeywordElement -> this.status = status
     }
 }
+
+private fun Element.addString(element: StringElement) {
+    when (this) {
+        is ArgumentsElement -> arguments.add(element.value)
+        is TagsElement -> tags.add(element.value)
+        is AssignsElement -> vars.add(element.value)
+    }
+}
+
+private fun Element.addTags(element: TagsElement) {
+    when (this) {
+        is TestElement -> this.tags = element.tags
+        is KeywordElement -> this.tags = element.tags
+    }
+}
+
+data class ArgumentsElement (
+    val arguments: MutableList<String> = ArrayList()
+) : Element
+
+data class TagsElement (
+    val tags: MutableList<String> = ArrayList()
+) : Element
+
+data class AssignsElement (
+    val vars: MutableList<String> = ArrayList()
+) : Element
+
+data class StringElement (
+    var value: String = ""
+) : Element

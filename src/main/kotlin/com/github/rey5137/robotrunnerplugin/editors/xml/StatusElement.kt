@@ -4,4 +4,8 @@ data class StatusElement(
     var status: String = "",
     var startTime: String = "",
     var endTime: String = "",
-) : Element
+) : Element {
+
+    val isPassed = "PASS".equals(status, ignoreCase = true)
+
+}

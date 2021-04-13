@@ -3,7 +3,6 @@ package com.github.rey5137.robotrunnerplugin.editors.ui
 import com.github.rey5137.robotrunnerplugin.editors.xml.Element
 import com.github.rey5137.robotrunnerplugin.editors.xml.HasCommonField
 import com.github.rey5137.robotrunnerplugin.editors.xml.HasTagsField
-import com.github.rey5137.robotrunnerplugin.editors.xml.KeywordElement
 import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBTextField
 import com.intellij.ui.layout.migLayout.createLayoutConstraints
@@ -14,14 +13,15 @@ import javax.swing.JPanel
 
 class DetailsPanel : JPanel(MigLayout(createLayoutConstraints(10, 10))) {
 
-    private val nameLabel = JBLabel()
+    private val nameField = JBTextField()
     private val statusLabel = JBLabel()
     private val tagsPanel = JPanel(MigLayout())
     private val tagsField = JBTextField()
 
     init {
-        add(statusLabel, CC().cell(0, 0))
-        add(nameLabel, CC().cell(0, 0).growX().pushX(1F))
+        add(statusLabel, CC().cell(0, 0).minWidth("32px"))
+        add(nameField, CC().cell(0, 0).growX().pushX(1F))
+        nameField.isEditable = false
 
         tagsPanel.add(JBLabel("Tags"))
         tagsPanel.add(tagsField, CC().pushX(1F))
@@ -31,11 +31,9 @@ class DetailsPanel : JPanel(MigLayout(createLayoutConstraints(10, 10))) {
 
     fun showDetails(element: Element) {
         if (element is HasCommonField) {
-            nameLabel.text = element.name
-            if("PASS".equals(element.status.status, true))
-                statusLabel.icon = MyIcons.TestPass
-            else
-                statusLabel.icon = MyIcons.TestFail
+            nameField.text = element.name
+            nameField.select(0, 0)
+            statusLabel.icon = if (element.status.isPassed) MyIcons.StatusPass else MyIcons.StatusFail
         }
 
         if(element is HasTagsField) {

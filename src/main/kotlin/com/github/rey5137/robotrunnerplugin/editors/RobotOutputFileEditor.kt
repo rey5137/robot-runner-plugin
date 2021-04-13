@@ -26,6 +26,7 @@ import com.intellij.util.ui.JBUI
 import com.intellij.util.ui.tree.TreeUtil
 import com.intellij.util.xml.DomElement
 import com.intellij.util.xml.DomManager
+import icons.MyIcons
 import java.awt.BorderLayout
 import java.beans.PropertyChangeListener
 import javax.swing.JComponent
@@ -204,18 +205,29 @@ class RobotOutputFileEditor(private val project: Project, private val srcFile: V
             }
             when (val userObject = value.userObject) {
                 is SuiteElement -> {
-                    append(userObject.name, SimpleTextAttributes.REGULAR_ATTRIBUTES)
-                    icon = AllIcons.Nodes.Package
+                    icon = if(userObject.status.isPassed) MyIcons.SuitePass else MyIcons.SuiteFail
+                    append(userObject.name, SimpleTextAttributes.REGULAR_BOLD_ATTRIBUTES)
                 }
                 is TestElement -> {
-                    append(userObject.name, SimpleTextAttributes.REGULAR_ATTRIBUTES)
-                    icon = AllIcons.Nodes.Class
+                    icon = if(userObject.status.isPassed) MyIcons.TestPass else MyIcons.TestFail
+                    append(userObject.name, SimpleTextAttributes.REGULAR_BOLD_ATTRIBUTES)
                 }
                 is KeywordElement -> {
+                    icon = if(userObject.status.isPassed) MyIcons.KeywordPass else MyIcons.KeywordFail
+                    if(userObject.assigns.isNotEmpty()) {
+                        append( userObject.assigns.joinToString(separator = ", "), SimpleTextAttributes.REGULAR_ATTRIBUTES)
+                        append(" = ", SimpleTextAttributes.REGULAR_BOLD_ATTRIBUTES)
+                    }
                     if(userObject.library.isNotBlank())
                         append("${userObject.library}.", SimpleTextAttributes.GRAY_SMALL_ATTRIBUTES)
-                    append(userObject.name, SimpleTextAttributes.REGULAR_ATTRIBUTES)
-                    icon = AllIcons.Nodes.Method
+                    append(userObject.name, SimpleTextAttributes.REGULAR_BOLD_ATTRIBUTES)
+                    if(userObject.arguments.isNotEmpty()) {
+                        append(" ")
+                        append(
+                            userObject.arguments.joinToString(separator = ", "),
+                            SimpleTextAttributes.GRAY_ATTRIBUTES
+                        )
+                    }
                 }
             }
         }

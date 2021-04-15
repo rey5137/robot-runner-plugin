@@ -4,10 +4,6 @@ import com.github.rey5137.robotrunnerplugin.editors.ui.DetailsPanel
 import com.github.rey5137.robotrunnerplugin.editors.ui.NodeFilter
 import com.github.rey5137.robotrunnerplugin.editors.ui.TreeNodeWrapper
 import com.github.rey5137.robotrunnerplugin.editors.xml.*
-import com.intellij.execution.configurations.ConfigurationFactory
-import com.intellij.execution.configurations.ConfigurationType
-import com.intellij.execution.configurations.RunConfiguration
-import com.intellij.execution.impl.SingleConfigurationConfigurable
 import com.intellij.icons.AllIcons
 import com.intellij.openapi.actionSystem.ActionToolbarPosition
 import com.intellij.openapi.actionSystem.AnActionEvent
@@ -17,15 +13,11 @@ import com.intellij.openapi.fileEditor.FileEditorState
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.UserDataHolderBase
 import com.intellij.openapi.vfs.VirtualFile
-import com.intellij.psi.PsiManager
-import com.intellij.psi.xml.XmlFile
 import com.intellij.ui.*
 import com.intellij.ui.treeStructure.Tree
 import com.intellij.util.ui.JBDimension
 import com.intellij.util.ui.JBUI
 import com.intellij.util.ui.tree.TreeUtil
-import com.intellij.util.xml.DomElement
-import com.intellij.util.xml.DomManager
 import icons.MyIcons
 import java.awt.BorderLayout
 import java.beans.PropertyChangeListener
@@ -205,7 +197,10 @@ class RobotOutputFileEditor(private val project: Project, private val srcFile: V
             }
             when (val userObject = value.userObject) {
                 is SuiteElement -> {
-                    icon = if(userObject.status.isPassed) MyIcons.SuitePass else MyIcons.SuiteFail
+                    icon = if(userObject.suites.isEmpty())
+                        if(userObject.status.isPassed) MyIcons.SuitePass else MyIcons.SuiteFail
+                    else
+                        if(userObject.status.isPassed) MyIcons.FolderPass else MyIcons.FolderFail
                     append(userObject.name, SimpleTextAttributes.REGULAR_BOLD_ATTRIBUTES)
                 }
                 is TestElement -> {

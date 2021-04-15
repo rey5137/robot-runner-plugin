@@ -14,6 +14,12 @@ object MyIcons {
     val StatusFail = IconLoader.getIcon("/icons/statusFail.svg", javaClass)
 
     @JvmField
+    val FolderPass = IconLoader.getIcon("/icons/folderPass.svg", javaClass)
+
+    @JvmField
+    val FolderFail = IconLoader.getIcon("/icons/folderFail.svg", javaClass)
+
+    @JvmField
     val SuitePass = IconLoader.getIcon("/icons/suitePass.svg", javaClass)
 
     @JvmField

@@ -33,12 +33,12 @@ fun VirtualFile.parseXml(): RobotElement {
                         currentElement.addStatus(this)
                     }
                     TAG_MESSAGE -> startElement.toMessageElement().apply {
-                        this.value = reader.nextEvent().asCharacters().data
+                        currentElement.addMessage(this)
                     }
                     TAG_ARGUMENTS -> ArgumentsElement()
                     TAG_ASSIGN -> AssignsElement()
                     TAG_TAGS -> TagsElement()
-                    TAG_ARGUMENT, TAG_VAR, TAG_TAG -> StringElement(value = reader.nextEvent().asCharacters().data)
+                    TAG_ARGUMENT, TAG_VAR, TAG_TAG -> StringElement()
                     else -> {
                         skipCount++
                         continue
@@ -48,7 +48,19 @@ fun VirtualFile.parseXml(): RobotElement {
                 stack.add(currentElement)
             }
         }
-        if (nextEvent.isEndElement) {
+        else if(nextEvent.isCharacters) {
+            val data = nextEvent.asCharacters().data
+            when(currentElement) {
+                is StringElement -> currentElement.value.append(data)
+                is MessageElement -> {
+                    val newElement = StringElement()
+                    newElement.value.append(data)
+                    currentElement = newElement
+                    stack.add(currentElement)
+                }
+            }
+        }
+        else if (nextEvent.isEndElement) {
             if (skipCount > 0)
                 skipCount--
             else {
@@ -56,11 +68,16 @@ fun VirtualFile.parseXml(): RobotElement {
                 if (stack.isNotEmpty()) {
                     currentElement = stack.last()
                     when(element) {
-                        is StringElement -> currentElement.addString(element)
+                        is StringElement -> {
+                            currentElement.addString(element)
+                            if(currentElement is MessageElement) {
+                                stack.removeAt(stack.size - 1)
+                                currentElement = stack.last()
+                            }
+                        }
                         is ArgumentsElement -> (currentElement as KeywordElement).arguments = element.arguments
                         is AssignsElement -> (currentElement as KeywordElement).assigns = element.vars
-                        is TagsElement -> currentElement.addTags(element)
-                        is MessageElement -> (currentElement as KeywordElement).messages.add(element)
+                        is TagsElement -> currentElement.setTags(element)
                     }
                 }
 
@@ -133,16 +150,23 @@ private fun Element.addStatus(status: StatusElement) {
 
 private fun Element.addString(element: StringElement) {
     when (this) {
-        is ArgumentsElement -> arguments.add(element.value)
-        is TagsElement -> tags.add(element.value)
-        is AssignsElement -> vars.add(element.value)
+        is ArgumentsElement -> arguments.add(element.value.toString())
+        is TagsElement -> tags.add(element.value.toString())
+        is AssignsElement -> vars.add(element.value.toString())
+        is MessageElement -> value = element.value.toString()
     }
 }
 
-private fun Element.addTags(element: TagsElement) {
+private fun Element.setTags(element: TagsElement) {
     when (this) {
         is TestElement -> this.tags = element.tags
         is KeywordElement -> this.tags = element.tags
+    }
+}
+
+private fun Element.addMessage(element: MessageElement) {
+    when (this) {
+        is KeywordElement -> this.messages.add(element)
     }
 }
 
@@ -159,5 +183,5 @@ data class AssignsElement (
 ) : Element
 
 data class StringElement (
-    var value: String = ""
+    var value: StringBuilder = StringBuilder()
 ) : Element

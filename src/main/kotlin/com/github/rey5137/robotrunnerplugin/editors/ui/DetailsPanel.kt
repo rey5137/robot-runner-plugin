@@ -3,30 +3,40 @@ package com.github.rey5137.robotrunnerplugin.editors.ui
 import com.github.rey5137.robotrunnerplugin.editors.xml.Element
 import com.github.rey5137.robotrunnerplugin.editors.xml.HasCommonField
 import com.github.rey5137.robotrunnerplugin.editors.xml.HasTagsField
+import com.github.rey5137.robotrunnerplugin.editors.xml.KeywordElement
 import com.intellij.ui.components.JBLabel
+import com.intellij.ui.components.JBTabbedPane
 import com.intellij.ui.components.JBTextField
 import com.intellij.ui.layout.migLayout.createLayoutConstraints
+import com.intellij.ui.table.JBTable
 import icons.MyIcons
 import net.miginfocom.layout.CC
 import net.miginfocom.swing.MigLayout
+import java.lang.StringBuilder
 import javax.swing.JPanel
 
 class DetailsPanel : JPanel(MigLayout(createLayoutConstraints(10, 10))) {
 
     private val nameField = JBTextField()
     private val statusLabel = JBLabel()
-    private val tagsPanel = JPanel(MigLayout())
     private val tagsField = JBTextField()
+    private val tabPane = JBTabbedPane()
+    private val argumentModel = ArgumentModel()
+    private val argumentTable = JBTable(argumentModel)
+    private val messagePanel = JPanel()
 
     init {
         add(statusLabel, CC().cell(0, 0).minWidth("32px"))
         add(nameField, CC().cell(0, 0).growX().pushX(1F))
         nameField.isEditable = false
 
-        tagsPanel.add(JBLabel("Tags"))
-        tagsPanel.add(tagsField, CC().pushX(1F))
+        add(JBLabel("Tags"), CC().cell(0, 1).minWidth("32px"))
+        add(tagsField, CC().cell(0, 1).growX().pushX(1F))
         tagsField.isEditable = false
-        add(tagsPanel, CC().newline().span(2))
+
+        add(tabPane, CC().newline().grow().push(1F, 1F))
+        argumentTable.tableHeader.resizingAllowed = true
+        argumentTable.tableHeader.reorderingAllowed = false
     }
 
     fun showDetails(element: Element) {
@@ -37,10 +47,43 @@ class DetailsPanel : JPanel(MigLayout(createLayoutConstraints(10, 10))) {
         }
 
         if(element is HasTagsField) {
-            tagsField.text = element.tags.joinToString(separator = ",")
+            tagsField.text = element.tags.joinToString(separator = ", ")
         }
         else {
             tagsField.text = ""
         }
+
+        tabPane.removeAll()
+        if(element is KeywordElement) {
+            tabPane.add("Arguments", argumentTable)
+            tabPane.add("Messages", messagePanel)
+
+            argumentModel.setItems(findActualArguments(element))
+        }
     }
+
+    private fun findActualArguments(element: KeywordElement): List<ArgumentModel.Item> {
+        val regex = "Arguments: \\[ (.*) ]".toRegex()
+        val message = element.messages.find {
+            println("${it.value} ${it.value.matches(regex)}")
+            it.level == "TRACE" && it.value.matches(regex)
+        } ?: return emptyList()
+
+        val argRegex = ".*\\{(.*)}=(.*)".toRegex()
+        return regex.matchEntire(message.value)!!.groupValues[1].split(" | ")
+            .map {
+                val result = argRegex.matchEntire(it)
+                if(result == null)
+                    ArgumentModel.Item(
+                        argument = "",
+                        value = it
+                    )
+                else
+                    ArgumentModel.Item(
+                        argument = result.groupValues[1],
+                        value = result.groupValues[2]
+                    )
+            }
+    }
+
 }

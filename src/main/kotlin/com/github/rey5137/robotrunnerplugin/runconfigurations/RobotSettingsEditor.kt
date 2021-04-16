@@ -110,8 +110,8 @@ class RobotSettingsEditor : SettingsEditor<RobotRunConfiguration>() {
             if(!key.isNullOrEmpty() && !value.isNullOrEmpty())
                 options.variables[key] = value
         }
-        options.logLevel = logLevelBox.selectedItem as String ?: "INFO"
-        options.defaultLogLevel = defaultLogLevelBox.selectedItem as String ?: "INFO"
+        options.logLevel = logLevelBox.selectedItem as String
+        options.defaultLogLevel = defaultLogLevelBox.selectedItem as String
         options.dryRun = dryRunCheckBox.isSelected
         options.runEmptySuite = runEmptySuiteCheckBox.isSelected
     }

@@ -37,11 +37,14 @@ class RobotOutputFileEditor(private val project: Project, private val srcFile: V
     private val myComponent by lazy { buildComponent() }
     private val treeModel by lazy { DefaultTreeModel(robotTreeNodeWrapper.node) }
     private val tree by lazy { Tree(treeModel) }
-    private val detailsPanel by lazy { DetailsPanel() }
+    private val detailsPanel by lazy { DetailsPanel(robotTreeNodeWrapper.node.userObject as RobotElement) }
 
     private var nodeFilter: NodeFilter = ShowAllFilter
 
-    override fun dispose() {}
+    override fun dispose() {
+        val robotElement = robotTreeNodeWrapper.node.userObject as RobotElement
+        robotElement.db.close()
+    }
 
     override fun getComponent(): JComponent {
         return myComponent

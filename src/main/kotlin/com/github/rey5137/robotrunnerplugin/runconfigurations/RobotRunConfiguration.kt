@@ -13,17 +13,15 @@ import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement
 import com.intellij.refactoring.listeners.RefactoringElementAdapter
 import com.intellij.refactoring.listeners.RefactoringElementListener
-import org.jetbrains.annotations.NotNull
-import org.jetbrains.annotations.Nullable
 
 @State(
     name = "RobotRunConfiguration",
     storages = [Storage("robot-runner-plugin__run-configuration.xml")]
 )
 class RobotRunConfiguration(
-    project: @NotNull Project,
-    factory: @NotNull RobotRunConfigurationFactory,
-    name: @Nullable String?
+    project: Project,
+    factory: RobotRunConfigurationFactory,
+    name: String?
 ) : RunConfigurationBase<RobotRunConfigurationOptions>(project, factory, name), RefactoringListenerProvider {
 
     override fun getState(executor: Executor, environment: ExecutionEnvironment) =

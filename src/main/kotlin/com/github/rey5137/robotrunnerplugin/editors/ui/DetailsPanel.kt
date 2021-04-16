@@ -1,9 +1,6 @@
 package com.github.rey5137.robotrunnerplugin.editors.ui
 
-import com.github.rey5137.robotrunnerplugin.editors.xml.Element
-import com.github.rey5137.robotrunnerplugin.editors.xml.HasCommonField
-import com.github.rey5137.robotrunnerplugin.editors.xml.HasTagsField
-import com.github.rey5137.robotrunnerplugin.editors.xml.KeywordElement
+import com.github.rey5137.robotrunnerplugin.editors.xml.*
 import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBTabbedPane
 import com.intellij.ui.components.JBTextField
@@ -12,10 +9,10 @@ import com.intellij.ui.table.JBTable
 import icons.MyIcons
 import net.miginfocom.layout.CC
 import net.miginfocom.swing.MigLayout
-import java.lang.StringBuilder
 import javax.swing.JPanel
 
-class DetailsPanel : JPanel(MigLayout(createLayoutConstraints(10, 10))) {
+class DetailsPanel(private val robotElement: RobotElement)
+    : JPanel(MigLayout(createLayoutConstraints(10, 10))) {
 
     private val nameField = JBTextField()
     private val statusLabel = JBLabel()
@@ -64,13 +61,13 @@ class DetailsPanel : JPanel(MigLayout(createLayoutConstraints(10, 10))) {
 
     private fun findActualArguments(element: KeywordElement): List<ArgumentModel.Item> {
         val regex = "Arguments: \\[ (.*) ]".toRegex()
-        val message = element.messages.find {
-            println("${it.value} ${it.value.matches(regex)}")
-            it.level == "TRACE" && it.value.matches(regex)
-        } ?: return emptyList()
+        val message = element.messages.asSequence()
+            .filter { it.level == "TRACE"}
+            .mapNotNull { robotElement.messageMap[it.valueIndex] }
+            .find { it.matches(regex) } ?: return emptyList()
 
         val argRegex = ".*\\{(.*)}=(.*)".toRegex()
-        return regex.matchEntire(message.value)!!.groupValues[1].split(" | ")
+        return regex.matchEntire(message)!!.groupValues[1].split(" | ")
             .map {
                 val result = argRegex.matchEntire(it)
                 if(result == null)

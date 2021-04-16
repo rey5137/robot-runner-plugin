@@ -10,7 +10,9 @@ fun VirtualFile.parseXml(): RobotElement {
     val reader = xmlInputFactory.createXMLEventReader(this.inputStream)
     val stack: MutableList<Element> = ArrayList()
     lateinit var currentElement: Element
+    lateinit var robotElement: RobotElement
     var skipCount = 0
+    var messageIndex = 0L
     while (reader.hasNext()) {
         val nextEvent = reader.nextEvent()
         if (nextEvent.isStartElement) {
@@ -19,7 +21,9 @@ fun VirtualFile.parseXml(): RobotElement {
             else {
                 val startElement = nextEvent.asStartElement()
                 val newElement = when (startElement.name.localPart) {
-                    TAG_ROBOT -> startElement.toRobotElement()
+                    TAG_ROBOT -> startElement.toRobotElement().apply {
+                        robotElement = this
+                    }
                     TAG_SUITE -> startElement.toSuiteElement().apply {
                         currentElement.addSuite(this)
                     }
@@ -32,7 +36,7 @@ fun VirtualFile.parseXml(): RobotElement {
                     TAG_STATUS -> startElement.toStatusElement().apply {
                         currentElement.addStatus(this)
                     }
-                    TAG_MESSAGE -> startElement.toMessageElement().apply {
+                    TAG_MESSAGE -> startElement.toMessageElement(messageIndex++).apply {
                         currentElement.addMessage(this)
                     }
                     TAG_ARGUMENTS -> ArgumentsElement()
@@ -69,11 +73,13 @@ fun VirtualFile.parseXml(): RobotElement {
                     currentElement = stack.last()
                     when(element) {
                         is StringElement -> {
-                            currentElement.addString(element)
                             if(currentElement is MessageElement) {
+                                robotElement.messageMap[currentElement.valueIndex] = element.value.toString()
                                 stack.removeAt(stack.size - 1)
                                 currentElement = stack.last()
                             }
+                            else
+                                currentElement.addString(element)
                         }
                         is ArgumentsElement -> (currentElement as KeywordElement).arguments = element.arguments
                         is AssignsElement -> (currentElement as KeywordElement).assigns = element.vars
@@ -84,7 +90,7 @@ fun VirtualFile.parseXml(): RobotElement {
             }
         }
     }
-    return currentElement as RobotElement
+    return robotElement
 }
 
 private fun StartElement.toRobotElement() = RobotElement(
@@ -115,9 +121,10 @@ private fun StartElement.toStatusElement() = StatusElement(
     endTime = getAttributeByName(QName(TAG_END_TIME))?.value ?: "",
 )
 
-private fun StartElement.toMessageElement() = MessageElement(
+private fun StartElement.toMessageElement(index: Long) = MessageElement(
     timestamp = getAttributeByName(QName(TAG_TIMESTAMP))?.value ?: "",
     level = getAttributeByName(QName(TAG_LEVEL))?.value ?: "",
+    valueIndex = index,
 )
 
 private fun Element.addSuite(suite: SuiteElement) {
@@ -153,7 +160,6 @@ private fun Element.addString(element: StringElement) {
         is ArgumentsElement -> arguments.add(element.value.toString())
         is TagsElement -> tags.add(element.value.toString())
         is AssignsElement -> vars.add(element.value.toString())
-        is MessageElement -> value = element.value.toString()
     }
 }
 

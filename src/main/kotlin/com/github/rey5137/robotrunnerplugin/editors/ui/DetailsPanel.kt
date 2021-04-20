@@ -1,6 +1,7 @@
 package com.github.rey5137.robotrunnerplugin.editors.ui
 
 import com.github.rey5137.robotrunnerplugin.editors.xml.*
+import com.intellij.ui.ToolbarDecorator
 import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBTabbedPane
 import com.intellij.ui.components.JBTextField
@@ -19,7 +20,7 @@ class DetailsPanel(private val robotElement: RobotElement)
     private val tagsField = JBTextField()
     private val tabPane = JBTabbedPane()
     private val argumentModel = ArgumentModel()
-    private val argumentTable = JBTable(argumentModel)
+    private val argumentTable =  JBTable(argumentModel)
     private val messagePanel = JPanel()
 
     init {
@@ -32,8 +33,6 @@ class DetailsPanel(private val robotElement: RobotElement)
         tagsField.isEditable = false
 
         add(tabPane, CC().newline().grow().push(1F, 1F))
-        argumentTable.tableHeader.resizingAllowed = true
-        argumentTable.tableHeader.reorderingAllowed = false
     }
 
     fun showDetails(element: Element) {
@@ -52,35 +51,29 @@ class DetailsPanel(private val robotElement: RobotElement)
 
         tabPane.removeAll()
         if(element is KeywordElement) {
-            tabPane.add("Arguments", argumentTable)
-            tabPane.add("Messages", messagePanel)
+            val messagePanel = ToolbarDecorator.createDecorator(argumentTable)
+                .disableUpAction()
+                .disableDownAction()
+                .disableRemoveAction()
+                .createPanel()
+            tabPane.add("Arguments", messagePanel)
+            argumentModel.populateModel(element)
 
-            argumentModel.setItems(findActualArguments(element))
+            tabPane.add("Messages", this.messagePanel)
         }
     }
 
-    private fun findActualArguments(element: KeywordElement): List<ArgumentModel.Item> {
-        val regex = "Arguments: \\[ (.*) ]".toRegex()
+    private fun ArgumentModel.populateModel(element: KeywordElement) {
         val message = element.messages.asSequence()
             .filter { it.level == "TRACE"}
             .mapNotNull { robotElement.messageMap[it.valueIndex] }
-            .find { it.matches(regex) } ?: return emptyList()
-
-        val argRegex = ".*\\{(.*)}=(.*)".toRegex()
-        return regex.matchEntire(message)!!.groupValues[1].split(" | ")
-            .map {
-                val result = argRegex.matchEntire(it)
-                if(result == null)
-                    ArgumentModel.Item(
-                        argument = "",
-                        value = it
-                    )
-                else
-                    ArgumentModel.Item(
-                        argument = result.groupValues[1],
-                        value = result.groupValues[2]
-                    )
-            }
+            .find { it.isArgumentMessage() } ?: return
+        try {
+            setArguments(message.parseArguments())
+        }
+        catch (ex: Exception) {
+            setArguments(emptyList())
+        }
     }
 
 }

@@ -1,46 +1,47 @@
 package com.github.rey5137.robotrunnerplugin.editors.ui
 
+import com.github.rey5137.robotrunnerplugin.editors.xml.*
 import javax.swing.table.AbstractTableModel
 
-class ArgumentModel: AbstractTableModel() {
+class ArgumentModel : AbstractTableModel() {
 
-    data class Item(val argument: String, val value: String = "")
+    private var arguments: List<Argument<*>> = emptyList()
 
-    private var items = listOf<Item>()
-
-    fun setItems(items: List<Item>) {
-        this.items = items
-        fireTableStructureChanged()
+    fun setArguments(arguments: List<Argument<*>>) {
+        this.arguments = arguments
+        fireTableDataChanged()
     }
 
-    override fun getRowCount(): Int = items.size
+    override fun getRowCount(): Int  = arguments.size
 
     override fun getColumnCount(): Int = 2
 
-    override fun getColumnName(column: Int): String = when(column) {
-        INDEX_ARGUMENT -> "Argument"
-        INDEX_VALUE -> "Value"
-        else -> ""
-    }
-
-    override fun getColumnClass(columnIndex: Int): Class<*> = when(columnIndex) {
-        INDEX_ARGUMENT -> String::class.java
-        INDEX_VALUE -> String::class.java
-        else -> Any::class.java
-    }
-
     override fun getValueAt(rowIndex: Int, columnIndex: Int): Any? = when(columnIndex) {
-        INDEX_ARGUMENT -> items[rowIndex].argument
-        INDEX_VALUE -> items[rowIndex].value
+        INDEX_NAME -> arguments[rowIndex].getFullName()
+        INDEX_VALUE -> arguments[rowIndex].getValue()
         else -> null
     }
 
-    override fun setValueAt(value: Any, rowIndex: Int, columnIndex: Int) {}
+    private fun Argument<*>.getFullName(): String = when(argumentType) {
+        ArgumentType.SINGLE -> "$ARG_SINGLE$ARG_NAME_START$name$ARG_NAME_END"
+        ArgumentType.DICT -> "$ARG_DICT$ARG_NAME_START$name$ARG_NAME_END"
+        ArgumentType.ARRAY -> "$ARG_ARRAY$ARG_NAME_START$name$ARG_NAME_END"
+    }
 
-    override fun isCellEditable(rowIndex: Int, columnIndex: Int) = false
+    private fun Argument<*>.getValue(): String = when(dataType) {
+        DataType.NONE -> "None"
+        DataType.BOOL, DataType.INTEGER, DataType.NUMBER, DataType.STRING -> value.toString()
+        else -> ""
+    }
+
+    override fun getColumnName(column: Int): String = when(column) {
+        INDEX_NAME -> "Name"
+        INDEX_VALUE -> "value"
+        else -> ""
+    }
 
     companion object {
-        const val INDEX_ARGUMENT = 0
+        const val INDEX_NAME = 0
         const val INDEX_VALUE = 1
     }
 }

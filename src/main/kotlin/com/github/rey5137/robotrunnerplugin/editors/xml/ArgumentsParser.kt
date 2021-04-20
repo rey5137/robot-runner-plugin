@@ -6,10 +6,10 @@ import kotlin.text.StringBuilder
 
 /**
  * Some examples:
- * [ ${a1}='qwe' | ${a2}='abc' | &amp;{dic}={'a3': 4, 'a4': 5.1, 'a5': True} ]
- * [ ${a1}='a\'b | c \\"q' | ${a2}=None | &amp;{dic}={} ]
- * [ ${a1}="a'b" | ${a2}='' | &amp;{dic}={'a3': {'k1': 'abc', 'k2': 1}} ]
- * [ ${a1}='123' | @{array}=['', 7, None] ]
+ * Arguments: [ ${a1}='qwe' | ${a2}='abc' | &amp;{dic}={'a3': 4, 'a4': 5.1, 'a5': True} ]
+ * Arguments: [ ${a1}='a\'b | c \\"q' | ${a2}=None | &amp;{dic}={} ]
+ * Arguments: [ ${a1}="a'b" | ${a2}='' | &amp;{dic}={'a3': {'k1': 'abc', 'k2': 1}} ]
+ * Arguments: [ ${a1}='123' | @{array}=['', 7, None] ]
  */
 
 const val ARG_SINGLE = '$'
@@ -44,8 +44,14 @@ const val VAL_NONE = "None"
 const val VAL_TRUE = "True"
 const val VAL_FALSE = "False"
 
+const val PATTERN_ARGUMENT_MESSAGE = "Arguments:\\s*\\[\\s*(.*)\\s*\\]"
+
+fun String.isArgumentMessage() = PATTERN_ARGUMENT_MESSAGE.toRegex().matches(this)
+
 fun String.parseArguments(): List<Argument<*>> {
-    val pointer = Pointer(value = this, end = this.length)
+    val matchResults = PATTERN_ARGUMENT_MESSAGE.toRegex().matchEntire(this) ?: return emptyList()
+    val text = matchResults.groupValues[1]
+    val pointer = Pointer(value = text, end = text.length)
     val args = ArrayList<Argument<*>>()
 
     while (pointer.hasNext()) {
@@ -58,55 +64,73 @@ fun String.parseArguments(): List<Argument<*>> {
 }
 
 private fun Pointer.parseArgument(): Argument<*> {
-    val name = when (peek()) {
-        ARG_SINGLE, ARG_DICT, ARG_ARRAY -> {
-            skip(1)
-            parseArgumentName()
+    val name: String
+    val argumentType: ArgumentType
+    when(peek()) {
+        ARG_SINGLE -> {
+            name = parseArgumentName()
+            argumentType = ArgumentType.SINGLE
         }
-        else -> ""
+        ARG_DICT -> {
+            name = parseArgumentName()
+            argumentType = ArgumentType.DICT
+        }
+        ARG_ARRAY -> {
+            name = parseArgumentName()
+            argumentType = ArgumentType.ARRAY
+        }
+        else -> throw IllegalArgumentException("Unexpected character: ${peek()}")
     }
     return when (peek()) {
         NONE_START -> Argument(
             name = name,
             value = parseNoneValue(),
-            type = DataType.NONE
+            dataType = DataType.NONE,
+            argumentType = argumentType
         )
         BOOL_START_1 -> Argument(
             name = name,
             value = parseBoolValue(true),
-            type = DataType.BOOL
+            dataType = DataType.BOOL,
+            argumentType = argumentType
         )
         BOOL_START_2 -> Argument(
             name = name,
             value = parseBoolValue(false),
-            type = DataType.BOOL
+            dataType = DataType.BOOL,
+            argumentType = argumentType
         )
         DICT_START -> Argument(
             name = name,
             value = parseDictValue(),
-            type = DataType.DICT
+            dataType = DataType.DICT,
+            argumentType = argumentType
         )
         ARRAY_START -> Argument(
             name = name,
             value = parseArrayValue(),
-            type = DataType.DICT
+            dataType = DataType.ARRAY,
+            argumentType = argumentType
         )
         STR_START_1 -> Argument(
             name = name,
             value = parseStringValue(STR_START_1),
-            type = DataType.DICT
+            dataType = DataType.STRING,
+            argumentType = argumentType
         )
         STR_START_2 -> Argument(
             name = name,
             value = parseStringValue(STR_START_2),
-            type = DataType.DICT
+            dataType = DataType.STRING,
+            argumentType = argumentType
         )
         else -> {
             val value = parseNumberValue()
             Argument(
                 name = name,
                 value = value,
-                type = if (value is Long) DataType.INTEGER else DataType.NUMBER
+                dataType = if (value is Long) DataType.INTEGER else DataType.NUMBER,
+                argumentType = argumentType
             )
         }
     }
@@ -137,17 +161,17 @@ private fun Pointer.parseVariable(name: String): Variable<*> {
         ARRAY_START -> Variable(
             name = name,
             value = parseArrayValue(),
-            type = DataType.DICT
+            type = DataType.ARRAY
         )
         STR_START_1 -> Variable(
             name = name,
             value = parseStringValue(STR_START_1),
-            type = DataType.DICT
+            type = DataType.STRING
         )
         STR_START_2 -> Variable(
             name = name,
             value = parseStringValue(STR_START_2),
-            type = DataType.DICT
+            type = DataType.STRING
         )
         else -> {
             val value = parseNumberValue()
@@ -188,6 +212,10 @@ private fun Pointer.parseDictValue(): List<Variable<*>> {
     skipChar(DICT_START)
     while(hasNext()) {
         val next = peek()
+        if(next == DICT_END) {
+            skip(1)
+            break
+        }
         if(next == STR_START_1 || next == STR_START_2) {
             val name = parseStringValue(next)
             skipChar(VAR_ASSIGN)
@@ -205,9 +233,16 @@ private fun Pointer.parseArrayValue(): List<Variable<*>> {
     val variables = ArrayList<Variable<*>>()
     skipChar(ARRAY_START)
     while(hasNext()) {
-        variables.add(parseVariable(""))
-        if(skipChar(VAR_SEPARATOR, ARRAY_END) == ARRAY_END)
+        val next = peek()
+        if(next == ARRAY_END) {
+            skip(1)
             break
+        }
+        else {
+            variables.add(parseVariable(""))
+            if (skipChar(VAR_SEPARATOR, ARRAY_END) == ARRAY_END)
+                break
+        }
     }
     return variables
 }
@@ -246,6 +281,7 @@ private fun Pointer.parseNumberValue(): Any {
 }
 
 private fun Pointer.parseArgumentName(): String {
+    skip(1)
     val builder = StringBuilder()
     var count = 0
 
@@ -309,7 +345,7 @@ data class Pointer(
         else ""
     }
 
-    override fun toString() = "value=[$value] end=[$end] current=[$current] next=[${peek()}]"
+    override fun toString() = "end=[$end] current=[$current] next=[${peek()}] value=[$value]"
 }
 
 enum class DataType {
@@ -322,10 +358,17 @@ enum class DataType {
     ARRAY
 }
 
+enum class ArgumentType {
+    SINGLE,
+    DICT,
+    ARRAY
+}
+
 data class Argument<T>(
     val name: String = "",
     val value: T,
-    val type: DataType
+    val dataType: DataType,
+    val argumentType: ArgumentType
 )
 
 data class Variable<T>(

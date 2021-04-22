@@ -14,7 +14,8 @@ class ArgumentsParserTest {
                 name = "a1",
                 value = "a'b | c \"q",
                 dataType = DataType.STRING,
-                argumentType = ArgumentType.SINGLE
+                argumentType = ArgumentType.SINGLE,
+                rawValue = "'a\\'b | c \"q'"
             ), arguments[0]
         )
         assertEquals(
@@ -22,7 +23,8 @@ class ArgumentsParserTest {
                 name = "a2",
                 value = null,
                 dataType = DataType.NONE,
-                argumentType = ArgumentType.SINGLE
+                argumentType = ArgumentType.SINGLE,
+                rawValue = "None"
             ), arguments[1]
         )
         assertEquals(
@@ -30,7 +32,8 @@ class ArgumentsParserTest {
                 name = "a3",
                 value = 234L,
                 dataType = DataType.INTEGER,
-                argumentType = ArgumentType.SINGLE
+                argumentType = ArgumentType.SINGLE,
+                rawValue = "234"
             ), arguments[2]
         )
         assertEquals(
@@ -38,7 +41,8 @@ class ArgumentsParserTest {
                 name = "a4",
                 value = 5.67,
                 dataType = DataType.NUMBER,
-                argumentType = ArgumentType.SINGLE
+                argumentType = ArgumentType.SINGLE,
+                rawValue = "5.67"
             ), arguments[3]
         )
         assertEquals(
@@ -46,7 +50,8 @@ class ArgumentsParserTest {
                 name = "a5",
                 value = true,
                 dataType = DataType.BOOL,
-                argumentType = ArgumentType.SINGLE
+                argumentType = ArgumentType.SINGLE,
+                rawValue = "True"
             ), arguments[4]
         )
         assertEquals(
@@ -54,7 +59,8 @@ class ArgumentsParserTest {
                 name = "a6",
                 value = false,
                 dataType = DataType.BOOL,
-                argumentType = ArgumentType.SINGLE
+                argumentType = ArgumentType.SINGLE,
+                rawValue = "False"
             ), arguments[5]
         )
     }
@@ -85,7 +91,8 @@ class ArgumentsParserTest {
                     ),
                 ),
                 dataType = DataType.DICT,
-                argumentType = ArgumentType.SINGLE
+                argumentType = ArgumentType.SINGLE,
+                rawValue = "{'k1': 'abc', 'k2': {'k3': None}}"
             ), arguments[0]
         )
         assertEquals(
@@ -109,7 +116,8 @@ class ArgumentsParserTest {
                     )
                 ),
                 dataType = DataType.DICT,
-                argumentType = ArgumentType.DICT
+                argumentType = ArgumentType.DICT,
+                rawValue = "{'a\\'\"3': True, \"a'4\": 5.1, 'a5': 4}"
             ), arguments[1]
         )
     }
@@ -123,12 +131,12 @@ class ArgumentsParserTest {
             name = "a1",
             value = listOf(
                 Variable(
-                    name = "",
+                    name = "[0]",
                     value = 2.3,
                     type = DataType.NUMBER,
                 ),
                 Variable<List<Variable<*>>>(
-                    name = "",
+                    name = "[1]",
                     value = listOf(
                         Variable(
                             name = "k1",
@@ -141,25 +149,26 @@ class ArgumentsParserTest {
             ),
             dataType = DataType.ARRAY,
             argumentType = ArgumentType.SINGLE,
+            rawValue = "[2.3, {'k1': 'abc'}]"
         ), arguments[0])
         assertEquals(Argument<List<Variable<*>>>(
             name = "a2",
             value = listOf(
                 Variable(
-                    name = "",
+                    name = "[0]",
                     value = "",
                     type = DataType.STRING,
                 ),
                 Variable(
-                    name = "",
+                    name = "[1]",
                     value = null,
                     type = DataType.NONE,
                 ),
                 Variable<List<Variable<*>>>(
-                    name = "",
+                    name = "[2]",
                     value = listOf(
                         Variable(
-                            name = "",
+                            name = "[0]",
                             value = 1L,
                             type = DataType.INTEGER
                         )
@@ -169,6 +178,7 @@ class ArgumentsParserTest {
             ),
             dataType = DataType.ARRAY,
             argumentType = ArgumentType.ARRAY,
+            rawValue = "['', None, [1]]"
         ), arguments[1])
     }
 

@@ -46,10 +46,10 @@ const val VAL_FALSE = "False"
 
 const val PATTERN_ARGUMENT_MESSAGE = "Arguments:\\s*\\[\\s*(.*)\\s*\\]"
 
-fun String.isArgumentMessage() = PATTERN_ARGUMENT_MESSAGE.toRegex().matches(this)
+fun String.isArgumentMessage() = PATTERN_ARGUMENT_MESSAGE.toRegex(option = RegexOption.DOT_MATCHES_ALL).matches(this)
 
 fun String.parseArguments(): List<Argument<*>> {
-    val matchResults = PATTERN_ARGUMENT_MESSAGE.toRegex().matchEntire(this) ?: return emptyList()
+    val matchResults = PATTERN_ARGUMENT_MESSAGE.toRegex(option = RegexOption.DOT_MATCHES_ALL).matchEntire(this) ?: return emptyList()
     val text = matchResults.groupValues[1]
     val pointer = Pointer(value = text, end = text.length)
     val args = ArrayList<Argument<*>>()
@@ -81,56 +81,65 @@ private fun Pointer.parseArgument(): Argument<*> {
         }
         else -> throw IllegalArgumentException("Unexpected character: ${peek()}")
     }
+    val startIndex = current + 1
     return when (peek()) {
         NONE_START -> Argument(
             name = name,
             value = parseNoneValue(),
             dataType = DataType.NONE,
-            argumentType = argumentType
+            argumentType = argumentType,
+            rawValue = value.substring(startIndex, current + 1).trim()
         )
         BOOL_START_1 -> Argument(
             name = name,
             value = parseBoolValue(true),
             dataType = DataType.BOOL,
-            argumentType = argumentType
+            argumentType = argumentType,
+            rawValue = value.substring(startIndex, current + 1).trim()
         )
         BOOL_START_2 -> Argument(
             name = name,
             value = parseBoolValue(false),
             dataType = DataType.BOOL,
-            argumentType = argumentType
+            argumentType = argumentType,
+            rawValue = value.substring(startIndex, current + 1).trim()
         )
         DICT_START -> Argument(
             name = name,
             value = parseDictValue(),
             dataType = DataType.DICT,
-            argumentType = argumentType
+            argumentType = argumentType,
+            rawValue = value.substring(startIndex, current + 1).trim()
         )
         ARRAY_START -> Argument(
             name = name,
             value = parseArrayValue(),
             dataType = DataType.ARRAY,
-            argumentType = argumentType
+            argumentType = argumentType,
+            rawValue = value.substring(startIndex, current + 1).trim()
         )
         STR_START_1 -> Argument(
             name = name,
             value = parseStringValue(STR_START_1),
             dataType = DataType.STRING,
-            argumentType = argumentType
+            argumentType = argumentType,
+            rawValue = value.substring(startIndex, current + 1).trim()
         )
         STR_START_2 -> Argument(
             name = name,
             value = parseStringValue(STR_START_2),
             dataType = DataType.STRING,
-            argumentType = argumentType
+            argumentType = argumentType,
+            rawValue = value.substring(startIndex, current + 1).trim()
         )
         else -> {
-            val value = parseNumberValue()
+            val numValue = parseNumberValue()
             Argument(
                 name = name,
-                value = value,
-                dataType = if (value is Long) DataType.INTEGER else DataType.NUMBER,
-                argumentType = argumentType
+                value = numValue,
+                dataType = if (numValue is Long) DataType.INTEGER else DataType.NUMBER,
+                argumentType = argumentType,
+                rawValue = value.substring(startIndex, current + 1).trim()
             )
         }
     }
@@ -239,7 +248,7 @@ private fun Pointer.parseArrayValue(): List<Variable<*>> {
             break
         }
         else {
-            variables.add(parseVariable(""))
+            variables.add(parseVariable("[${variables.size}]"))
             if (skipChar(VAR_SEPARATOR, ARRAY_END) == ARRAY_END)
                 break
         }
@@ -316,7 +325,7 @@ private fun Pointer.skipChar(vararg values: Char): Char? {
 }
 
 private fun Pointer.skipSpace() {
-    while (peek() == ' ')
+    while (peek() == ' ' || peek() == '\n')
         skip(1)
 }
 
@@ -368,7 +377,8 @@ data class Argument<T>(
     val name: String = "",
     val value: T,
     val dataType: DataType,
-    val argumentType: ArgumentType
+    val argumentType: ArgumentType,
+    val rawValue: String,
 )
 
 data class Variable<T>(

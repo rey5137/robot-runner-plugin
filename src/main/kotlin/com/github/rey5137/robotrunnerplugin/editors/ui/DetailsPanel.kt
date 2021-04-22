@@ -11,6 +11,8 @@ import icons.MyIcons
 import net.miginfocom.layout.CC
 import net.miginfocom.swing.MigLayout
 import javax.swing.JPanel
+import javax.swing.JTable
+
 
 class DetailsPanel(private val robotElement: RobotElement)
     : JPanel(MigLayout(createLayoutConstraints(10, 10))) {
@@ -21,6 +23,7 @@ class DetailsPanel(private val robotElement: RobotElement)
     private val tabPane = JBTabbedPane()
     private val argumentModel = ArgumentModel()
     private val argumentTable =  JBTable(argumentModel)
+    private val argumentTableColumnAdjuster = TableColumnAdjuster(argumentTable)
     private val messagePanel = JPanel()
 
     init {
@@ -33,6 +36,14 @@ class DetailsPanel(private val robotElement: RobotElement)
         tagsField.isEditable = false
 
         add(tabPane, CC().newline().grow().push(1F, 1F))
+        argumentTable.cellSelectionEnabled = true
+        argumentTable.autoResizeMode = JTable.AUTO_RESIZE_SUBSEQUENT_COLUMNS
+        argumentTable.columnModel.getColumn(ArgumentModel.INDEX_ARGUMENT).apply {
+            cellRenderer = ArgumentTableCellRenderer(argumentModel)
+        }
+        argumentTable.columnModel.getColumn(ArgumentModel.INDEX_VALUE).apply {
+            cellRenderer = ValueTableCellRenderer(argumentModel)
+        }
     }
 
     fun showDetails(element: Element) {
@@ -58,6 +69,7 @@ class DetailsPanel(private val robotElement: RobotElement)
                 .createPanel()
             tabPane.add("Arguments", messagePanel)
             argumentModel.populateModel(element)
+            argumentTableColumnAdjuster.adjustColumn(ArgumentModel.INDEX_ARGUMENT)
 
             tabPane.add("Messages", this.messagePanel)
         }
@@ -72,6 +84,7 @@ class DetailsPanel(private val robotElement: RobotElement)
             setArguments(message.parseArguments())
         }
         catch (ex: Exception) {
+            ex.printStackTrace()
             setArguments(emptyList())
         }
     }

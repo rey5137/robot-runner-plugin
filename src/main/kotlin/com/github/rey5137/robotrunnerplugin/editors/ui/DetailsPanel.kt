@@ -7,11 +7,13 @@ import com.intellij.ui.components.JBTabbedPane
 import com.intellij.ui.components.JBTextField
 import com.intellij.ui.layout.migLayout.createLayoutConstraints
 import com.intellij.ui.table.JBTable
+import com.intellij.util.ui.UIUtil
 import icons.MyIcons
 import net.miginfocom.layout.CC
 import net.miginfocom.swing.MigLayout
-import javax.swing.JPanel
-import javax.swing.JTable
+import java.awt.event.FocusEvent
+import java.awt.event.FocusListener
+import javax.swing.*
 
 
 class DetailsPanel(private val robotElement: RobotElement)
@@ -43,7 +45,9 @@ class DetailsPanel(private val robotElement: RobotElement)
         }
         argumentTable.columnModel.getColumn(ArgumentModel.INDEX_VALUE).apply {
             cellRenderer = ValueTableCellRenderer(argumentModel)
+            cellEditor = ValueTableCellEditor(argumentModel)
         }
+        argumentTable.setDefaultEditor(Any::class.java, StringCellEditor())
     }
 
     fun showDetails(element: Element) {

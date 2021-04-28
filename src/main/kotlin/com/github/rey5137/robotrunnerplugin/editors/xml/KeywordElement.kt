@@ -4,6 +4,7 @@ data class KeywordElement(
     override var name: String = "",
     var library: String = "",
     var document: String = "",
+    var type: String = "",
     var arguments: MutableList<String> = ArrayList(),
     var assigns: MutableList<String> = ArrayList(),
     override var tags: MutableList<String> = ArrayList(),

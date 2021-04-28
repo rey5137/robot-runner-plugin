@@ -113,6 +113,7 @@ private fun StartElement.toKeywordElement() = KeywordElement(
     name = getAttributeByName(QName(TAG_NAME))?.value ?: "",
     library = getAttributeByName(QName(TAG_LIBRARY))?.value ?: "",
     document = getAttributeByName(QName(TAG_DOC))?.value ?: "",
+    type = getAttributeByName(QName(TAG_TYPE))?.value ?: "",
 )
 
 private fun StartElement.toStatusElement() = StatusElement(

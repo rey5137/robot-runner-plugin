@@ -1,5 +1,6 @@
 package com.github.rey5137.robotrunnerplugin.editors.ui
 
+import com.github.rey5137.robotrunnerplugin.editors.ui.argument.*
 import com.github.rey5137.robotrunnerplugin.editors.xml.*
 import com.intellij.ui.ToolbarDecorator
 import com.intellij.ui.components.JBLabel
@@ -7,13 +8,11 @@ import com.intellij.ui.components.JBTabbedPane
 import com.intellij.ui.components.JBTextField
 import com.intellij.ui.layout.migLayout.createLayoutConstraints
 import com.intellij.ui.table.JBTable
-import com.intellij.util.ui.UIUtil
 import icons.MyIcons
 import net.miginfocom.layout.CC
 import net.miginfocom.swing.MigLayout
-import java.awt.event.FocusEvent
-import java.awt.event.FocusListener
-import javax.swing.*
+import javax.swing.JPanel
+import javax.swing.JTable
 
 
 class DetailsPanel(private val robotElement: RobotElement)
@@ -42,6 +41,10 @@ class DetailsPanel(private val robotElement: RobotElement)
         argumentTable.autoResizeMode = JTable.AUTO_RESIZE_SUBSEQUENT_COLUMNS
         argumentTable.columnModel.getColumn(ArgumentModel.INDEX_ARGUMENT).apply {
             cellRenderer = ArgumentTableCellRenderer(argumentModel)
+        }
+        argumentTable.columnModel.getColumn(ArgumentModel.INDEX_INPUT).apply {
+            cellRenderer = InputTableCellRenderer(argumentModel)
+            cellEditor = InputTableCellEditor(argumentModel)
         }
         argumentTable.columnModel.getColumn(ArgumentModel.INDEX_VALUE).apply {
             cellRenderer = ValueTableCellRenderer(argumentModel)
@@ -74,6 +77,7 @@ class DetailsPanel(private val robotElement: RobotElement)
             tabPane.add("Arguments", messagePanel)
             argumentModel.populateModel(element)
             argumentTableColumnAdjuster.adjustColumn(ArgumentModel.INDEX_ARGUMENT)
+            argumentTableColumnAdjuster.adjustColumn(ArgumentModel.INDEX_INPUT)
 
             tabPane.add("Messages", this.messagePanel)
         }
@@ -83,13 +87,19 @@ class DetailsPanel(private val robotElement: RobotElement)
         val message = element.messages.asSequence()
             .filter { it.level == "TRACE"}
             .mapNotNull { robotElement.messageMap[it.valueIndex] }
-            .find { it.isArgumentMessage() } ?: return
-        try {
-            setArguments(message.parseArguments())
-        }
-        catch (ex: Exception) {
-            ex.printStackTrace()
-            setArguments(emptyList())
+            .find { it.isArgumentMessage() }
+        if(message == null)
+            setArguments(emptyList(), emptyList())
+        else {
+            try {
+                val arguments = message.parseArguments()
+                val inputArguments = arguments.parseArgumentInputs(element.arguments)
+                setArguments(arguments, inputArguments)
+            }
+            catch (ex: Exception) {
+                ex.printStackTrace()
+                setArguments(emptyList(), emptyList())
+            }
         }
     }
 

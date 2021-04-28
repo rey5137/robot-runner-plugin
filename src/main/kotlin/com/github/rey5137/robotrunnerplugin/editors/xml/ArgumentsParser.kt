@@ -4,14 +4,6 @@ import java.lang.IllegalArgumentException
 import kotlin.math.min
 import kotlin.text.StringBuilder
 
-/**
- * Some examples:
- * Arguments: [ ${a1}='qwe' | ${a2}='abc' | &amp;{dic}={'a3': 4, 'a4': 5.1, 'a5': True} ]
- * Arguments: [ ${a1}='a\'b | c \\"q' | ${a2}=None | &amp;{dic}={} ]
- * Arguments: [ ${a1}="a'b" | ${a2}='' | &amp;{dic}={'a3': {'k1': 'abc', 'k2': 1}} ]
- * Arguments: [ ${a1}='123' | @{array}=['', 7, None] ]
- */
-
 const val ARG_SINGLE = '$'
 const val ARG_DICT = '&'
 const val ARG_ARRAY = '@'
@@ -48,6 +40,13 @@ const val PATTERN_ARGUMENT_MESSAGE = "Arguments:\\s*\\[\\s*(.*)\\s*\\]"
 
 fun String.isArgumentMessage() = PATTERN_ARGUMENT_MESSAGE.toRegex(option = RegexOption.DOT_MATCHES_ALL).matches(this)
 
+/**
+ * Some examples:
+ * Arguments: [ ${a1}='qwe' | ${a2}='abc' | &amp;{dic}={'a3': 4, 'a4': 5.1, 'a5': True} ]
+ * Arguments: [ ${a1}='a\'b | c \\"q' | ${a2}=None | &amp;{dic}={} ]
+ * Arguments: [ ${a1}="a'b" | ${a2}='' | &amp;{dic}={'a3': {'k1': 'abc', 'k2': 1}} ]
+ * Arguments: [ ${a1}='123' | @{array}=['', 7, None] ]
+ */
 fun String.parseArguments(): List<Argument<*>> {
     val matchResults = PATTERN_ARGUMENT_MESSAGE.toRegex(option = RegexOption.DOT_MATCHES_ALL).matchEntire(this) ?: return emptyList()
     val text = matchResults.groupValues[1]
@@ -329,7 +328,7 @@ private fun Pointer.skipSpace() {
         skip(1)
 }
 
-data class Pointer(
+private data class Pointer(
     val value: String,
     var current: Int = -1,
     val end: Int
@@ -356,33 +355,3 @@ data class Pointer(
 
     override fun toString() = "end=[$end] current=[$current] next=[${peek()}] value=[$value]"
 }
-
-enum class DataType {
-    STRING,
-    INTEGER,
-    NUMBER,
-    BOOL,
-    NONE,
-    DICT,
-    ARRAY
-}
-
-enum class ArgumentType {
-    SINGLE,
-    DICT,
-    ARRAY
-}
-
-data class Argument<T>(
-    val name: String = "",
-    val value: T,
-    val dataType: DataType,
-    val argumentType: ArgumentType,
-    val rawValue: String,
-)
-
-data class Variable<T>(
-    val name: String = "",
-    val value: T,
-    val type: DataType
-)

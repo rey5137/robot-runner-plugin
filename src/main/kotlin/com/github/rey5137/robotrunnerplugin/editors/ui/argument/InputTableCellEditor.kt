@@ -1,0 +1,72 @@
+package com.github.rey5137.robotrunnerplugin.editors.ui.argument
+
+import com.github.rey5137.robotrunnerplugin.editors.xml.InputArgument
+import com.intellij.ui.table.JBTable
+import com.intellij.util.ui.AbstractTableCellEditor
+import java.awt.Component
+import java.awt.event.MouseEvent
+import java.util.*
+import javax.swing.JTable
+
+class InputTableCellEditor(private val argumentModel: ArgumentModel): AbstractTableCellEditor() {
+
+    private val inputArgumentModel = InputArgumentModel()
+    private val table = JBTable(inputArgumentModel)
+    var editEvent: MouseEvent? = null
+
+    init {
+        table.columnModel.getColumn(0).apply {
+            cellRenderer = InputArgumentCellRender(inputArgumentModel)
+            cellEditor = InputArgumentCellEditor(inputArgumentModel, this@InputTableCellEditor)
+        }
+        table.setDefaultEditor(Any::class.java, StringCellEditor())
+    }
+
+    override fun isCellEditable(e: EventObject?): Boolean {
+        if(e is MouseEvent) {
+            val enable = e.clickCount > 1
+            if(enable) {
+                editEvent = e
+            }
+            return enable
+        }
+        return false
+    }
+
+    override fun stopCellEditing(): Boolean {
+        editEvent = null
+        return super.stopCellEditing()
+    }
+
+    override fun cancelCellEditing() {
+        editEvent = null
+        super.cancelCellEditing()
+    }
+
+    override fun getCellEditorValue(): Any = ""
+
+    override fun getTableCellEditorComponent(
+        table: JTable,
+        value: Any?,
+        isSelected: Boolean,
+        row: Int,
+        column: Int
+    ): Component {
+        val inputs = argumentModel.getInputArguments(row)
+        val editor = table.getDefaultEditor(Any::class.java)
+        return if(inputs.size == 1) {
+            val input = inputs[0]
+            if(input.name == null)
+                editor.getTableCellEditorComponent(table, input.value, isSelected, row, column)
+            else
+                editor.getTableCellEditorComponent(table, "${input.name}: ${input.value}", isSelected, row, column)
+        } else
+            getCellRendererComponent(inputs)
+    }
+
+    private fun getCellRendererComponent(inputs: List<InputArgument>): Component {
+        inputArgumentModel.add(inputs)
+        return table
+    }
+
+}

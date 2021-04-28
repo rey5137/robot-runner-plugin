@@ -24,6 +24,7 @@ const val TAG_START_TIME = "starttime"
 const val TAG_END_TIME = "endtime"
 const val TAG_ASSIGN = "assign"
 const val TAG_VAR = "var"
+const val TAG_TYPE = "type"
 
 interface Element
 
@@ -39,3 +40,43 @@ interface HasTagsField {
     val tags: List<String>
 
 }
+
+enum class DataType {
+    STRING,
+    INTEGER,
+    NUMBER,
+    BOOL,
+    NONE,
+    DICT,
+    ARRAY
+}
+
+enum class ArgumentType {
+    SINGLE,
+    DICT,
+    ARRAY
+}
+
+data class Argument<T>(
+    val name: String = "",
+    val value: T,
+    val dataType: DataType,
+    val argumentType: ArgumentType,
+    val rawValue: String,
+)
+
+data class Variable<T>(
+    val name: String = "",
+    val value: T,
+    val type: DataType
+)
+
+data class InputArgument(
+    val name: String? = null,
+    val value: String,
+    val rawInput: String,
+)
+
+val VARIABLE_EMPTY = Variable<Any?>(type = DataType.NONE, value = null)
+
+val INPUT_EMPTY = InputArgument(value = "", rawInput = "")

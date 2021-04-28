@@ -24,7 +24,6 @@ class DetailsPanel(private val robotElement: RobotElement)
     private val tabPane = JBTabbedPane()
     private val argumentModel = ArgumentModel()
     private val argumentTable =  JBTable(argumentModel)
-    private val argumentTableColumnAdjuster = TableColumnAdjuster(argumentTable)
     private val messagePanel = JPanel()
 
     init {
@@ -76,8 +75,8 @@ class DetailsPanel(private val robotElement: RobotElement)
                 .createPanel()
             tabPane.add("Arguments", messagePanel)
             argumentModel.populateModel(element)
-            argumentTableColumnAdjuster.adjustColumn(ArgumentModel.INDEX_ARGUMENT)
-            argumentTableColumnAdjuster.adjustColumn(ArgumentModel.INDEX_INPUT)
+            argumentTable.adjustColumn(ArgumentModel.INDEX_ARGUMENT)
+            argumentTable.adjustColumn(ArgumentModel.INDEX_INPUT)
 
             tabPane.add("Messages", this.messagePanel)
         }

@@ -88,7 +88,10 @@ class DetailsPanel(private val robotElement: RobotElement)
             .mapNotNull { robotElement.messageMap[it.valueIndex] }
             .find { it.isArgumentMessage() }
         if(message == null)
-            setArguments(emptyList(), emptyList())
+            setArguments(
+                List(element.arguments.size) { ARGUMENT_EMPTY },
+                element.arguments.map { listOf(InputArgument(value = it, rawInput = it)) }
+            )
         else {
             try {
                 val arguments = message.parseArguments()

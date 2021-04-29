@@ -1,5 +1,7 @@
 package com.github.rey5137.robotrunnerplugin.editors.ui.argument
 
+import com.github.rey5137.robotrunnerplugin.editors.xml.ARGUMENT_EMPTY
+import com.github.rey5137.robotrunnerplugin.editors.xml.Argument
 import com.github.rey5137.robotrunnerplugin.editors.xml.DataType
 import com.github.rey5137.robotrunnerplugin.editors.xml.Variable
 import com.intellij.ui.ColoredTableCellRenderer
@@ -21,15 +23,21 @@ class ValueTableCellRenderer(private val argumentModel: ArgumentModel) : TableCe
             row: Int,
             column: Int
         ) {
-            if(value == null)
-                append("None", SimpleTextAttributes.GRAYED_ATTRIBUTES)
-            else {
-                val data = value.toString()
-                if (data.isEmpty())
-                    append("Empty String", SimpleTextAttributes.GRAY_SMALL_ATTRIBUTES)
-                else
-                    append(data, SimpleTextAttributes.REGULAR_ATTRIBUTES)
-            }
+            val argument = value as Argument<*>
+            if(argument == ARGUMENT_EMPTY)
+                append("")
+            else
+                when(argument.dataType) {
+                    DataType.NONE -> append("None", SimpleTextAttributes.GRAYED_ATTRIBUTES)
+                    DataType.BOOL -> append(if(argument.value as Boolean) "True" else "False", SimpleTextAttributes.REGULAR_ATTRIBUTES)
+                    else -> {
+                        val data = argument.value.toString()
+                        if (data.isEmpty())
+                            append("Empty String", SimpleTextAttributes.GRAY_SMALL_ATTRIBUTES)
+                        else
+                            append(data, SimpleTextAttributes.REGULAR_ATTRIBUTES)
+                    }
+                }
         }
     }
 
@@ -50,10 +58,8 @@ class ValueTableCellRenderer(private val argumentModel: ArgumentModel) : TableCe
     ): Component {
         val argument = argumentModel.getArgument(row)
         val component = when(argument.dataType) {
-            DataType.NONE -> stringCellRenderer.getTableCellRendererComponent(table, null, isSelected, hasFocus, row, column)
-            DataType.BOOL -> stringCellRenderer.getTableCellRendererComponent(table, if(argument.value as Boolean) "True" else "False", isSelected, hasFocus, row, column)
             DataType.DICT, DataType.ARRAY -> getCellRendererComponent(argument.value as List<Variable<*>>, isSelected)
-            else -> stringCellRenderer.getTableCellRendererComponent(table, argument.value.toString(), isSelected, hasFocus, row, column)
+            else -> stringCellRenderer.getTableCellRendererComponent(table, argument, isSelected, hasFocus, row, column)
         }
         table?.setRowHeight(row, component.preferredSize.height)
         return component

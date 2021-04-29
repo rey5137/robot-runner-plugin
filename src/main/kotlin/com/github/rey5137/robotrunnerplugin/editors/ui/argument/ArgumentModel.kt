@@ -22,8 +22,13 @@ class ArgumentModel : AbstractTableModel() {
 
     override fun getColumnCount(): Int = 3
 
-    override fun isCellEditable(rowIndex: Int, columnIndex: Int): Boolean =
-        columnIndex != INDEX_INPUT || inputArguments[rowIndex].isNotEmpty()
+    override fun isCellEditable(rowIndex: Int, columnIndex: Int): Boolean {
+        if(columnIndex == INDEX_INPUT) {
+            return inputArguments[rowIndex].isNotEmpty()
+        }
+        else
+            return arguments[rowIndex] != ARGUMENT_EMPTY
+    }
 
     override fun getValueAt(rowIndex: Int, columnIndex: Int): Any? = when(columnIndex) {
         INDEX_ARGUMENT -> arguments[rowIndex].getFullName()

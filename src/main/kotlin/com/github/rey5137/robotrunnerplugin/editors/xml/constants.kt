@@ -77,6 +77,6 @@ data class InputArgument(
     val rawInput: String,
 )
 
+val ARGUMENT_EMPTY = Argument<Any?>(value = null, dataType = DataType.NONE, argumentType = ArgumentType.SINGLE, rawValue = "")
 val VARIABLE_EMPTY = Variable<Any?>(type = DataType.NONE, value = null)
-
 val INPUT_EMPTY = InputArgument(value = "", rawInput = "")

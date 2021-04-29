@@ -37,6 +37,7 @@ const val VAL_TRUE = "True"
 const val VAL_FALSE = "False"
 
 const val PATTERN_ARGUMENT_MESSAGE = "Arguments:\\s*\\[\\s*(.*)\\s*\\]"
+const val PATTERN_PYTHON_ARGUMENT = "^[\\w\\d]*$"
 
 fun String.isArgumentMessage() = PATTERN_ARGUMENT_MESSAGE.toRegex(option = RegexOption.DOT_MATCHES_ALL).matches(this)
 
@@ -50,7 +51,7 @@ fun String.isArgumentMessage() = PATTERN_ARGUMENT_MESSAGE.toRegex(option = Regex
 fun String.parseArguments(): List<Argument<*>> {
     val matchResults = PATTERN_ARGUMENT_MESSAGE.toRegex(option = RegexOption.DOT_MATCHES_ALL).matchEntire(this) ?: return emptyList()
     val text = matchResults.groupValues[1]
-    val pointer = Pointer(value = text, end = text.length)
+    val pointer = Pointer(value = text)
     val args = ArrayList<Argument<*>>()
 
     while (pointer.hasNext()) {
@@ -67,18 +68,21 @@ private fun Pointer.parseArgument(): Argument<*> {
     val argumentType: ArgumentType
     when(peek()) {
         ARG_SINGLE -> {
-            name = parseArgumentName()
+            name = parseRobotArgumentName()
             argumentType = ArgumentType.SINGLE
         }
         ARG_DICT -> {
-            name = parseArgumentName()
+            name = parseRobotArgumentName()
             argumentType = ArgumentType.DICT
         }
         ARG_ARRAY -> {
-            name = parseArgumentName()
+            name = parseRobotArgumentName()
             argumentType = ArgumentType.ARRAY
         }
-        else -> throw IllegalArgumentException("Unexpected character: ${peek()}")
+        else -> {
+            name = parsePythonArgumentName()
+            argumentType = ArgumentType.PYTHON
+        }
     }
     val startIndex = current + 1
     return when (peek()) {
@@ -288,7 +292,7 @@ private fun Pointer.parseNumberValue(): Any {
     return if (dotCount == 0) builder.toString().toLong() else builder.toString().toDouble()
 }
 
-private fun Pointer.parseArgumentName(): String {
+private fun Pointer.parseRobotArgumentName(): String {
     skip(1)
     val builder = StringBuilder()
     var count = 0
@@ -311,6 +315,19 @@ private fun Pointer.parseArgumentName(): String {
     return builder.toString()
 }
 
+private fun Pointer.parsePythonArgumentName(): String {
+    val assignIndex = nextIndex(ARG_ASSIGN)
+    if(assignIndex < 0)
+        return ""
+    val length = assignIndex - current
+    val name = peek(length - 1).trim()
+    if(PATTERN_PYTHON_ARGUMENT.toRegex().matches(name)) {
+        skip(length)
+        return name
+    }
+    return ""
+}
+
 private fun Pointer.skipChar(vararg values: Char): Char? {
     skipSpace()
     val next = peek() ?: return null
@@ -330,9 +347,10 @@ private fun Pointer.skipSpace() {
 
 private data class Pointer(
     val value: String,
-    var current: Int = -1,
-    val end: Int
+    var current: Int = -1
 ) {
+
+    val end = value.length
 
     fun hasNext() = current < end - 1
 
@@ -351,6 +369,14 @@ private data class Pointer(
         return if (hasNext())
             value.substring(current + 1, min(current + 1 + n, end))
         else ""
+    }
+
+    fun nextIndex(c: Char): Int {
+        ((current + 1) until end).forEach {
+            if(value[it] == c)
+                return it
+        }
+        return -1
     }
 
     override fun toString() = "end=[$end] current=[$current] next=[${peek()}] value=[$value]"

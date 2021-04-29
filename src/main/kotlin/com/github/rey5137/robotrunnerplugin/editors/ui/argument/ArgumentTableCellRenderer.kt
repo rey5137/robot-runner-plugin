@@ -23,11 +23,15 @@ class ArgumentTableCellRenderer(private val model: ArgumentModel) : ColoredTable
                 ArgumentType.SINGLE -> ARG_SINGLE
                 ArgumentType.DICT -> ARG_DICT
                 ArgumentType.ARRAY -> ARG_ARRAY
+                else -> ""
             }.toString()
-            append(sign, SimpleTextAttributes.GRAY_ATTRIBUTES)
-            append(ARG_NAME_START.toString(), SimpleTextAttributes.GRAY_ATTRIBUTES)
+            if(sign.isNotEmpty()) {
+                append(sign, SimpleTextAttributes.GRAY_ATTRIBUTES)
+                append(ARG_NAME_START.toString(), SimpleTextAttributes.GRAY_ATTRIBUTES)
+            }
             append(argument.name, SimpleTextAttributes.REGULAR_BOLD_ATTRIBUTES)
-            append(ARG_NAME_END.toString(), SimpleTextAttributes.GRAY_ATTRIBUTES)
+            if(sign.isNotEmpty())
+                append(ARG_NAME_END.toString(), SimpleTextAttributes.GRAY_ATTRIBUTES)
         }
     }
 

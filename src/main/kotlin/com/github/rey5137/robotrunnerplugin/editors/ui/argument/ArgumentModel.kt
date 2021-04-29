@@ -22,12 +22,11 @@ class ArgumentModel : AbstractTableModel() {
 
     override fun getColumnCount(): Int = 3
 
-    override fun isCellEditable(rowIndex: Int, columnIndex: Int): Boolean {
-        if(columnIndex == INDEX_INPUT) {
-            return inputArguments[rowIndex].isNotEmpty()
-        }
-        else
-            return arguments[rowIndex] != ARGUMENT_EMPTY
+    override fun isCellEditable(rowIndex: Int, columnIndex: Int): Boolean = when(columnIndex) {
+        INDEX_ARGUMENT -> arguments[rowIndex].name.isNotEmpty()
+        INDEX_INPUT -> inputArguments[rowIndex].isNotEmpty()
+        INDEX_VALUE -> arguments[rowIndex] != ARGUMENT_EMPTY
+        else -> false
     }
 
     override fun getValueAt(rowIndex: Int, columnIndex: Int): Any? = when(columnIndex) {
@@ -40,12 +39,13 @@ class ArgumentModel : AbstractTableModel() {
     private fun Argument<*>.getFullName() = if(name.isEmpty())
         ""
     else {
-        val sign = when(argumentType) {
-            ArgumentType.SINGLE -> ARG_SINGLE
-            ArgumentType.DICT -> ARG_DICT
-            ArgumentType.ARRAY -> ARG_ARRAY
+        when(argumentType) {
+            ArgumentType.SINGLE -> "$ARG_SINGLE$ARG_NAME_START$name$ARG_NAME_END"
+            ArgumentType.DICT -> "$ARG_DICT$ARG_NAME_START$name$ARG_NAME_END"
+            ArgumentType.ARRAY -> "$ARG_ARRAY$ARG_NAME_START$name$ARG_NAME_END"
+            ArgumentType.PYTHON -> name
         }
-        "$sign$ARG_NAME_START$name$ARG_NAME_END"
+
     }
 
     override fun getColumnName(column: Int): String = when(column) {

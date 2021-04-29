@@ -182,4 +182,44 @@ class ArgumentsParserTest {
         ), arguments[1])
     }
 
+
+    @Test
+    fun parseArguments__withPythonArgument() {
+        val arguments =
+            "Arguments: [ '123' | a3={'k1': 'abc', 'k2': 1} | a2='456' ]".parseArguments()
+
+        assertEquals(Argument(
+            name = "",
+            value = "123",
+            dataType = DataType.STRING,
+            argumentType = ArgumentType.PYTHON,
+            rawValue = "'123'"
+        ), arguments[0])
+        assertEquals(Argument(
+            name = "a3",
+            value = listOf(
+                Variable(
+                    name="k1",
+                    value = "abc",
+                    type = DataType.STRING,
+                ),
+                Variable(
+                    name="k2",
+                    value = 1L,
+                    type = DataType.INTEGER,
+                )
+            ),
+            dataType = DataType.DICT,
+            argumentType = ArgumentType.PYTHON,
+            rawValue = "{'k1': 'abc', 'k2': 1}"
+        ), arguments[1])
+        assertEquals(Argument(
+            name = "a2",
+            value = "456",
+            dataType = DataType.STRING,
+            argumentType = ArgumentType.PYTHON,
+            rawValue = "'456'"
+        ), arguments[2])
+    }
+
 }

@@ -54,7 +54,7 @@ class VariableCellEditor(private val model : VariableModel, private val valueTab
             .append("• ")
             .append(variable.name)
         if(variable.type != DataType.DICT && variable.type != DataType.ARRAY) {
-            builder.append(": ")
+            builder.append(" = ")
             when(variable.type) {
                 DataType.NONE -> builder.append("None")
                 DataType.BOOL -> builder.append(if(variable.value as Boolean) "True" else "False")

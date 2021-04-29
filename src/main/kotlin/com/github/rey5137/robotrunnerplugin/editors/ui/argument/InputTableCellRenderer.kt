@@ -27,7 +27,7 @@ class InputTableCellRenderer(private val argumentModel: ArgumentModel) : TableCe
             }
             else {
                 append(input.name, SimpleTextAttributes.REGULAR_BOLD_ATTRIBUTES)
-                append(": ", SimpleTextAttributes.GRAYED_ATTRIBUTES)
+                append(" = ", SimpleTextAttributes.GRAYED_ATTRIBUTES)
                 append(input.value, SimpleTextAttributes.REGULAR_ATTRIBUTES)
             }
         }

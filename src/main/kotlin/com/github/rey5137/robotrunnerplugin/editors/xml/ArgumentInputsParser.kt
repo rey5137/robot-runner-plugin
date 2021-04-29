@@ -1,6 +1,11 @@
 package com.github.rey5137.robotrunnerplugin.editors.xml
 
 fun List<Argument<*>>.parseArgumentInputs(inputs: List<String>): List<List<InputArgument>> {
+    val hasPythonArgument = firstOrNull { it.argumentType == ArgumentType.PYTHON } != null
+    return if(hasPythonArgument) parsePythonArgumentInputs(inputs) else parseRobotArgumentInputs(inputs)
+}
+
+private fun List<Argument<*>>.parseRobotArgumentInputs(inputs: List<String>): List<List<InputArgument>> {
     val argumentMap = LinkedHashMap<String, Holder>()
     var arrayHolder: Holder? = null
     var dictHolder: Holder? = null
@@ -42,6 +47,21 @@ fun List<Argument<*>>.parseArgumentInputs(inputs: List<String>): List<List<Input
     }
 
     return argumentMap.values.map { it.inputs }
+}
+
+private fun List<Argument<*>>.parsePythonArgumentInputs(inputs: List<String>): List<List<InputArgument>> {
+    return mapIndexed { index, argument ->
+        val input = inputs[index]
+        if(argument.name.isEmpty())
+            listOf(InputArgument(value = input, rawInput = input))
+        else {
+            val (name, value) = inputs[index].parseInput()
+            if (name == argument.name)
+                listOf(InputArgument(value = value, rawInput = input))
+            else
+                listOf(InputArgument(value = input, rawInput = input))
+        }
+    }
 }
 
 private fun String.parseInput(): Pair<String?, String> {

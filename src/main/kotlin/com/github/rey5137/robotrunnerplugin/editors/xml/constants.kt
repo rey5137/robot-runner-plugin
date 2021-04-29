@@ -54,7 +54,8 @@ enum class DataType {
 enum class ArgumentType {
     SINGLE,
     DICT,
-    ARRAY
+    ARRAY,
+    PYTHON
 }
 
 data class Argument<T>(

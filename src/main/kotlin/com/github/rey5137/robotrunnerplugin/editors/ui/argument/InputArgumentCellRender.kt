@@ -25,7 +25,7 @@ class InputArgumentCellRender(private val model : InputArgumentModel) : ColoredT
             }
             else -> {
                 append(input.name, SimpleTextAttributes.REGULAR_BOLD_ATTRIBUTES)
-                append(": ", SimpleTextAttributes.GRAYED_ATTRIBUTES)
+                append(" = ", SimpleTextAttributes.GRAYED_ATTRIBUTES)
                 append(input.value, SimpleTextAttributes.REGULAR_ATTRIBUTES)
             }
         }

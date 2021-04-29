@@ -39,7 +39,7 @@ class VariableCellRender(private val model : VariableModel) : ColoredTableCellRe
             append(getSpacing(level))
             append("• ", SimpleTextAttributes.GRAYED_ATTRIBUTES)
             append(variable.name, SimpleTextAttributes.REGULAR_BOLD_ATTRIBUTES)
-            append(": ", SimpleTextAttributes.GRAYED_ATTRIBUTES)
+            append(" = ", SimpleTextAttributes.GRAYED_ATTRIBUTES)
             when(variable.type) {
                 DataType.NONE -> append("None", SimpleTextAttributes.GRAYED_ATTRIBUTES)
                 DataType.BOOL -> append(if(variable.value as Boolean) "True" else "False",

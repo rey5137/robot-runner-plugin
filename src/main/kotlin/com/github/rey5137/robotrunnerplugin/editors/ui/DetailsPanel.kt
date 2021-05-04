@@ -5,6 +5,7 @@ import com.github.rey5137.robotrunnerplugin.editors.ui.argument.ArgumentTable
 import com.github.rey5137.robotrunnerplugin.editors.ui.assignment.AssignmentModel
 import com.github.rey5137.robotrunnerplugin.editors.ui.assignment.AssignmentTable
 import com.github.rey5137.robotrunnerplugin.editors.xml.*
+import com.intellij.ui.JBSplitter
 import com.intellij.ui.ToolbarDecorator
 import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBTabbedPane
@@ -34,6 +35,7 @@ class DetailsPanel(private val robotElement: RobotElement)
         cellSelectionEnabled = true
         autoResizeMode = JTable.AUTO_RESIZE_SUBSEQUENT_COLUMNS
     }
+    private val argumentSplitter = JBSplitter(true, 0.7F)
     private val messagePanel = JPanel()
 
     init {
@@ -46,6 +48,18 @@ class DetailsPanel(private val robotElement: RobotElement)
         tagsField.isEditable = false
 
         add(tabPane, CC().newline().grow().push(1F, 1F))
+
+        argumentSplitter.firstComponent = ToolbarDecorator.createDecorator(argumentTable)
+            .disableUpAction()
+            .disableDownAction()
+            .disableRemoveAction()
+            .createPanel()
+
+        argumentSplitter.secondComponent = ToolbarDecorator.createDecorator(assignmentTable)
+            .disableUpAction()
+            .disableDownAction()
+            .disableRemoveAction()
+            .createPanel()
     }
 
     fun showDetails(element: Element) {
@@ -64,25 +78,7 @@ class DetailsPanel(private val robotElement: RobotElement)
 
         tabPane.removeAll()
         if(element is KeywordElement) {
-            val argumentPanel = JPanel(MigLayout(createLayoutConstraints(0, 10)))
-            ToolbarDecorator.createDecorator(argumentTable)
-                .disableUpAction()
-                .disableDownAction()
-                .disableRemoveAction()
-                .createPanel()
-                .let {
-                    argumentPanel.add(it, CC().cell(0, 0).growX().pushX().growY().pushY(3F))
-                }
-            ToolbarDecorator.createDecorator(assignmentTable)
-                .disableUpAction()
-                .disableDownAction()
-                .disableRemoveAction()
-                .createPanel()
-                .let {
-                    argumentPanel.add(it, CC().cell(0, 1).growX().pushX().growY().pushY(1F).minHeight("48px"))
-                }
-
-            tabPane.add("Argument / Assigment", argumentPanel)
+            tabPane.add("Argument / Assigment", argumentSplitter)
             argumentModel.populateModel(element)
             argumentTable.adjustColumn(ArgumentModel.INDEX_ARGUMENT)
             argumentTable.adjustColumn(ArgumentModel.INDEX_INPUT)

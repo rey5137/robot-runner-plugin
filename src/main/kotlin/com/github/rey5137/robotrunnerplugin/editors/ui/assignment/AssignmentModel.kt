@@ -18,11 +18,14 @@ class AssignmentModel : AbstractTableModel() {
 
     override fun getColumnCount(): Int = 2
 
-    override fun isCellEditable(rowIndex: Int, columnIndex: Int): Boolean = true
+    override fun isCellEditable(rowIndex: Int, columnIndex: Int): Boolean = when(columnIndex) {
+        INDEX_VALUE -> assignments[rowIndex].hasValue
+        else -> true
+    }
 
     override fun getValueAt(rowIndex: Int, columnIndex: Int): Any? = when(columnIndex) {
         INDEX_ASSIGNMENT -> assignments[rowIndex].getFullName()
-        INDEX_VALUE -> assignments[rowIndex].value
+        INDEX_VALUE -> ""
         else -> null
     }
 

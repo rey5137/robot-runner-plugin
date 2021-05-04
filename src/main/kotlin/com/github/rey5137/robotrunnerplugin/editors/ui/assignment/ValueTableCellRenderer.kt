@@ -23,17 +23,20 @@ class ValueTableCellRenderer(private val assignmentModel: AssignmentModel) : Tab
             column: Int
         ) {
             val assignment = value as Assignment<*>
-            when(assignment.dataType) {
-                DataType.NONE -> append("None", SimpleTextAttributes.GRAYED_ATTRIBUTES)
-                DataType.BOOL -> append(if(assignment.value as Boolean) "True" else "False", SimpleTextAttributes.REGULAR_ATTRIBUTES)
-                else -> {
-                    val data = assignment.value.toString()
-                    if (data.isEmpty())
-                        append("Empty String", SimpleTextAttributes.GRAY_SMALL_ATTRIBUTES)
-                    else
-                        append(data, SimpleTextAttributes.REGULAR_ATTRIBUTES)
+            if(!assignment.hasValue)
+                append("")
+            else
+                when(assignment.dataType) {
+                    DataType.NONE -> append("None", SimpleTextAttributes.GRAYED_ATTRIBUTES)
+                    DataType.BOOL -> append(if(assignment.value as Boolean) "True" else "False", SimpleTextAttributes.REGULAR_ATTRIBUTES)
+                    else -> {
+                        val data = assignment.value.toString()
+                        if (data.isEmpty())
+                            append("Empty String", SimpleTextAttributes.GRAY_SMALL_ATTRIBUTES)
+                        else
+                            append(data, SimpleTextAttributes.REGULAR_ATTRIBUTES)
+                    }
                 }
-            }
         }
     }
 

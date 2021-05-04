@@ -22,7 +22,7 @@ class VariableCellEditor(private val model : VariableModel, private val editEven
 
     override fun isCellEditable(e: EventObject?): Boolean {
         if(e is MouseEvent) {
-            if(e == editEventProvider.editEvent) {
+            if(editEventProvider.editEvent != null) {
                 editEventProvider.editEvent = null
                 return false
             }

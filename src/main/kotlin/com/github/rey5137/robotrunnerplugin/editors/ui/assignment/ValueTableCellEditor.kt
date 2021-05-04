@@ -1,5 +1,6 @@
-package com.github.rey5137.robotrunnerplugin.editors.ui.argument
+package com.github.rey5137.robotrunnerplugin.editors.ui.assignment
 
+import com.github.rey5137.robotrunnerplugin.editors.ui.argument.*
 import com.github.rey5137.robotrunnerplugin.editors.xml.DataType
 import com.github.rey5137.robotrunnerplugin.editors.xml.Variable
 import com.intellij.ui.table.JBTable
@@ -9,8 +10,7 @@ import java.awt.event.MouseEvent
 import java.util.*
 import javax.swing.JTable
 
-class ValueTableCellEditor(private val argumentModel: ArgumentModel) : AbstractTableCellEditor(),
-    VariableCellEditor.EditEventProvider {
+class ValueTableCellEditor(private val assignmentModel: AssignmentModel): AbstractTableCellEditor(), VariableCellEditor.EditEventProvider {
 
     private val variableModel = VariableModel()
     private val table = JBTable(variableModel)
@@ -25,9 +25,9 @@ class ValueTableCellEditor(private val argumentModel: ArgumentModel) : AbstractT
     }
 
     override fun isCellEditable(e: EventObject?): Boolean {
-        if (e is MouseEvent) {
+        if(e is MouseEvent) {
             val enable = e.clickCount > 1
-            if (enable) {
+            if(enable) {
                 editEvent = e
             }
             return enable
@@ -54,19 +54,13 @@ class ValueTableCellEditor(private val argumentModel: ArgumentModel) : AbstractT
         row: Int,
         column: Int
     ): Component {
-        val argument = argumentModel.getArgument(row)
+        val assignment = assignmentModel.getAssignment(row)
         val editor = table.getDefaultEditor(Any::class.java)
-        return when (argument.dataType) {
+        return when(assignment.dataType) {
             DataType.NONE -> editor.getTableCellEditorComponent(table, "None", isSelected, row, column)
-            DataType.BOOL -> editor.getTableCellEditorComponent(
-                table,
-                if (argument.value as Boolean) "True" else "False",
-                isSelected,
-                row,
-                column
-            )
-            DataType.DICT, DataType.ARRAY -> getCellEditorComponent(argument.value as List<Variable<*>>)
-            else -> editor.getTableCellEditorComponent(table, argument.value.toString(), isSelected, row, column)
+            DataType.BOOL -> editor.getTableCellEditorComponent(table, if(assignment.value as Boolean) "True" else "False", isSelected, row, column)
+            DataType.DICT, DataType.ARRAY -> getCellEditorComponent(assignment.value as List<Variable<*>>)
+            else -> editor.getTableCellEditorComponent(table, assignment.value.toString(), isSelected, row, column)
         }
     }
 

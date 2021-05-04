@@ -2,12 +2,21 @@ package com.github.rey5137.robotrunnerplugin.editors.xml
 
 const val PATTERN_ASSIGNMENT = "[$@]\\{(.*)\\}"
 
-fun List<String>.parseAssignments(variable: Variable<*>): List<Assignment<*>> {
+fun List<String>.parseAssignments(variable: Variable<*>?): List<Assignment<*>> {
     if(this.isEmpty())
         return emptyList()
-    if(size == 1) {
+    if(variable == null)
+        return this.map {
+            Assignment(
+                name = it.getAssignmentName(),
+                value = null,
+                dataType = DataType.NONE,
+                assignmentType = it.getAssignmentType(),
+                hasValue = false
+            )
+        }
+    if(size == 1)
         return listOf(first().toAssignment(variable))
-    }
     if(variable.type != DataType.ARRAY)
         throw IllegalArgumentException()
 
@@ -41,7 +50,7 @@ fun List<String>.parseAssignments(variable: Variable<*>): List<Assignment<*>> {
         val name = names.first()
         result.add(Assignment(
             name = name.getAssignmentName(),
-            value = variables.toList(),
+            value = variables.mapIndexed { index, v -> v.copy(name = "[$index]") },
             dataType = DataType.ARRAY,
             assignmentType = AssignmentType.ARRAY,
         ))

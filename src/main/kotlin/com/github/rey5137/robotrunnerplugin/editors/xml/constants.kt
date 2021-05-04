@@ -63,7 +63,6 @@ enum class AssignmentType {
     ARRAY
 }
 
-
 data class Argument<T>(
     val name: String = "",
     val value: T,
@@ -88,7 +87,8 @@ data class Assignment<T>(
     val name: String = "",
     val value: T,
     val dataType: DataType,
-    val assignmentType: AssignmentType
+    val assignmentType: AssignmentType,
+    val hasValue: Boolean = true,
 )
 
 val ARGUMENT_EMPTY = Argument<Any?>(value = null, dataType = DataType.NONE, argumentType = ArgumentType.SINGLE, rawValue = "")

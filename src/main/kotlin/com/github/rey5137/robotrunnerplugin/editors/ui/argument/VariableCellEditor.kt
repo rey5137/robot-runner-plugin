@@ -8,7 +8,7 @@ import java.util.*
 import javax.swing.JTable
 import kotlin.collections.HashMap
 
-class VariableCellEditor(private val model : VariableModel, private val valueTableCellEditor: ValueTableCellEditor) : AbstractTableCellEditor() {
+class VariableCellEditor(private val model : VariableModel, private val editEventProvider: EditEventProvider) : AbstractTableCellEditor() {
 
     private val spacingMap = HashMap<Int, String>()
 
@@ -22,21 +22,13 @@ class VariableCellEditor(private val model : VariableModel, private val valueTab
 
     override fun isCellEditable(e: EventObject?): Boolean {
         if(e is MouseEvent) {
-            if(e.isSameEvent(valueTableCellEditor.editEvent)) {
-                valueTableCellEditor.editEvent = null
+            if(e == editEventProvider.editEvent) {
+                editEventProvider.editEvent = null
                 return false
             }
             return e.clickCount > 1
         }
         return false
-    }
-
-    private fun MouseEvent.isSameEvent(p: MouseEvent?): Boolean {
-        if(p == null)
-            return false
-        return p.locationOnScreen == locationOnScreen
-            && p.button == button
-            && p.clickCount == clickCount
     }
 
     override fun getCellEditorValue(): Any = ""
@@ -63,6 +55,10 @@ class VariableCellEditor(private val model : VariableModel, private val valueTab
         }
         val editor = table.getDefaultEditor(Any::class.java)
         return editor.getTableCellEditorComponent(table, builder.toString(), isSelected, row, column)
+    }
+
+    interface EditEventProvider {
+        var editEvent: MouseEvent?
     }
 
 }

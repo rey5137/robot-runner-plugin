@@ -19,8 +19,11 @@ const val VAR_SEPARATOR = ','
 const val STR_START_1 = '\''
 const val STR_START_2 = '"'
 
-const val ARRAY_START = '['
-const val ARRAY_END = ']'
+const val ARRAY_START_1 = '['
+const val ARRAY_END_1 = ']'
+
+const val ARRAY_START_2 = '('
+const val ARRAY_END_2 = ')'
 
 const val DICT_START = '{'
 const val DICT_END = '}'
@@ -38,8 +41,10 @@ const val VAL_FALSE = "False"
 
 const val PATTERN_ARGUMENT_MESSAGE = "Arguments:\\s*\\[\\s*(.*)\\s*\\]"
 const val PATTERN_PYTHON_ARGUMENT = "^[\\w\\d]*$"
+const val PATTERN_RETURN_MESSAGE = "Return:\\s*(.*)"
 
 fun String.isArgumentMessage() = PATTERN_ARGUMENT_MESSAGE.toRegex(option = RegexOption.DOT_MATCHES_ALL).matches(this)
+fun String.isReturnMessage() = PATTERN_RETURN_MESSAGE.toRegex(option = RegexOption.DOT_MATCHES_ALL).matches(this)
 
 /**
  * Some examples:
@@ -49,7 +54,9 @@ fun String.isArgumentMessage() = PATTERN_ARGUMENT_MESSAGE.toRegex(option = Regex
  * Arguments: [ ${a1}='123' | @{array}=['', 7, None] ]
  */
 fun String.parseArguments(): List<Argument<*>> {
-    val matchResults = PATTERN_ARGUMENT_MESSAGE.toRegex(option = RegexOption.DOT_MATCHES_ALL).matchEntire(this) ?: return emptyList()
+    val matchResults =
+        PATTERN_ARGUMENT_MESSAGE.toRegex(option = RegexOption.DOT_MATCHES_ALL).matchEntire(this)
+            ?: return emptyList()
     val text = matchResults.groupValues[1]
     val pointer = Pointer(value = text)
     val args = ArrayList<Argument<*>>()
@@ -63,10 +70,25 @@ fun String.parseArguments(): List<Argument<*>> {
     return args
 }
 
+/**
+ * Some examples:
+ * Return: ('123', ('a2=2', '3'))
+ * Return: ('123', {'a2': '2', 'a3': '3'})
+ * Return: ['1', ['a | e', 'b', 'c']]
+ * Return: 'qwe'
+ */
+fun String.parseReturn(): Variable<*> {
+    val matchResults = PATTERN_RETURN_MESSAGE.toRegex(option = RegexOption.DOT_MATCHES_ALL).matchEntire(this)
+        ?: return VARIABLE_EMPTY
+    val text = matchResults.groupValues[1].trim()
+    val pointer = Pointer(value = text)
+    return pointer.parseVariable("")
+}
+
 private fun Pointer.parseArgument(): Argument<*> {
     val name: String
     val argumentType: ArgumentType
-    when(peek()) {
+    when (peek()) {
         ARG_SINGLE -> {
             name = parseRobotArgumentName()
             argumentType = ArgumentType.SINGLE
@@ -114,9 +136,16 @@ private fun Pointer.parseArgument(): Argument<*> {
             argumentType = argumentType,
             rawValue = value.substring(startIndex, current + 1).trim()
         )
-        ARRAY_START -> Argument(
+        ARRAY_START_1 -> Argument(
             name = name,
-            value = parseArrayValue(),
+            value = parseArrayValue(ARRAY_START_1, ARRAY_END_1),
+            dataType = DataType.ARRAY,
+            argumentType = argumentType,
+            rawValue = value.substring(startIndex, current + 1).trim()
+        )
+        ARRAY_START_2 -> Argument(
+            name = name,
+            value = parseArrayValue(ARRAY_START_2, ARRAY_END_2),
             dataType = DataType.ARRAY,
             argumentType = argumentType,
             rawValue = value.substring(startIndex, current + 1).trim()
@@ -170,9 +199,14 @@ private fun Pointer.parseVariable(name: String): Variable<*> {
             value = parseDictValue(),
             type = DataType.DICT
         )
-        ARRAY_START -> Variable(
+        ARRAY_START_1 -> Variable(
             name = name,
-            value = parseArrayValue(),
+            value = parseArrayValue(ARRAY_START_1, ARRAY_END_1),
+            type = DataType.ARRAY
+        )
+        ARRAY_START_2 -> Variable(
+            name = name,
+            value = parseArrayValue(ARRAY_START_2, ARRAY_END_2),
             type = DataType.ARRAY
         )
         STR_START_1 -> Variable(
@@ -222,37 +256,35 @@ private fun Pointer.parseBoolValue(expected: Boolean): Boolean {
 private fun Pointer.parseDictValue(): List<Variable<*>> {
     val variables = ArrayList<Variable<*>>()
     skipChar(DICT_START)
-    while(hasNext()) {
+    while (hasNext()) {
         val next = peek()
-        if(next == DICT_END) {
+        if (next == DICT_END) {
             skip(1)
             break
         }
-        if(next == STR_START_1 || next == STR_START_2) {
+        if (next == STR_START_1 || next == STR_START_2) {
             val name = parseStringValue(next)
             skipChar(VAR_ASSIGN)
             variables.add(parseVariable(name))
-            if(skipChar(VAR_SEPARATOR, DICT_END) == DICT_END)
+            if (skipChar(VAR_SEPARATOR, DICT_END) == DICT_END)
                 break
-        }
-        else
+        } else
             throw IllegalArgumentException("Unexpected character: $next")
     }
     return variables
 }
 
-private fun Pointer.parseArrayValue(): List<Variable<*>> {
+private fun Pointer.parseArrayValue(arrayStart: Char, arrayEnd: Char): List<Variable<*>> {
     val variables = ArrayList<Variable<*>>()
-    skipChar(ARRAY_START)
-    while(hasNext()) {
+    skipChar(arrayStart)
+    while (hasNext()) {
         val next = peek()
-        if(next == ARRAY_END) {
+        if (next == arrayEnd) {
             skip(1)
             break
-        }
-        else {
+        } else {
             variables.add(parseVariable("[${variables.size}]"))
-            if (skipChar(VAR_SEPARATOR, ARRAY_END) == ARRAY_END)
+            if (skipChar(VAR_SEPARATOR, arrayEnd) == arrayEnd)
                 break
         }
     }
@@ -317,11 +349,11 @@ private fun Pointer.parseRobotArgumentName(): String {
 
 private fun Pointer.parsePythonArgumentName(): String {
     val assignIndex = nextIndex(ARG_ASSIGN)
-    if(assignIndex < 0)
+    if (assignIndex < 0)
         return ""
     val length = assignIndex - current
     val name = peek(length - 1).trim()
-    if(PATTERN_PYTHON_ARGUMENT.toRegex().matches(name)) {
+    if (PATTERN_PYTHON_ARGUMENT.toRegex().matches(name)) {
         skip(length)
         return name
     }
@@ -331,12 +363,11 @@ private fun Pointer.parsePythonArgumentName(): String {
 private fun Pointer.skipChar(vararg values: Char): Char? {
     skipSpace()
     val next = peek() ?: return null
-    if(next in values) {
+    if (next in values) {
         skip(1)
         skipSpace()
         return next
-    }
-    else
+    } else
         throw IllegalArgumentException("Unexpected character: ${peek()}")
 }
 
@@ -373,7 +404,7 @@ private data class Pointer(
 
     fun nextIndex(c: Char): Int {
         ((current + 1) until end).forEach {
-            if(value[it] == c)
+            if (value[it] == c)
                 return it
         }
         return -1

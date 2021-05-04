@@ -3,7 +3,7 @@ package com.github.rey5137.robotrunnerplugin.editors.xml
 import org.junit.Test
 import kotlin.test.assertEquals
 
-class ArgumentsParserTest {
+class MessageParserTest {
 
     @Test
     fun parseArguments__withSingleValue() {
@@ -182,7 +182,6 @@ class ArgumentsParserTest {
         ), arguments[1])
     }
 
-
     @Test
     fun parseArguments__withPythonArgument() {
         val arguments =
@@ -222,4 +221,131 @@ class ArgumentsParserTest {
         ), arguments[2])
     }
 
+    @Test
+    fun parseReturn__withSingleVariable() {
+        "Return: 'qwe'".parseReturn().let {
+            assertEquals(Variable(
+                name = "",
+                value = "qwe",
+                type = DataType.STRING,
+            ), it)
+        }
+
+        "Return: None".parseReturn().let {
+            assertEquals(Variable(
+                name = "",
+                value = null,
+                type = DataType.NONE,
+            ), it)
+        }
+
+        "Return: True".parseReturn().let {
+            assertEquals(Variable(
+                name = "",
+                value = true,
+                type = DataType.BOOL,
+            ), it)
+        }
+
+        "Return: 1".parseReturn().let {
+            assertEquals(Variable(
+                name = "",
+                value = 1L,
+                type = DataType.INTEGER,
+            ), it)
+        }
+
+        "Return: 2.3".parseReturn().let {
+            assertEquals(Variable(
+                name = "",
+                value = 2.3,
+                type = DataType.NUMBER,
+            ), it)
+        }
+    }
+
+    @Test
+    fun parseReturn_withDictVariable() {
+        val variable = "Return: {'a2': 2, 'a3': '3'}".parseReturn()
+        assertEquals(Variable(
+            name = "",
+            value = listOf(
+                Variable(
+                    name = "a2",
+                    value = 2L,
+                    type = DataType.INTEGER,
+                ),
+                Variable(
+                    name = "a3",
+                    value = "3",
+                    type = DataType.STRING,
+                )
+            ),
+            type = DataType.DICT,
+        ), variable)
+    }
+
+    @Test
+    fun parseReturn__withArrayVariable() {
+        val variable = "Return: ['1', ['a | e', 'b']]".parseReturn()
+        assertEquals(Variable(
+            name = "",
+            value = listOf(
+                Variable(
+                    name = "[0]",
+                    value = "1",
+                    type = DataType.STRING,
+                ),
+                Variable(
+                    name = "[1]",
+                    value = listOf(
+                        Variable(
+                            name = "[0]",
+                            value = "a | e",
+                            type = DataType.STRING,
+                        ),
+                        Variable(
+                            name = "[1]",
+                            value = "b",
+                            type = DataType.STRING,
+                        ),
+                    ),
+                    type = DataType.ARRAY,
+                )
+            ),
+            type = DataType.ARRAY,
+        ), variable)
+    }
+
+    @Test
+    fun parseReturn__withArrayVariable2() {
+        val variable = "Return: ('123', {'a2': '2', 'a3': '3'})".parseReturn()
+        assertEquals(Variable(
+            name = "",
+            value = listOf(
+                Variable(
+                    name = "[0]",
+                    value = "123",
+                    type = DataType.STRING,
+                ),
+                Variable(
+                    name = "[1]",
+                    value = listOf(
+                        Variable(
+                            name = "a2",
+                            value = "2",
+                            type = DataType.STRING,
+                        ),
+                        Variable(
+                            name = "a3",
+                            value = "3",
+                            type = DataType.STRING,
+                        ),
+                    ),
+                    type = DataType.DICT,
+                )
+            ),
+            type = DataType.ARRAY,
+        ), variable)
+    }
 }

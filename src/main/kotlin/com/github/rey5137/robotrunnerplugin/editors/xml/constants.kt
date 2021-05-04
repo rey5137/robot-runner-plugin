@@ -58,6 +58,12 @@ enum class ArgumentType {
     PYTHON
 }
 
+enum class AssignmentType {
+    SINGLE,
+    ARRAY
+}
+
+
 data class Argument<T>(
     val name: String = "",
     val value: T,
@@ -76,6 +82,13 @@ data class InputArgument(
     val name: String? = null,
     val value: String,
     val rawInput: String,
+)
+
+data class Assignment<T>(
+    val name: String = "",
+    val value: T,
+    val dataType: DataType,
+    val assignmentType: AssignmentType
 )
 
 val ARGUMENT_EMPTY = Argument<Any?>(value = null, dataType = DataType.NONE, argumentType = ArgumentType.SINGLE, rawValue = "")

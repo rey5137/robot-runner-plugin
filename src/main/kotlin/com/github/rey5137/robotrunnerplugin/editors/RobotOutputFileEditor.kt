@@ -81,7 +81,7 @@ class RobotOutputFileEditor(private val project: Project, private val srcFile: V
         leftPanel.border = IdeBorderFactory.createBorder(SideBorder.RIGHT)
         splitter.firstComponent = leftPanel
         splitter.setHonorComponentsMinimumSize(true)
-        rightPanel.border = JBUI.Borders.empty(15, 5, 0, 15)
+        rightPanel.border = JBUI.Borders.empty(10, 0, 0, 10)
         splitter.secondComponent = rightPanel
 
         rootPanel.add(splitter, BorderLayout.CENTER)

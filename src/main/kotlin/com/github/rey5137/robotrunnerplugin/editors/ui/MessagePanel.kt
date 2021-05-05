@@ -55,6 +55,8 @@ class MessagePanel(private val robotElement: RobotElement) : JPanel(BorderLayout
 
     private fun showMessageDetail(messageElement: MessageElement?) {
         messageDetail.text = if(messageElement != null) robotElement.messageMap[messageElement.valueIndex] else ""
+        messageDetail.caretPosition = 0
+        messageDetail.revalidate()
     }
 
 }

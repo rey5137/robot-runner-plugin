@@ -11,7 +11,7 @@ import net.miginfocom.swing.MigLayout
 import javax.swing.JPanel
 
 
-class DetailsPanel(private val robotElement: RobotElement)
+class DetailsPanel(robotElement: RobotElement)
     : JPanel(MigLayout(createLayoutConstraints(10, 10))) {
 
     private val nameField = JBTextField()
@@ -31,7 +31,7 @@ class DetailsPanel(private val robotElement: RobotElement)
         add(tagsField, CC().cell(0, 1).growX().pushX(1F))
         tagsField.isEditable = false
 
-        add(tabPane, CC().newline().grow().push(1F, 1F))
+        add(tabPane, CC().cell(0, 2).grow().push(1F, 1F).gapBottom("10px").gapRight("10px"))
     }
 
     fun showDetails(element: Element) {

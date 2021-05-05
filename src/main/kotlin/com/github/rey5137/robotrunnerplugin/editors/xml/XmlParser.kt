@@ -74,7 +74,7 @@ fun VirtualFile.parseXml(): RobotElement {
                     when(element) {
                         is StringElement -> {
                             if(currentElement is MessageElement) {
-                                val text = element.value.toString()
+                                val text = element.value.toString().trim()
                                 currentElement.title = text.extractMessageTitle()
                                 robotElement.messageMap[currentElement.valueIndex] = text
                                 stack.removeAt(stack.size - 1)

@@ -32,27 +32,22 @@ import javax.swing.tree.TreePath
 class RobotOutputFileEditor(private val project: Project, private val srcFile: VirtualFile) : UserDataHolderBase(),
     FileEditor {
 
-    private val robotTreeNodeWrapper by lazy { getRootNodeWrapper() }
+    private var robotTreeNodeWrapper: TreeNodeWrapper? = null
 
-    private val myComponent by lazy { buildComponent() }
-    private val treeModel by lazy { DefaultTreeModel(robotTreeNodeWrapper.node) }
-    private val tree by lazy { Tree(treeModel) }
-    private val detailsPanel by lazy { DetailsPanel(robotTreeNodeWrapper.node.userObject as RobotElement) }
+    private val nodeFilters = mutableListOf<NodeFilter>()
 
-    private var nodeFilter: NodeFilter = ShowAllFilter
+    private val treeModel = DefaultTreeModel(null)
+    private val tree = Tree(treeModel)
+    private val detailsPanel = DetailsPanel()
+    private val myComponent = buildComponent()
 
     override fun dispose() {
-        val robotElement = robotTreeNodeWrapper.node.userObject as RobotElement
-        robotElement.db.close()
+        cleanUp()
     }
 
-    override fun getComponent(): JComponent {
-        return myComponent
-    }
+    override fun getComponent(): JComponent = myComponent
 
-    override fun getPreferredFocusedComponent(): JComponent? {
-        return null
-    }
+    override fun getPreferredFocusedComponent(): JComponent? = tree
 
     override fun getName(): String = "Robot Result"
 
@@ -66,13 +61,11 @@ class RobotOutputFileEditor(private val project: Project, private val srcFile: V
 
     override fun removePropertyChangeListener(listener: PropertyChangeListener) {}
 
-    override fun getCurrentLocation(): FileEditorLocation? {
-        return null
-    }
-
-    private fun getRootNodeWrapper(): TreeNodeWrapper = srcFile.parseXml().toNode()
+    override fun getCurrentLocation(): FileEditorLocation? = null
 
     private fun buildComponent(): JComponent {
+        refreshFile()
+
         val rootPanel = JPanel(BorderLayout())
         val splitter = JBSplitter(0.3F)
         val leftPanel = buildLeftPanel()
@@ -81,7 +74,7 @@ class RobotOutputFileEditor(private val project: Project, private val srcFile: V
         leftPanel.border = IdeBorderFactory.createBorder(SideBorder.RIGHT)
         splitter.firstComponent = leftPanel
         splitter.setHonorComponentsMinimumSize(true)
-        rightPanel.border = JBUI.Borders.empty(10, 0, 0, 10)
+        rightPanel.border = JBUI.Borders.empty(10, 10, 0, 10)
         splitter.secondComponent = rightPanel
 
         rootPanel.add(splitter, BorderLayout.CENTER)
@@ -92,8 +85,6 @@ class RobotOutputFileEditor(private val project: Project, private val srcFile: V
         tree.isRootVisible = false
         tree.showsRootHandles = true
         tree.cellRenderer = MyTreeCellRenderer()
-
-        populateTree(false)
 
         TreeUtil.installActions(tree)
         TreeSpeedSearch(tree) { o ->
@@ -120,14 +111,20 @@ class RobotOutputFileEditor(private val project: Project, private val srcFile: V
             .setScrollPaneBorder(JBUI.Borders.empty())
             .setMinimumSize(JBDimension(200, 200))
             .setForcedDnD()
-            .addExtraAction(object : ToggleActionButton("Show keyword", AllIcons.Nodes.Method) {
-                override fun isSelected(e: AnActionEvent?): Boolean = nodeFilter == ShowAllFilter
-
-                override fun setSelected(e: AnActionEvent?, state: Boolean) {
-                    nodeFilter = if(state) ShowAllFilter else HideKeywordFilter
-                    populateTree(true)
+            .addExtraAction(object : AnActionButton("Refresh", AllIcons.Actions.Refresh) {
+                override fun actionPerformed(e: AnActionEvent) {
+                    refreshFile()
                 }
-
+            })
+            .addExtraAction(object : AnActionButton("Collapse All", AllIcons.Actions.Collapseall) {
+                override fun actionPerformed(e: AnActionEvent) {
+                    TreeUtil.collapseAll(tree, 0)
+                }
+            })
+            .addExtraAction(object : AnActionButton("Expand All", AllIcons.Actions.Expandall) {
+                override fun actionPerformed(e: AnActionEvent) {
+                    TreeUtil.expandAll(tree)
+                }
             })
         val panel = JPanel(BorderLayout())
         panel.background = JBColor.background()
@@ -136,52 +133,87 @@ class RobotOutputFileEditor(private val project: Project, private val srcFile: V
         return panel
     }
 
+    private fun refreshFile() {
+        cleanUp()
+        val keepExpanded = robotTreeNodeWrapper != null
+        val rootNodeWrapper = srcFile.parseXml().toNode(robotTreeNodeWrapper)
+        detailsPanel.setRobotElement(rootNodeWrapper.node.userObject as RobotElement)
+
+        robotTreeNodeWrapper = rootNodeWrapper
+        if(treeModel.root == null)
+            treeModel.setRoot(rootNodeWrapper.node)
+
+        populateTree(keepExpanded)
+    }
+
+    private fun cleanUp() {
+        robotTreeNodeWrapper?.let {
+            val robotElement = it.node.userObject as RobotElement
+            robotElement.db.close()
+        }
+    }
+
     private fun populateTree(keepExpanded: Boolean) {
         var expandedPaths = emptyList<TreePath>()
         if(keepExpanded)
             expandedPaths = TreeUtil.collectExpandedPaths(tree)
 
-        robotTreeNodeWrapper.rebuildNode()
+        val selectedPaths = tree.selectionPaths
+
+        robotTreeNodeWrapper?.rebuildNode()
         treeModel.reload()
 
-        if(keepExpanded)
+        if(keepExpanded) {
             TreeUtil.restoreExpandedPaths(tree, expandedPaths)
-        else
-            TreeUtil.expandAll(tree)
+            tree.selectionPaths = selectedPaths
+        } else
+            TreeUtil.expandAll(tree) {
+                tree.selectionPaths = selectedPaths
+            }
     }
 
     private fun TreeNodeWrapper.rebuildNode(): DefaultMutableTreeNode {
         node.removeAllChildren()
-        children.forEach {
-            if(nodeFilter.accept(it))
-                node.add(it.rebuildNode())
+        children.forEach { nodeWrapper ->
+            if(nodeFilters.firstOrNull { !it.accept(nodeWrapper) } == null)
+                node.add(nodeWrapper.rebuildNode())
         }
         return node
     }
 
-    private fun RobotElement.toNode(): TreeNodeWrapper {
+    private fun RobotElement.toNode(oldNodeWrapper: TreeNodeWrapper? = null): TreeNodeWrapper {
         val children = mutableListOf<TreeNodeWrapper>()
-        suites.forEach { children.add(it.toNode()) }
-        return TreeNodeWrapper(node = DefaultMutableTreeNode(this), children = children)
+        suites.forEachIndexed { index, suite -> children.add(suite.toNode(oldNodeWrapper.childAt(index))) }
+        return TreeNodeWrapper(node = oldNodeWrapper.copyNode(this), children = children)
     }
 
-    private fun SuiteElement.toNode(): TreeNodeWrapper {
+    private fun SuiteElement.toNode(oldNodeWrapper: TreeNodeWrapper? = null): TreeNodeWrapper {
         val children = mutableListOf<TreeNodeWrapper>()
-        suites.forEach { children.add(it.toNode()) }
-        tests.forEach { children.add(it.toNode()) }
-        return TreeNodeWrapper(node = DefaultMutableTreeNode(this), children = children)
+        suites.forEachIndexed { index, suite -> children.add(suite.toNode(oldNodeWrapper.childAt(index)))  }
+        tests.forEachIndexed { index, test -> children.add(test.toNode(oldNodeWrapper.childAt(suites.size + index))) }
+        return TreeNodeWrapper(node = oldNodeWrapper.copyNode(this), children = children)
     }
 
-    private fun TestElement.toNode(): TreeNodeWrapper {
+    private fun TestElement.toNode(oldNodeWrapper: TreeNodeWrapper? = null): TreeNodeWrapper {
         val children = mutableListOf<TreeNodeWrapper>()
-        keywords.forEach { children.add(it.toNode()) }
-        return TreeNodeWrapper(node = DefaultMutableTreeNode(this), children = children)
+        keywords.forEachIndexed { index, keyword -> children.add(keyword.toNode(oldNodeWrapper.childAt(index))) }
+        return TreeNodeWrapper(node = oldNodeWrapper.copyNode(this), children = children)
     }
 
-    private fun KeywordElement.toNode(): TreeNodeWrapper {
+    private fun KeywordElement.toNode(oldNodeWrapper: TreeNodeWrapper? = null): TreeNodeWrapper {
         val children = mutableListOf<TreeNodeWrapper>()
-        keywords.forEach { children.add(it.toNode()) }
-        return TreeNodeWrapper(node = DefaultMutableTreeNode(this), children = children)
+        keywords.forEachIndexed { index, keyword -> children.add(keyword.toNode(oldNodeWrapper.childAt(index))) }
+        return TreeNodeWrapper(node = oldNodeWrapper.copyNode(this), children = children)
+    }
+
+    private fun TreeNodeWrapper?.copyNode(obj: Any) = this?.node?.apply { userObject = obj } ?: DefaultMutableTreeNode(obj)
+
+    private fun TreeNodeWrapper?.childAt(index: Int): TreeNodeWrapper? {
+        if(this == null)
+            return null
+        if(index >= children.size)
+            return null
+        return children[index]
     }
 
     internal class MyTreeCellRenderer : ColoredTreeCellRenderer() {
@@ -231,18 +263,5 @@ class RobotOutputFileEditor(private val project: Project, private val srcFile: V
         }
 
     }
-
-    object ShowAllFilter : NodeFilter {
-
-        override fun accept(nodeWrapper: TreeNodeWrapper) = true
-
-    }
-
-    object HideKeywordFilter : NodeFilter {
-
-        override fun accept(nodeWrapper: TreeNodeWrapper) = nodeWrapper.node.userObject !is KeywordElement
-
-    }
-
 
 }

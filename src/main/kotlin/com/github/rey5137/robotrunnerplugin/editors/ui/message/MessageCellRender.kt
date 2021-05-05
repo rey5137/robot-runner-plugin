@@ -14,7 +14,16 @@ class MessageCellRender : ColoredListCellRenderer<MessageElement>() {
         selected: Boolean,
         hasFocus: Boolean
     ) {
-        append("${value.level} - ", SimpleTextAttributes.GRAY_SMALL_ATTRIBUTES)
+        append("${value.level.appendSpaceIfNeed(6)} - ", SimpleTextAttributes.GRAY_SMALL_ATTRIBUTES)
         append("${value.title} ...", SimpleTextAttributes.REGULAR_ATTRIBUTES)
+    }
+
+    private fun String.appendSpaceIfNeed(minLength: Int): String {
+        if(length >= minLength)
+            return this
+        val builder = StringBuilder()
+        repeat(length - minLength) { builder.append(' ') }
+        builder.append(this)
+        return builder.toString()
     }
 }

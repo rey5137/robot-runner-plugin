@@ -11,7 +11,9 @@ import java.awt.BorderLayout
 import javax.swing.JPanel
 import javax.swing.JTable
 
-class ArgumentPanel(private val robotElement: RobotElement) : JPanel(BorderLayout()) {
+class ArgumentPanel : JPanel(BorderLayout()) {
+
+    lateinit var robotElement: RobotElement
 
     private val argumentModel = ArgumentModel()
     private val argumentTable = ArgumentTable(argumentModel).apply {

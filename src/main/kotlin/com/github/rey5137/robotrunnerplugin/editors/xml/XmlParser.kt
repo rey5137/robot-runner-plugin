@@ -74,7 +74,9 @@ fun VirtualFile.parseXml(): RobotElement {
                     when(element) {
                         is StringElement -> {
                             if(currentElement is MessageElement) {
-                                robotElement.messageMap[currentElement.valueIndex] = element.value.toString()
+                                val text = element.value.toString()
+                                currentElement.title = text.extractMessageTitle()
+                                robotElement.messageMap[currentElement.valueIndex] = text
                                 stack.removeAt(stack.size - 1)
                                 currentElement = stack.last()
                             }
@@ -175,6 +177,15 @@ private fun Element.addMessage(element: MessageElement) {
     when (this) {
         is KeywordElement -> this.messages.add(element)
     }
+}
+
+private fun String.extractMessageTitle(): String {
+    val end = Math.min(31, length - 1)
+    (end downTo (end - end / 3)).forEach {
+        if(this[it] == ' ')
+            return substring(0, it)
+    }
+    return substring(0, end + 1)
 }
 
 data class ArgumentsElement (

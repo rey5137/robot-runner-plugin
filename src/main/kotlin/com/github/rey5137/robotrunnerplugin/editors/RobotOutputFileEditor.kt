@@ -1,16 +1,18 @@
 package com.github.rey5137.robotrunnerplugin.editors
 
 import com.github.rey5137.robotrunnerplugin.editors.ui.DetailsPanel
-import com.github.rey5137.robotrunnerplugin.editors.ui.NodeFilter
+import com.github.rey5137.robotrunnerplugin.editors.ui.filter.ElementFilter
 import com.github.rey5137.robotrunnerplugin.editors.ui.TreeNodeWrapper
+import com.github.rey5137.robotrunnerplugin.editors.ui.filter.HideKeywordFilter
+import com.github.rey5137.robotrunnerplugin.editors.ui.filter.HidePassedTestFilter
 import com.github.rey5137.robotrunnerplugin.editors.xml.*
 import com.intellij.icons.AllIcons
-import com.intellij.openapi.actionSystem.ActionToolbarPosition
-import com.intellij.openapi.actionSystem.AnActionEvent
+import com.intellij.openapi.actionSystem.*
 import com.intellij.openapi.fileEditor.FileEditor
 import com.intellij.openapi.fileEditor.FileEditorLocation
 import com.intellij.openapi.fileEditor.FileEditorState
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.ui.popup.JBPopupFactory
 import com.intellij.openapi.util.UserDataHolderBase
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.ui.*
@@ -34,7 +36,10 @@ class RobotOutputFileEditor(private val project: Project, private val srcFile: V
 
     private var robotTreeNodeWrapper: TreeNodeWrapper? = null
 
-    private val nodeFilters = mutableListOf<NodeFilter>()
+    private val elementFilters = mutableListOf(
+        HideKeywordFilter(false),
+        HidePassedTestFilter(false),
+    )
 
     private val treeModel = DefaultTreeModel(null)
     private val tree = Tree(treeModel)
@@ -112,6 +117,23 @@ class RobotOutputFileEditor(private val project: Project, private val srcFile: V
             .setScrollPaneBorder(JBUI.Borders.empty())
             .setMinimumSize(JBDimension(200, 200))
             .setForcedDnD()
+            .addExtraAction(object : DumbAwareActionButton("Filter Element", AllIcons.General.Filter) {
+                override fun actionPerformed(e: AnActionEvent) {
+                    JBPopupFactory.getInstance().createActionGroupPopup(null, DefaultActionGroup().apply {
+                        elementFilters.map { filter ->
+                            add(object : ToggleAction(filter.getTitle()) {
+                                override fun isSelected(e: AnActionEvent): Boolean = filter.isEnabled
+
+                                override fun setSelected(e: AnActionEvent, state: Boolean) {
+                                    filter.isEnabled = state
+                                    populateTree(true)
+                                }
+                            })
+                        }
+                    }, e.dataContext, JBPopupFactory.ActionSelectionAid.SPEEDSEARCH, false)
+                        .show(preferredPopupPoint!!)
+                }
+            })
             .addExtraAction(object : AnActionButton("Refresh", AllIcons.Actions.Refresh) {
                 override fun actionPerformed(e: AnActionEvent) {
                     refreshFile()
@@ -181,8 +203,9 @@ class RobotOutputFileEditor(private val project: Project, private val srcFile: V
 
     private fun TreeNodeWrapper.rebuildNode(): DefaultMutableTreeNode {
         node.removeAllChildren()
+        val filters = elementFilters.filter { it.isEnabled }
         children.forEach { nodeWrapper ->
-            if(nodeFilters.firstOrNull { !it.accept(nodeWrapper) } == null)
+            if(filters.firstOrNull { !it.accept(nodeWrapper.node.userObject as Element) } == null)
                 node.add(nodeWrapper.rebuildNode())
         }
         return node

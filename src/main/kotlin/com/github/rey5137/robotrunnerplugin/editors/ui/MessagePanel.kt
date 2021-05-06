@@ -15,6 +15,7 @@ import com.intellij.ui.components.JBList
 import com.intellij.ui.components.JBScrollPane
 import com.intellij.ui.components.JBTextArea
 import java.awt.BorderLayout
+import java.awt.Insets
 import javax.swing.DefaultListModel
 import javax.swing.JPanel
 import javax.swing.ListSelectionModel
@@ -37,6 +38,7 @@ class MessagePanel : JPanel(BorderLayout()) {
         lineWrap = true
         wrapStyleWord = true
         isEditable = false
+        margin = Insets(5, 5, 5, 5)
     }
     private val messageSplitter = JBSplitter(0.3F)
 
@@ -46,6 +48,7 @@ class MessagePanel : JPanel(BorderLayout()) {
     private var showInfoMessage = true
     private var showDebugMessage = true
     private var showTraceMessage = true
+    private var showFailMessage = true
 
     init {
         messageSplitter.firstComponent = ToolbarDecorator.createDecorator(messageList)
@@ -53,7 +56,7 @@ class MessagePanel : JPanel(BorderLayout()) {
             .disableDownAction()
             .disableRemoveAction()
             .setToolbarPosition(ActionToolbarPosition.TOP)
-            .addExtraAction(object : DumbAwareActionButton("Filter message", AllIcons.Actions.ShortcutFilter) {
+            .addExtraAction(object : DumbAwareActionButton("Filter message", AllIcons.General.Filter) {
                 override fun actionPerformed(e: AnActionEvent) {
                     JBPopupFactory.getInstance().createActionGroupPopup(null, DefaultActionGroup().apply {
                         add(object : ToggleAction("Show INFO message") {
@@ -77,6 +80,14 @@ class MessagePanel : JPanel(BorderLayout()) {
 
                             override fun setSelected(e: AnActionEvent, state: Boolean) {
                                 showTraceMessage = state
+                                populateMessage(element)
+                            }
+                        })
+                        add(object : ToggleAction("Show FAIL message") {
+                            override fun isSelected(e: AnActionEvent): Boolean = showFailMessage
+
+                            override fun setSelected(e: AnActionEvent, state: Boolean) {
+                                showFailMessage = state
                                 populateMessage(element)
                             }
                         })
@@ -105,6 +116,7 @@ class MessagePanel : JPanel(BorderLayout()) {
                 (it.level == LOG_LEVEL_INFO && showInfoMessage)
                         || (it.level == LOG_LEVEL_DEBUG && showDebugMessage)
                         || (it.level == LOG_LEVEL_TRACE && showTraceMessage)
+                        || (it.level == LOG_LEVEL_FAIL && showFailMessage)
             }
             .forEach {
                 messageModel.addElement(it)

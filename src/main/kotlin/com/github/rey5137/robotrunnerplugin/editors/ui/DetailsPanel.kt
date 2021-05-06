@@ -20,6 +20,7 @@ class DetailsPanel : JPanel(MigLayout(LC().gridGap("10px", "10px").insets("0px")
 
     private val argumentPanel = ArgumentPanel()
     private val messagePanel = MessagePanel()
+    private val miscPanel = MiscPanel()
 
     init {
         add(statusLabel, CC().cell(0, 0).minWidth("32px"))
@@ -45,12 +46,10 @@ class DetailsPanel : JPanel(MigLayout(LC().gridGap("10px", "10px").insets("0px")
             statusLabel.icon = if (element.status.isPassed) MyIcons.StatusPass else MyIcons.StatusFail
         }
 
-        if(element is HasTagsField) {
+        if(element is HasTagsField)
             tagsField.text = element.tags.joinToString(separator = ", ")
-        }
-        else {
+        else
             tagsField.text = ""
-        }
 
         tabPane.removeAll()
         if(element is KeywordElement) {
@@ -62,6 +61,10 @@ class DetailsPanel : JPanel(MigLayout(LC().gridGap("10px", "10px").insets("0px")
             messagePanel.border = null
             messagePanel.populateData(element)
         }
+
+        tabPane.add("Miscellaneous", miscPanel)
+        miscPanel.border = null
+        miscPanel.populateData(element)
     }
 
 }

@@ -51,36 +51,39 @@ fun VirtualFile.parseXml(): RobotElement {
                 currentElement = newElement
                 stack.add(currentElement)
             }
-        }
-        else if(nextEvent.isCharacters) {
+        } else if (nextEvent.isCharacters) {
             val data = nextEvent.asCharacters().data
-            when(currentElement) {
+            when (currentElement) {
                 is StringElement -> currentElement.value.append(data)
-                is MessageElement -> {
+                is MessageElement,
+                is StatusElement -> {
                     val newElement = StringElement()
                     newElement.value.append(data)
                     currentElement = newElement
                     stack.add(currentElement)
                 }
             }
-        }
-        else if (nextEvent.isEndElement) {
+        } else if (nextEvent.isEndElement) {
             if (skipCount > 0)
                 skipCount--
             else {
                 val element = stack.removeAt(stack.size - 1)
                 if (stack.isNotEmpty()) {
                     currentElement = stack.last()
-                    when(element) {
+                    when (element) {
                         is StringElement -> {
-                            if(currentElement is MessageElement) {
+                            if (currentElement is MessageElement) {
                                 val text = element.value.toString().trim()
                                 currentElement.title = text.extractMessageTitle()
                                 robotElement.messageMap[currentElement.valueIndex] = text
                                 stack.removeAt(stack.size - 1)
                                 currentElement = stack.last()
-                            }
-                            else
+                            } else if (currentElement is StatusElement) {
+                                val text = element.value.toString().trim()
+                                currentElement.message = text
+                                stack.removeAt(stack.size - 1)
+                                currentElement = stack.last()
+                            } else
                                 currentElement.addString(element)
                         }
                         is ArgumentsElement -> (currentElement as KeywordElement).arguments = element.arguments
@@ -182,24 +185,24 @@ private fun Element.addMessage(element: MessageElement) {
 private fun String.extractMessageTitle(): String {
     val end = Math.min(31, length - 1)
     (end downTo (end - end / 3)).forEach {
-        if(this[it] == ' ')
+        if (this[it] == ' ')
             return substring(0, it)
     }
     return substring(0, end + 1)
 }
 
-data class ArgumentsElement (
+data class ArgumentsElement(
     val arguments: MutableList<String> = ArrayList()
 ) : Element
 
-data class TagsElement (
+data class TagsElement(
     val tags: MutableList<String> = ArrayList()
 ) : Element
 
-data class AssignsElement (
+data class AssignsElement(
     val vars: MutableList<String> = ArrayList()
 ) : Element
 
-data class StringElement (
+data class StringElement(
     var value: StringBuilder = StringBuilder()
 ) : Element

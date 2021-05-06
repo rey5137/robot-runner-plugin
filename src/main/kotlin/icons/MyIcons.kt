@@ -45,4 +45,7 @@ object MyIcons {
 
     @JvmField
     val LevelTrace = IconLoader.getIcon("/icons/levelTrace.svg", javaClass)
+
+    @JvmField
+    val LevelFail = IconLoader.getIcon("/icons/levelFail.svg", javaClass)
 }

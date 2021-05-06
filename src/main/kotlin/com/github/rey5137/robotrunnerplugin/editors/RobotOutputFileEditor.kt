@@ -64,8 +64,6 @@ class RobotOutputFileEditor(private val project: Project, private val srcFile: V
     override fun getCurrentLocation(): FileEditorLocation? = null
 
     private fun buildComponent(): JComponent {
-        refreshFile()
-
         val rootPanel = JPanel(BorderLayout())
         val splitter = JBSplitter(0.3F)
         val leftPanel = buildLeftPanel()
@@ -78,6 +76,9 @@ class RobotOutputFileEditor(private val project: Project, private val srcFile: V
         splitter.secondComponent = rightPanel
 
         rootPanel.add(splitter, BorderLayout.CENTER)
+
+        refreshFile()
+
         return rootPanel
     }
 
@@ -165,11 +166,17 @@ class RobotOutputFileEditor(private val project: Project, private val srcFile: V
 
         if(keepExpanded) {
             TreeUtil.restoreExpandedPaths(tree, expandedPaths)
-            tree.selectionPaths = selectedPaths
+            restoreSelectionNode(selectedPaths)
         } else
-            TreeUtil.expandAll(tree) {
-                tree.selectionPaths = selectedPaths
-            }
+            TreeUtil.expandAll(tree) { restoreSelectionNode(selectedPaths) }
+    }
+
+    private fun restoreSelectionNode(paths: Array<TreePath>?) {
+        tree.selectionPaths = paths
+        if(tree.selectionPaths == null) {
+            val nodes = treeModel.getPathToRoot(robotTreeNodeWrapper.childAt(0)?.node)
+            tree.selectionPath = TreePath(nodes)
+        }
     }
 
     private fun TreeNodeWrapper.rebuildNode(): DefaultMutableTreeNode {

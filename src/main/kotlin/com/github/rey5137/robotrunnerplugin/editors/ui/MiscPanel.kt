@@ -1,7 +1,6 @@
 package com.github.rey5137.robotrunnerplugin.editors.ui
 
 import com.github.rey5137.robotrunnerplugin.editors.xml.*
-import com.intellij.ui.JBColor
 import com.intellij.ui.components.JBScrollPane
 import com.intellij.ui.components.JBTextArea
 import java.awt.BorderLayout
@@ -35,6 +34,14 @@ class MiscPanel : JPanel(BorderLayout()) {
             if(element.status.message.isNotEmpty()) {
                 miscDetail.append("Status message: ")
                 miscDetail.append(element.status.message)
+                miscDetail.append("\n")
+            }
+        }
+        if(element is KeywordElement) {
+            val failMessage = element.messages.firstOrNull { it.level == LOG_LEVEL_FAIL }
+            if(failMessage != null) {
+                miscDetail.append("Fail reason: ")
+                miscDetail.append(robotElement.messageMap[failMessage.valueIndex])
                 miscDetail.append("\n")
             }
         }

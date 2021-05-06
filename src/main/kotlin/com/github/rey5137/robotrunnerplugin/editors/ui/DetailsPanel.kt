@@ -37,6 +37,7 @@ class DetailsPanel : JPanel(MigLayout(LC().gridGap("10px", "10px").insets("0px")
     fun setRobotElement(robotElement: RobotElement) {
         argumentPanel.robotElement = robotElement
         messagePanel.robotElement = robotElement
+        miscPanel.robotElement = robotElement
     }
 
     fun showDetails(element: Element) {

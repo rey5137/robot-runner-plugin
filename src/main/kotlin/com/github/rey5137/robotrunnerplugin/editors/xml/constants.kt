@@ -26,6 +26,10 @@ const val TAG_ASSIGN = "assign"
 const val TAG_VAR = "var"
 const val TAG_TYPE = "type"
 
+const val LOG_LEVEL_INFO = "INFO"
+const val LOG_LEVEL_DEBUG = "DEBUG"
+const val LOG_LEVEL_TRACE= "TRACE"
+
 interface Element
 
 interface HasCommonField {

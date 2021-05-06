@@ -126,7 +126,7 @@ private fun StartElement.toStatusElement() = StatusElement(
 
 private fun StartElement.toMessageElement(index: Long) = MessageElement(
     timestamp = getAttributeByName(QName(TAG_TIMESTAMP))?.value ?: "",
-    level = getAttributeByName(QName(TAG_LEVEL))?.value ?: "",
+    level = getAttributeByName(QName(TAG_LEVEL))?.value?.toUpperCase() ?: "",
     valueIndex = index,
 )
 

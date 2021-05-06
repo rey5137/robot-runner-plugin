@@ -1,5 +1,8 @@
 package com.github.rey5137.robotrunnerplugin.editors.ui.message
 
+import com.github.rey5137.robotrunnerplugin.editors.xml.LOG_LEVEL_DEBUG
+import com.github.rey5137.robotrunnerplugin.editors.xml.LOG_LEVEL_INFO
+import com.github.rey5137.robotrunnerplugin.editors.xml.LOG_LEVEL_TRACE
 import com.github.rey5137.robotrunnerplugin.editors.xml.MessageElement
 import com.intellij.ui.ColoredListCellRenderer
 import com.intellij.ui.SimpleTextAttributes
@@ -15,10 +18,10 @@ class MessageCellRender : ColoredListCellRenderer<MessageElement>() {
         selected: Boolean,
         hasFocus: Boolean
     ) {
-        icon = when(value.level.toUpperCase()) {
-            "INFO" -> MyIcons.LevelInfo
-            "DEBUG" -> MyIcons.LevelDebug
-            "TRACE" -> MyIcons.LevelTrace
+        icon = when(value.level) {
+            LOG_LEVEL_INFO -> MyIcons.LevelInfo
+            LOG_LEVEL_DEBUG -> MyIcons.LevelDebug
+            LOG_LEVEL_TRACE -> MyIcons.LevelTrace
             else -> null
         }
         isIconOnTheRight = false

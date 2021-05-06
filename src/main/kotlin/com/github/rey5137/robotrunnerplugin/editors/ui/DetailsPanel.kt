@@ -4,14 +4,14 @@ import com.github.rey5137.robotrunnerplugin.editors.xml.*
 import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBTabbedPane
 import com.intellij.ui.components.JBTextField
-import com.intellij.ui.layout.migLayout.createLayoutConstraints
 import icons.MyIcons
 import net.miginfocom.layout.CC
+import net.miginfocom.layout.LC
 import net.miginfocom.swing.MigLayout
 import javax.swing.JPanel
 
 
-class DetailsPanel : JPanel(MigLayout(createLayoutConstraints(10, 10))) {
+class DetailsPanel : JPanel(MigLayout(LC().gridGap("10px", "10px").insets("0px"))) {
 
     private val nameField = JBTextField()
     private val statusLabel = JBLabel()

@@ -17,10 +17,10 @@ class MessageCellRender : ColoredListCellRenderer<MessageElement>() {
         hasFocus: Boolean
     ) {
         icon = when(value.level) {
-            LOG_LEVEL_INFO -> LayeredIcon(MyIcons.ElementPass, MyIcons.LabelInfo)
-            LOG_LEVEL_DEBUG -> LayeredIcon(MyIcons.ElementPass, MyIcons.LabelDebug)
-            LOG_LEVEL_TRACE -> LayeredIcon(MyIcons.ElementPass, MyIcons.LabelTrace)
-            LOG_LEVEL_FAIL -> LayeredIcon(MyIcons.ElementFail, MyIcons.LabelFail)
+            LOG_LEVEL_INFO -> MyIcons.LevelInfo
+            LOG_LEVEL_DEBUG -> MyIcons.LevelDebug
+            LOG_LEVEL_TRACE -> MyIcons.LevelTrace
+            LOG_LEVEL_FAIL -> MyIcons.LevelFail
             else -> null
         }
         isIconOnTheRight = false

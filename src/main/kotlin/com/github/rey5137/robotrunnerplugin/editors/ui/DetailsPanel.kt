@@ -45,10 +45,7 @@ class DetailsPanel : JPanel(MigLayout(LC().gridGap("10px", "10px").insets("0px")
         if (element is HasCommonField) {
             nameField.text = element.name
             nameField.select(0, 0)
-            statusLabel.icon = LayeredIcon(
-                if (element.status.isPassed) MyIcons.ElementPass else MyIcons.ElementFail,
-                if (element.status.isPassed) MyIcons.LabelPass else MyIcons.LabelFail,
-            ).scale(1.5F)
+            statusLabel.icon = if (element.status.isPassed) MyIcons.StatusPass else MyIcons.StatusFail
         }
 
         if(element is HasTagsField)

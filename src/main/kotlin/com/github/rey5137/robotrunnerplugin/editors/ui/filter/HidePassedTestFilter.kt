@@ -1,7 +1,6 @@
 package com.github.rey5137.robotrunnerplugin.editors.ui.filter
 
 import com.github.rey5137.robotrunnerplugin.editors.xml.Element
-import com.github.rey5137.robotrunnerplugin.editors.xml.KeywordElement
 import com.github.rey5137.robotrunnerplugin.editors.xml.TestElement
 
 class HidePassedTestFilter(override var isEnabled: Boolean) : ElementFilter {

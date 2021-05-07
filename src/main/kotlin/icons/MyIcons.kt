@@ -1,12 +1,12 @@
 package icons
 
 import com.intellij.openapi.util.IconLoader
+import com.intellij.ui.LayeredIcon
 
 object MyIcons {
 
     @JvmField
     val RunRobot = IconLoader.getIcon("/icons/runRobot.svg", javaClass)
-
 
     @JvmField
     val ElementPass = IconLoader.getIcon("/icons/elementPass.svg", javaClass)
@@ -55,4 +55,64 @@ object MyIcons {
 
     @JvmField
     val LabelTrace = IconLoader.getIcon("/icons/labelTrace.svg", javaClass)
+
+    @JvmField
+    val SuitePass = LayeredIcon(ElementPass, LabelSuite)
+
+    @JvmField
+    val SuiteFail = LayeredIcon(ElementFail, LabelSuite)
+
+    @JvmField
+    val TestPass = LayeredIcon(ElementPass, LabelTest)
+
+    @JvmField
+    val TestFail = LayeredIcon(ElementFail, LabelTest)
+
+    @JvmField
+    val SetupPass = LayeredIcon(ElementPass, LabelSetup)
+
+    @JvmField
+    val SetupFail = LayeredIcon(ElementFail, LabelSetup)
+
+    @JvmField
+    val TeardownPass = LayeredIcon(ElementPass2, LabelTeardown)
+
+    @JvmField
+    val TeardownFail = LayeredIcon(ElementFail2, LabelTeardown)
+
+    @JvmField
+    val KeywordPass = LayeredIcon(ElementPass2, LabelKeyword)
+
+    @JvmField
+    val KeywordFail = LayeredIcon(ElementFail2, LabelKeyword)
+
+    @JvmField
+    val ForPass = LayeredIcon(ElementPass, LabelFor)
+
+    @JvmField
+    val ForFail = LayeredIcon(ElementFail, LabelFor)
+
+    @JvmField
+    val ForitemPass = LayeredIcon(ElementPass, LabelForitem)
+
+    @JvmField
+    val ForitemFail = LayeredIcon(ElementFail, LabelForitem)
+
+    @JvmField
+    val StatusPass = LayeredIcon(ElementPass, LabelPass).scale(1.5F)
+
+    @JvmField
+    val StatusFail = LayeredIcon(ElementFail, LabelFail).scale(1.5F)
+
+    @JvmField
+    val LevelInfo = LayeredIcon(ElementPass, LabelInfo)
+
+    @JvmField
+    val LevelDebug = LayeredIcon(ElementPass, LabelDebug)
+
+    @JvmField
+    val LevelTrace = LayeredIcon(ElementPass, LabelTrace)
+
+    @JvmField
+    val LevelFail = LayeredIcon(ElementPass, LabelFail)
 }

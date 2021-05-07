@@ -3,6 +3,7 @@ package com.github.rey5137.robotrunnerplugin.editors
 import com.github.rey5137.robotrunnerplugin.editors.ui.DetailsPanel
 import com.github.rey5137.robotrunnerplugin.editors.ui.TreeNodeWrapper
 import com.github.rey5137.robotrunnerplugin.editors.ui.filter.HideKeywordFilter
+import com.github.rey5137.robotrunnerplugin.editors.ui.filter.HidePassedSuiteFilter
 import com.github.rey5137.robotrunnerplugin.editors.ui.filter.HidePassedTestFilter
 import com.github.rey5137.robotrunnerplugin.editors.xml.*
 import com.intellij.icons.AllIcons
@@ -37,6 +38,7 @@ class RobotOutputFileEditor(private val project: Project, private val srcFile: V
 
     private val elementFilters = mutableListOf(
         HideKeywordFilter(false),
+        HidePassedSuiteFilter(false),
         HidePassedTestFilter(false),
     )
 
@@ -266,41 +268,20 @@ class RobotOutputFileEditor(private val project: Project, private val srcFile: V
             }
             when (val userObject = value.userObject) {
                 is SuiteElement -> {
-                    icon =  LayeredIcon(
-                        if(userObject.status.isPassed) MyIcons.ElementPass else MyIcons.ElementFail,
-                        MyIcons.LabelSuite
-                    )
+                    icon =  if(userObject.status.isPassed) MyIcons.SuitePass else MyIcons.SuiteFail
                     append(userObject.name, SimpleTextAttributes.REGULAR_BOLD_ATTRIBUTES)
                 }
                 is TestElement -> {
-                    icon = LayeredIcon(
-                        if(userObject.status.isPassed) MyIcons.ElementPass else MyIcons.ElementFail,
-                        MyIcons.LabelTest
-                    )
+                    icon = if(userObject.status.isPassed) MyIcons.TestPass else MyIcons.TestFail
                     append(userObject.name, SimpleTextAttributes.REGULAR_BOLD_ATTRIBUTES)
                 }
                 is KeywordElement -> {
                     icon = when(userObject.type) {
-                        KEYWORD_TYPE_SETUP -> LayeredIcon(
-                            if(userObject.status.isPassed) MyIcons.ElementPass else MyIcons.ElementFail,
-                            MyIcons.LabelSetup
-                        )
-                        KEYWORD_TYPE_TEARDOWN -> LayeredIcon(
-                            if(userObject.status.isPassed) MyIcons.ElementPass2 else MyIcons.ElementFail2,
-                            MyIcons.LabelTeardown
-                        )
-                        KEYWORD_TYPE_FOR -> LayeredIcon(
-                            if(userObject.status.isPassed) MyIcons.ElementPass else MyIcons.ElementFail,
-                            MyIcons.LabelFor
-                        )
-                        KEYWORD_TYPE_FORITEM -> LayeredIcon(
-                            if(userObject.status.isPassed) MyIcons.ElementPass else MyIcons.ElementFail,
-                            MyIcons.LabelForitem
-                        )
-                        else -> LayeredIcon(
-                            if(userObject.status.isPassed) MyIcons.ElementPass2 else MyIcons.ElementFail2,
-                            MyIcons.LabelKeyword
-                        )
+                        KEYWORD_TYPE_SETUP -> if(userObject.status.isPassed) MyIcons.SetupPass else MyIcons.SetupFail
+                        KEYWORD_TYPE_TEARDOWN -> if(userObject.status.isPassed) MyIcons.TeardownPass else MyIcons.TeardownFail
+                        KEYWORD_TYPE_FOR -> if(userObject.status.isPassed) MyIcons.ForPass else MyIcons.ForFail
+                        KEYWORD_TYPE_FORITEM -> if(userObject.status.isPassed) MyIcons.ForitemPass else MyIcons.ForitemFail
+                        else -> if(userObject.status.isPassed) MyIcons.KeywordPass else MyIcons.KeywordFail
                     }
                     if(userObject.assigns.isNotEmpty()) {
                         append( userObject.assigns.joinToString(separator = ", "), SimpleTextAttributes.REGULAR_ATTRIBUTES)

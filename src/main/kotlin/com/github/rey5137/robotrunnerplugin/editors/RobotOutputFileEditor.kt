@@ -27,13 +27,13 @@ import com.intellij.util.ui.UIUtil
 import com.intellij.util.ui.tree.TreeUtil
 import icons.MyIcons
 import java.awt.BorderLayout
+import java.awt.Dimension
 import java.beans.PropertyChangeListener
 import javax.swing.JComponent
 import javax.swing.JPanel
 import javax.swing.JTree
-import javax.swing.tree.DefaultMutableTreeNode
-import javax.swing.tree.DefaultTreeModel
-import javax.swing.tree.TreePath
+import javax.swing.plaf.basic.BasicTreeUI
+import javax.swing.tree.*
 
 
 class RobotOutputFileEditor(private val project: Project, private val srcFile: VirtualFile) : UserDataHolderBase(),
@@ -48,7 +48,7 @@ class RobotOutputFileEditor(private val project: Project, private val srcFile: V
     )
 
     private val treeModel = DefaultTreeModel(null)
-    private val tree = Tree(treeModel)
+    private val tree = MyTree(treeModel)
     private val detailsPanel = DetailsPanel()
     private val myComponent = buildComponent()
 
@@ -94,6 +94,7 @@ class RobotOutputFileEditor(private val project: Project, private val srcFile: V
     }
 
     private fun buildLeftPanel(): JPanel {
+        tree.ui = MyTreeUI()
         tree.isRootVisible = false
         tree.showsRootHandles = true
         tree.cellRenderer = MyTreeCellRenderer()
@@ -155,7 +156,10 @@ class RobotOutputFileEditor(private val project: Project, private val srcFile: V
             })
             .addExtraAction(object : AnActionButton("Expand All", AllIcons.Actions.Expandall) {
                 override fun actionPerformed(e: AnActionEvent) {
-                    TreeUtil.expandAll(tree)
+                    tree.ui = null
+                    TreeUtil.expandAll(tree) {
+                        tree.ui = MyTreeUI()
+                    }
                 }
             })
         val panel = JPanel(BorderLayout())
@@ -196,7 +200,9 @@ class RobotOutputFileEditor(private val project: Project, private val srcFile: V
         treeModel.reload()
 
         if(keepExpanded) {
+            tree.ui = null
             TreeUtil.restoreExpandedPaths(tree, expandedPaths)
+            tree.ui = MyTreeUI()
             restoreSelectionNode(selectedPaths)
         } else {
             TreeUtil.promiseExpand(tree) { path ->
@@ -317,6 +323,20 @@ class RobotOutputFileEditor(private val project: Project, private val srcFile: V
                     }
                 }
             }
+        }
+
+    }
+
+    internal class MyTree(treeModel: TreeModel): Tree(treeModel) {
+        override fun getPreferredSize(): Dimension {
+            return Dimension(1000, rowCount * rowHeight + 2)
+        }
+    }
+
+    internal class MyTreeUI : BasicTreeUI() {
+
+        override fun createLayoutCache(): AbstractLayoutCache {
+            return FixedHeightLayoutCache()
         }
 
     }

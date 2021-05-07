@@ -1,6 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<svg width="16" height="16" viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg">
-  <circle style="fill: rgb(173, 108, 121);" cx="64" cy="64" r="48"/>
-  <path d="M 72.775 88.576 L 61.875 69.526 L 56.815 75.076 L 56.815 88.576 L 44.475 88.576 L 44.475 37.386 L 56.815 37.386 L 56.815 59.956 L 61.105 53.456 L 72.145 37.386 L 87.395 37.386 L 70.105 60.026 L 87.395 88.576 L 72.775 88.576 Z" transform="matrix(1, 0, 0, 1, 0, 0)" style="fill: rgb(255, 255, 255); white-space: pre;"/>
-  <circle style="fill: rgb(252, 52, 52);" cx="87.377" cy="88.754" r="32"/>
-</svg>

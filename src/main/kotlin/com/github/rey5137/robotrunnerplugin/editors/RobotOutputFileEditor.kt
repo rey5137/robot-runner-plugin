@@ -267,19 +267,42 @@ class RobotOutputFileEditor(private val project: Project, private val srcFile: V
             }
             when (val userObject = value.userObject) {
                 is SuiteElement -> {
-                    val hasChildSuite = userObject.children.count { it is SuiteElement } > 0
-                    icon = if(hasChildSuite)
-                        if(userObject.status.isPassed) MyIcons.FolderPass else MyIcons.FolderFail
-                    else
-                        if(userObject.status.isPassed) MyIcons.SuitePass else MyIcons.SuiteFail
+                    icon =  LayeredIcon(
+                        if(userObject.status.isPassed) MyIcons.ElementPass else MyIcons.ElementFail,
+                        MyIcons.LabelSuite
+                    )
                     append(userObject.name, SimpleTextAttributes.REGULAR_BOLD_ATTRIBUTES)
                 }
                 is TestElement -> {
-                    icon = if(userObject.status.isPassed) MyIcons.TestPass else MyIcons.TestFail
+                    icon = LayeredIcon(
+                        if(userObject.status.isPassed) MyIcons.ElementPass else MyIcons.ElementFail,
+                        MyIcons.LabelTest
+                    )
                     append(userObject.name, SimpleTextAttributes.REGULAR_BOLD_ATTRIBUTES)
                 }
                 is KeywordElement -> {
-                    icon = if(userObject.status.isPassed) MyIcons.KeywordPass else MyIcons.KeywordFail
+                    icon = when(userObject.type) {
+                        KEYWORD_TYPE_SETUP -> LayeredIcon(
+                            if(userObject.status.isPassed) MyIcons.ElementPass else MyIcons.ElementFail,
+                            MyIcons.LabelSetup
+                        )
+                        KEYWORD_TYPE_TEARDOWN -> LayeredIcon(
+                            if(userObject.status.isPassed) MyIcons.ElementPass2 else MyIcons.ElementFail2,
+                            MyIcons.LabelTeardown
+                        )
+                        KEYWORD_TYPE_FOR -> LayeredIcon(
+                            if(userObject.status.isPassed) MyIcons.ElementPass else MyIcons.ElementFail,
+                            MyIcons.LabelFor
+                        )
+                        KEYWORD_TYPE_FORITEM -> LayeredIcon(
+                            if(userObject.status.isPassed) MyIcons.ElementPass else MyIcons.ElementFail,
+                            MyIcons.LabelForitem
+                        )
+                        else -> LayeredIcon(
+                            if(userObject.status.isPassed) MyIcons.ElementPass2 else MyIcons.ElementFail2,
+                            MyIcons.LabelKeyword
+                        )
+                    }
                     if(userObject.assigns.isNotEmpty()) {
                         append( userObject.assigns.joinToString(separator = ", "), SimpleTextAttributes.REGULAR_ATTRIBUTES)
                         append(" = ", SimpleTextAttributes.REGULAR_BOLD_ATTRIBUTES)

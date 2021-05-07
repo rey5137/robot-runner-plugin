@@ -7,45 +7,52 @@ object MyIcons {
     @JvmField
     val RunRobot = IconLoader.getIcon("/icons/runRobot.svg", javaClass)
 
-    @JvmField
-    val StatusPass = IconLoader.getIcon("/icons/statusPass.svg", javaClass)
 
     @JvmField
-    val StatusFail = IconLoader.getIcon("/icons/statusFail.svg", javaClass)
+    val ElementPass = IconLoader.getIcon("/icons/elementPass.svg", javaClass)
 
     @JvmField
-    val FolderPass = IconLoader.getIcon("/icons/folderPass.svg", javaClass)
+    val ElementFail = IconLoader.getIcon("/icons/elementFail.svg", javaClass)
 
     @JvmField
-    val FolderFail = IconLoader.getIcon("/icons/folderFail.svg", javaClass)
+    val ElementPass2 = IconLoader.getIcon("/icons/elementPass2.svg", javaClass)
 
     @JvmField
-    val SuitePass = IconLoader.getIcon("/icons/suitePass.svg", javaClass)
+    val ElementFail2 = IconLoader.getIcon("/icons/elementFail2.svg", javaClass)
 
     @JvmField
-    val SuiteFail = IconLoader.getIcon("/icons/suiteFail.svg", javaClass)
+    val LabelSuite = IconLoader.getIcon("/icons/labelSuite.svg", javaClass)
 
     @JvmField
-    val TestPass = IconLoader.getIcon("/icons/testPass.svg", javaClass)
+    val LabelTest = IconLoader.getIcon("/icons/labelTest.svg", javaClass)
 
     @JvmField
-    val TestFail = IconLoader.getIcon("/icons/testFail.svg", javaClass)
+    val LabelKeyword = IconLoader.getIcon("/icons/labelKeyword.svg", javaClass)
 
     @JvmField
-    val KeywordPass = IconLoader.getIcon("/icons/keywordPass.svg", javaClass)
+    val LabelSetup = IconLoader.getIcon("/icons/labelSetup.svg", javaClass)
 
     @JvmField
-    val KeywordFail = IconLoader.getIcon("/icons/keywordFail.svg", javaClass)
+    val LabelTeardown = IconLoader.getIcon("/icons/labelTeardown.svg", javaClass)
 
     @JvmField
-    val LevelInfo = IconLoader.getIcon("/icons/levelInfo.svg", javaClass)
+    val LabelFor = IconLoader.getIcon("/icons/labelFor.svg", javaClass)
 
     @JvmField
-    val LevelDebug = IconLoader.getIcon("/icons/levelDebug.svg", javaClass)
+    val LabelForitem = IconLoader.getIcon("/icons/labelForitem.svg", javaClass)
 
     @JvmField
-    val LevelTrace = IconLoader.getIcon("/icons/levelTrace.svg", javaClass)
+    val LabelPass = IconLoader.getIcon("/icons/labelPass.svg", javaClass)
 
     @JvmField
-    val LevelFail = IconLoader.getIcon("/icons/levelFail.svg", javaClass)
+    val LabelFail = IconLoader.getIcon("/icons/labelFail.svg", javaClass)
+
+    @JvmField
+    val LabelInfo = IconLoader.getIcon("/icons/labelInfo.svg", javaClass)
+
+    @JvmField
+    val LabelDebug = IconLoader.getIcon("/icons/labelDebug.svg", javaClass)
+
+    @JvmField
+    val LabelTrace = IconLoader.getIcon("/icons/labelTrace.svg", javaClass)
 }

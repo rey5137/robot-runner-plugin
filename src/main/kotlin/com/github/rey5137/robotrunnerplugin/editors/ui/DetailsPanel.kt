@@ -1,6 +1,7 @@
 package com.github.rey5137.robotrunnerplugin.editors.ui
 
 import com.github.rey5137.robotrunnerplugin.editors.xml.*
+import com.intellij.ui.LayeredIcon
 import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBTabbedPane
 import com.intellij.ui.components.JBTextField
@@ -23,11 +24,11 @@ class DetailsPanel : JPanel(MigLayout(LC().gridGap("10px", "10px").insets("0px")
     private val miscPanel = MiscPanel()
 
     init {
-        add(statusLabel, CC().cell(0, 0).minWidth("32px"))
+        add(statusLabel, CC().cell(0, 0).minWidth("48px"))
         add(nameField, CC().cell(0, 0).growX().pushX(1F))
         nameField.isEditable = false
 
-        add(JBLabel("Tags"), CC().cell(0, 1).minWidth("32px"))
+        add(JBLabel("Tags"), CC().cell(0, 1).minWidth("48px"))
         add(tagsField, CC().cell(0, 1).growX().pushX(1F))
         tagsField.isEditable = false
 
@@ -44,7 +45,10 @@ class DetailsPanel : JPanel(MigLayout(LC().gridGap("10px", "10px").insets("0px")
         if (element is HasCommonField) {
             nameField.text = element.name
             nameField.select(0, 0)
-            statusLabel.icon = if (element.status.isPassed) MyIcons.StatusPass else MyIcons.StatusFail
+            statusLabel.icon = LayeredIcon(
+                if (element.status.isPassed) MyIcons.ElementPass else MyIcons.ElementFail,
+                if (element.status.isPassed) MyIcons.LabelPass else MyIcons.LabelFail,
+            ).scale(1.5F)
         }
 
         if(element is HasTagsField)

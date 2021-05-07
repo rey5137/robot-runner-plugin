@@ -1,7 +1,6 @@
 package com.github.rey5137.robotrunnerplugin.editors
 
 import com.github.rey5137.robotrunnerplugin.editors.ui.DetailsPanel
-import com.github.rey5137.robotrunnerplugin.editors.ui.filter.ElementFilter
 import com.github.rey5137.robotrunnerplugin.editors.ui.TreeNodeWrapper
 import com.github.rey5137.robotrunnerplugin.editors.ui.filter.HideKeywordFilter
 import com.github.rey5137.robotrunnerplugin.editors.ui.filter.HidePassedTestFilter
@@ -219,8 +218,14 @@ class RobotOutputFileEditor(private val project: Project, private val srcFile: V
 
     private fun SuiteElement.toNode(oldNodeWrapper: TreeNodeWrapper? = null): TreeNodeWrapper {
         val children = mutableListOf<TreeNodeWrapper>()
-        suites.forEachIndexed { index, suite -> children.add(suite.toNode(oldNodeWrapper.childAt(index)))  }
-        tests.forEachIndexed { index, test -> children.add(test.toNode(oldNodeWrapper.childAt(suites.size + index))) }
+        this.children.forEachIndexed { index, element ->
+            if(element is SuiteElement)
+                children.add(element.toNode(oldNodeWrapper.childAt(index)))
+            else if(element is TestElement)
+                children.add(element.toNode(oldNodeWrapper.childAt(index)))
+            else if(element is KeywordElement)
+                children.add(element.toNode(oldNodeWrapper.childAt(index)))
+        }
         return TreeNodeWrapper(node = oldNodeWrapper.copyNode(this), children = children)
     }
 
@@ -262,10 +267,11 @@ class RobotOutputFileEditor(private val project: Project, private val srcFile: V
             }
             when (val userObject = value.userObject) {
                 is SuiteElement -> {
-                    icon = if(userObject.suites.isEmpty())
-                        if(userObject.status.isPassed) MyIcons.SuitePass else MyIcons.SuiteFail
-                    else
+                    val hasChildSuite = userObject.children.count { it is SuiteElement } > 0
+                    icon = if(hasChildSuite)
                         if(userObject.status.isPassed) MyIcons.FolderPass else MyIcons.FolderFail
+                    else
+                        if(userObject.status.isPassed) MyIcons.SuitePass else MyIcons.SuiteFail
                     append(userObject.name, SimpleTextAttributes.REGULAR_BOLD_ATTRIBUTES)
                 }
                 is TestElement -> {

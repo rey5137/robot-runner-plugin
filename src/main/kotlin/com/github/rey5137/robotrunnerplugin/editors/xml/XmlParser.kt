@@ -118,7 +118,7 @@ private fun StartElement.toKeywordElement() = KeywordElement(
     name = getAttributeByName(QName(TAG_NAME))?.value ?: "",
     library = getAttributeByName(QName(TAG_LIBRARY))?.value ?: "",
     document = getAttributeByName(QName(TAG_DOC))?.value ?: "",
-    type = getAttributeByName(QName(TAG_TYPE))?.value ?: "",
+    type = getAttributeByName(QName(TAG_TYPE))?.value?.toUpperCase() ?: "",
 )
 
 private fun StartElement.toStatusElement() = StatusElement(
@@ -135,19 +135,20 @@ private fun StartElement.toMessageElement(index: Long) = MessageElement(
 
 private fun Element.addSuite(suite: SuiteElement) {
     when (this) {
-        is SuiteElement -> suites.add(suite)
+        is SuiteElement -> children.add(suite)
         is RobotElement -> suites.add(suite)
     }
 }
 
 private fun Element.addTest(test: TestElement) {
     when (this) {
-        is SuiteElement -> tests.add(test)
+        is SuiteElement -> children.add(test)
     }
 }
 
 private fun Element.addKeyword(keyword: KeywordElement) {
     when (this) {
+        is SuiteElement -> children.add(keyword)
         is TestElement -> keywords.add(keyword)
         is KeywordElement -> keywords.add(keyword)
     }

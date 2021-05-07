@@ -6,15 +6,7 @@ fun List<String>.parseAssignments(variable: Variable<*>?): List<Assignment<*>> {
     if(this.isEmpty())
         return emptyList()
     if(variable == null)
-        return this.map {
-            Assignment(
-                name = it.getAssignmentName(),
-                value = null,
-                dataType = DataType.NONE,
-                assignmentType = it.getAssignmentType(),
-                hasValue = false
-            )
-        }
+        return this.map { it.toNoValueAssignment() }
     if(size == 1)
         return listOf(first().toAssignment(variable))
     if(variable.type != DataType.ARRAY)
@@ -28,6 +20,10 @@ fun List<String>.parseAssignments(variable: Variable<*>?): List<Assignment<*>> {
         val name = names.first()
         if(name.getAssignmentType() == AssignmentType.ARRAY)
             break
+        if(variables.isEmpty()) {
+            result.addAll(names.map { it.toNoValueAssignment() })
+            return result
+        }
         result.add(name.toAssignment(variables.first()))
         names.removeAt(0)
         variables.removeAt(0)
@@ -58,6 +54,16 @@ fun List<String>.parseAssignments(variable: Variable<*>?): List<Assignment<*>> {
     }
 
     return result
+}
+
+private fun String.toNoValueAssignment(): Assignment<*> {
+    return Assignment(
+        name = getAssignmentName(),
+        value = null,
+        dataType = DataType.NONE,
+        assignmentType = getAssignmentType(),
+        hasValue = false
+    )
 }
 
 private fun String.toAssignment(variable: Variable<*>): Assignment<*> {

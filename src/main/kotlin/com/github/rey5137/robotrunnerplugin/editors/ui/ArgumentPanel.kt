@@ -13,8 +13,6 @@ import javax.swing.JTable
 
 class ArgumentPanel : JPanel(BorderLayout()) {
 
-    lateinit var robotElement: RobotElement
-
     private val argumentModel = ArgumentModel()
     private val argumentTable = ArgumentTable(argumentModel).apply {
         cellSelectionEnabled = true
@@ -54,7 +52,7 @@ class ArgumentPanel : JPanel(BorderLayout()) {
     private fun ArgumentModel.populateModel(element: KeywordElement) {
         val message = element.messages.asSequence()
             .filter { it.level == "TRACE" }
-            .mapNotNull { robotElement.messageMap[it.valueIndex] }
+            .mapNotNull { it.value() }
             .find { it.isArgumentMessage() }
         if (message == null)
             setArguments(
@@ -76,12 +74,35 @@ class ArgumentPanel : JPanel(BorderLayout()) {
     private fun AssignmentModel.populateModel(element: KeywordElement) {
         val assigns = element.assigns
 
-        if (assigns.isEmpty())
-            setAssignments(emptyList())
-        else {
+        if (assigns.isEmpty()) {
             val message = element.messages.asSequence()
                 .filter { it.level == "TRACE" }
-                .mapNotNull { robotElement.messageMap[it.valueIndex] }
+                .mapNotNull { it.value() }
+                .find { it.isReturnMessage() }
+
+            try {
+                val variable = message?.parseReturn()
+                if(variable == null || variable == VARIABLE_EMPTY)
+                    setAssignments(emptyList())
+                else
+                    setAssignments(
+                        listOf(
+                            Assignment(
+                                name = "",
+                                value = variable.value,
+                                dataType = variable.type,
+                                assignmentType = AssignmentType.SINGLE
+                            )
+                        )
+                    )
+            } catch (ex: Exception) {
+                ex.printStackTrace()
+                setAssignments(emptyList())
+            }
+        } else {
+            val message = element.messages.asSequence()
+                .filter { it.level == "TRACE" }
+                .mapNotNull { it.value() }
                 .find { it.isReturnMessage() }
 
             try {

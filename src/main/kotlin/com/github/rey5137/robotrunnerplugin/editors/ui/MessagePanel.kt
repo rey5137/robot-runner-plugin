@@ -22,8 +22,6 @@ import javax.swing.ListSelectionModel
 
 class MessagePanel : JPanel(BorderLayout()) {
 
-    lateinit var robotElement: RobotElement
-
     private val messageModel = DefaultListModel<MessageElement>()
     private val messageList = JBList(messageModel).apply {
         cellRenderer = MessageCellRender()
@@ -129,7 +127,7 @@ class MessagePanel : JPanel(BorderLayout()) {
 
     private fun showMessageDetail(messageElement: MessageElement?) {
         selectedMessageElement = messageElement
-        messageDetail.text = if (messageElement != null) robotElement.messageMap[messageElement.valueIndex] else ""
+        messageDetail.text = messageElement?.value() ?: ""
         messageDetail.caretPosition = 0
         messageDetail.revalidate()
     }

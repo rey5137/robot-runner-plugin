@@ -173,7 +173,6 @@ class RobotOutputFileEditor(private val project: Project, private val srcFile: V
         cleanUp()
         val keepExpanded = robotTreeNodeWrapper != null
         val rootNodeWrapper = srcFile.parseXml().toNode(robotTreeNodeWrapper)
-        detailsPanel.setRobotElement(rootNodeWrapper.node.userObject as RobotElement)
 
         robotTreeNodeWrapper = rootNodeWrapper
         if(treeModel.root == null)

@@ -1,7 +1,6 @@
 package com.github.rey5137.robotrunnerplugin.editors.ui
 
 import com.github.rey5137.robotrunnerplugin.editors.xml.*
-import com.intellij.ui.LayeredIcon
 import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBTabbedPane
 import com.intellij.ui.components.JBTextField
@@ -33,12 +32,6 @@ class DetailsPanel : JPanel(MigLayout(LC().gridGap("10px", "10px").insets("0px")
         tagsField.isEditable = false
 
         add(tabPane, CC().cell(0, 2).grow().push(1F, 1F).gapBottom("10px").gapRight("10px"))
-    }
-
-    fun setRobotElement(robotElement: RobotElement) {
-        argumentPanel.robotElement = robotElement
-        messagePanel.robotElement = robotElement
-        miscPanel.robotElement = robotElement
     }
 
     fun showDetails(element: Element) {

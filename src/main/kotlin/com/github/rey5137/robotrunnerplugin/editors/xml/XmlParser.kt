@@ -13,6 +13,8 @@ fun VirtualFile.parseXml(): RobotElement {
     lateinit var robotElement: RobotElement
     var skipCount = 0
     var messageIndex = 0L
+    var docIndex = 0L
+    val keywordMap = mutableMapOf<String, Int>()
     while (reader.hasNext()) {
         val nextEvent = reader.nextEvent()
         if (nextEvent.isStartElement) {
@@ -30,13 +32,13 @@ fun VirtualFile.parseXml(): RobotElement {
                     TAG_TEST -> startElement.toTestElement().apply {
                         currentElement.addTest(this)
                     }
-                    TAG_KEYWORD -> startElement.toKeywordElement().apply {
+                    TAG_KEYWORD -> startElement.toKeywordElement(keywordMap, docIndex++, robotElement).apply {
                         currentElement.addKeyword(this)
                     }
                     TAG_STATUS -> startElement.toStatusElement().apply {
                         currentElement.addStatus(this)
                     }
-                    TAG_MESSAGE -> startElement.toMessageElement(messageIndex++).apply {
+                    TAG_MESSAGE -> startElement.toMessageElement(messageIndex++, robotElement).apply {
                         currentElement.addMessage(this)
                     }
                     TAG_ARGUMENTS -> ArgumentsElement()
@@ -114,12 +116,21 @@ private fun StartElement.toTestElement() = TestElement(
     name = getAttributeByName(QName(TAG_NAME))?.value ?: "",
 )
 
-private fun StartElement.toKeywordElement() = KeywordElement(
-    name = getAttributeByName(QName(TAG_NAME))?.value ?: "",
-    library = getAttributeByName(QName(TAG_LIBRARY))?.value ?: "",
-    document = getAttributeByName(QName(TAG_DOC))?.value ?: "",
-    type = getAttributeByName(QName(TAG_TYPE))?.value?.toUpperCase() ?: "",
-)
+private fun StartElement.toKeywordElement(keywordMap: MutableMap<String, Int>, docIndex: Long, robotElement: RobotElement): KeywordElement {
+    val name = getAttributeByName(QName(TAG_NAME))?.value ?: ""
+    val index = keywordMap[name] ?: keywordMap.size.apply {
+        keywordMap[name] = this
+        robotElement.keywordNames.add(name)
+    }
+    robotElement.docMap[docIndex] = getAttributeByName(QName(TAG_DOC))?.value ?: ""
+    return KeywordElement(
+        nameIndex = index,
+        library = getAttributeByName(QName(TAG_LIBRARY))?.value ?: "",
+        docIndex = docIndex,
+        type = getAttributeByName(QName(TAG_TYPE))?.value?.toUpperCase() ?: "",
+        robotElement = robotElement,
+    )
+}
 
 private fun StartElement.toStatusElement() = StatusElement(
     status = getAttributeByName(QName(TAG_STATUS))?.value ?: "",
@@ -127,10 +138,11 @@ private fun StartElement.toStatusElement() = StatusElement(
     endTime = getAttributeByName(QName(TAG_END_TIME))?.value ?: "",
 )
 
-private fun StartElement.toMessageElement(index: Long) = MessageElement(
+private fun StartElement.toMessageElement(index: Long, robotElement: RobotElement) = MessageElement(
     timestamp = getAttributeByName(QName(TAG_TIMESTAMP))?.value ?: "",
     level = getAttributeByName(QName(TAG_LEVEL))?.value?.toUpperCase() ?: "",
     valueIndex = index,
+    robotElement = robotElement
 )
 
 private fun Element.addSuite(suite: SuiteElement) {

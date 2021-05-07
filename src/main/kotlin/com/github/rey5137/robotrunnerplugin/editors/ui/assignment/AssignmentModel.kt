@@ -19,6 +19,7 @@ class AssignmentModel : AbstractTableModel() {
     override fun getColumnCount(): Int = 2
 
     override fun isCellEditable(rowIndex: Int, columnIndex: Int): Boolean = when(columnIndex) {
+        INDEX_ASSIGNMENT -> assignments[rowIndex].name.isNotEmpty()
         INDEX_VALUE -> assignments[rowIndex].hasValue
         else -> true
     }

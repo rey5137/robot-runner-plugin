@@ -13,4 +13,10 @@ data class RobotElement(
 ) : Element {
 
     val messageMap: ConcurrentMap<Long, String> by lazy { db.hashMap("message", Serializer.LONG, Serializer.STRING).createOrOpen() }
+
+    val keywordNames = mutableListOf<String>()
+
+    val docMap: ConcurrentMap<Long, String> by lazy { db.hashMap("doc", Serializer.LONG, Serializer.STRING).createOrOpen() }
+
 }
+

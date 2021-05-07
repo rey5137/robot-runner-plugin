@@ -9,8 +9,6 @@ import javax.swing.JPanel
 
 class MiscPanel : JPanel(BorderLayout()) {
 
-    lateinit var robotElement: RobotElement
-
     private val miscDetail = JBTextArea().apply {
         lineWrap = true
         wrapStyleWord = true
@@ -41,7 +39,7 @@ class MiscPanel : JPanel(BorderLayout()) {
             val failMessage = element.messages.firstOrNull { it.level == LOG_LEVEL_FAIL }
             if(failMessage != null) {
                 miscDetail.append("Fail reason: ")
-                miscDetail.append(robotElement.messageMap[failMessage.valueIndex])
+                miscDetail.append(failMessage.value())
                 miscDetail.append("\n")
             }
         }

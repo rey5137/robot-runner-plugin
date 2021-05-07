@@ -4,5 +4,9 @@ data class MessageElement(
     var timestamp: String = "",
     var level: String = "",
     var valueIndex: Long,
-    var title: String = ""
-) : Element
+    var title: String = "",
+    val robotElement: RobotElement,
+) : Element {
+
+    fun value() = robotElement.messageMap[valueIndex]
+}

@@ -8,25 +8,13 @@ import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory
 import com.intellij.openapi.options.SettingsEditor
 import com.intellij.openapi.projectRoots.ProjectJdkTable
 import com.intellij.openapi.projectRoots.Sdk
-import com.intellij.openapi.ui.ComboBox
-import com.intellij.openapi.ui.DialogPanel
-import com.intellij.openapi.ui.Messages
-import com.intellij.openapi.ui.TextFieldWithBrowseButton
-import com.intellij.openapi.util.Disposer
-import com.intellij.openapi.util.Pair
+import com.intellij.openapi.ui.*
 import com.intellij.ui.SimpleListCellRenderer
 import com.intellij.ui.ToolbarDecorator
-import com.intellij.ui.components.JBCheckBox
-import com.intellij.ui.components.JBList
-import com.intellij.ui.components.JBTabbedPane
-import com.intellij.ui.components.JBTextField
+import com.intellij.ui.components.*
 import com.intellij.ui.layout.CCFlags
 import com.intellij.ui.layout.panel
 import com.intellij.ui.table.JBTable
-import com.intellij.ui.tabs.JBTabsFactory
-import com.intellij.ui.tabs.TabInfo
-import java.awt.BorderLayout
-import java.awt.Color
 import java.awt.Dimension
 import javax.swing.*
 import javax.swing.table.DefaultTableModel
@@ -301,9 +289,12 @@ class RobotSettingsEditor : SettingsEditor<RobotRunConfiguration>() {
         val decorator = ToolbarDecorator.createDecorator(list)
         decorator.setPreferredSize(Dimension(20000, 50))
         decorator.setAddAction {
-            val name = Messages.showMultilineInputDialog(null, addMessage, title, null, null, null) ?: ""
+            val (name, wrapWord) = showMultilineInput(addMessage, title)
             if(name.isNotBlank())
-                model.addAll(name.split("\n").filter { it.isNotBlank() })
+                model.addAll(name.split("\n")
+                    .filter { it.isNotBlank() }
+                    .map { if(wrapWord) "*$it*" else it }
+                )
         }
         decorator.setEditAction {
             val name = Messages.showInputDialog(null, editMessage, title, null, list.selectedValue, null) ?: ""
@@ -314,6 +305,32 @@ class RobotSettingsEditor : SettingsEditor<RobotRunConfiguration>() {
         decorator.disableUpAction()
         decorator.disableDownAction()
         return decorator.createPanel()
+    }
+
+    private fun showMultilineInput(message: String, title: String): Pair<String, Boolean> {
+        val builder = DialogBuilder()
+        val textArea = JBTextArea(5, 30)
+        lateinit var checkbox: JBCheckBox
+        val panel = panel {
+            row { label(message) }
+            row {
+                JBScrollPane(textArea).apply {
+                    minimumSize = Dimension(textArea.preferredSize.width, textArea.preferredSize.height + 5)
+                }()
+            }
+            row {
+                checkbox = checkBox(MyBundle.message("robot.run.configuration.label.wrap-value")).component
+            }
+        }
+        builder.setTitle(title)
+        builder.setCenterPanel(panel)
+        builder.removeAllActions()
+        builder.addOkAction()
+        builder.addCancelAction()
+        return if(builder.show() == DialogWrapper.OK_EXIT_CODE)
+            textArea.text to checkbox.isSelected
+        else
+            "" to false
     }
 
     private fun variablesPanel(model: DefaultTableModel): JPanel {

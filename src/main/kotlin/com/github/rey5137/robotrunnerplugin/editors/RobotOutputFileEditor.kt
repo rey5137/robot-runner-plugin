@@ -219,12 +219,11 @@ class RobotOutputFileEditor(private val project: Project, private val srcFile: V
     private fun SuiteElement.toNode(oldNodeWrapper: TreeNodeWrapper? = null): TreeNodeWrapper {
         val children = mutableListOf<TreeNodeWrapper>()
         this.children.forEachIndexed { index, element ->
-            if(element is SuiteElement)
-                children.add(element.toNode(oldNodeWrapper.childAt(index)))
-            else if(element is TestElement)
-                children.add(element.toNode(oldNodeWrapper.childAt(index)))
-            else if(element is KeywordElement)
-                children.add(element.toNode(oldNodeWrapper.childAt(index)))
+            when (element) {
+                is SuiteElement -> children.add(element.toNode(oldNodeWrapper.childAt(index)))
+                is TestElement -> children.add(element.toNode(oldNodeWrapper.childAt(index)))
+                is KeywordElement -> children.add(element.toNode(oldNodeWrapper.childAt(index)))
+            }
         }
         return TreeNodeWrapper(node = oldNodeWrapper.copyNode(this), children = children)
     }

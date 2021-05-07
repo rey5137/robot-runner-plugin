@@ -7,7 +7,10 @@ import com.github.rey5137.robotrunnerplugin.editors.ui.filter.HidePassedSuiteFil
 import com.github.rey5137.robotrunnerplugin.editors.ui.filter.HidePassedTestFilter
 import com.github.rey5137.robotrunnerplugin.editors.xml.*
 import com.intellij.icons.AllIcons
-import com.intellij.openapi.actionSystem.*
+import com.intellij.openapi.actionSystem.ActionToolbarPosition
+import com.intellij.openapi.actionSystem.AnActionEvent
+import com.intellij.openapi.actionSystem.DefaultActionGroup
+import com.intellij.openapi.actionSystem.ToggleAction
 import com.intellij.openapi.fileEditor.FileEditor
 import com.intellij.openapi.fileEditor.FileEditorLocation
 import com.intellij.openapi.fileEditor.FileEditorState
@@ -16,9 +19,11 @@ import com.intellij.openapi.ui.popup.JBPopupFactory
 import com.intellij.openapi.util.UserDataHolderBase
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.ui.*
+import com.intellij.ui.tree.TreeVisitor
 import com.intellij.ui.treeStructure.Tree
 import com.intellij.util.ui.JBDimension
 import com.intellij.util.ui.JBUI
+import com.intellij.util.ui.UIUtil
 import com.intellij.util.ui.tree.TreeUtil
 import icons.MyIcons
 import java.awt.BorderLayout
@@ -53,7 +58,7 @@ class RobotOutputFileEditor(private val project: Project, private val srcFile: V
 
     override fun getComponent(): JComponent = myComponent
 
-    override fun getPreferredFocusedComponent(): JComponent? = tree
+    override fun getPreferredFocusedComponent(): JComponent = tree
 
     override fun getName(): String = "Robot Result"
 
@@ -103,6 +108,9 @@ class RobotOutputFileEditor(private val project: Project, private val srcFile: V
                 else -> o.toString()
             }
         }
+
+        val component = tree.cellRenderer.getTreeCellRendererComponent(tree, "", false, false, false, 0, false)
+        tree.rowHeight = component.preferredSize.height + 2
 
         tree.addTreeSelectionListener {
             val selectionPath = tree.selectionPath
@@ -190,8 +198,18 @@ class RobotOutputFileEditor(private val project: Project, private val srcFile: V
         if(keepExpanded) {
             TreeUtil.restoreExpandedPaths(tree, expandedPaths)
             restoreSelectionNode(selectedPaths)
-        } else
-            TreeUtil.expandAll(tree) { restoreSelectionNode(selectedPaths) }
+        } else {
+            TreeUtil.promiseExpand(tree) { path ->
+                val element = (path.lastPathComponent as DefaultMutableTreeNode).userObject as Element
+                if (element is KeywordElement || element is TestElement)
+                    TreeVisitor.Action.SKIP_CHILDREN
+                else
+                    TreeVisitor.Action.CONTINUE
+            }
+            UIUtil.invokeLaterIfNeeded {
+                restoreSelectionNode(selectedPaths)
+            }
+        }
     }
 
     private fun restoreSelectionNode(paths: Array<TreePath>?) {

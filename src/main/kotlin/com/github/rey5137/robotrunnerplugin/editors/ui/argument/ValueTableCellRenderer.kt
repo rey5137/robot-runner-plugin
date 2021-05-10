@@ -3,7 +3,6 @@ package com.github.rey5137.robotrunnerplugin.editors.ui.argument
 import com.github.rey5137.robotrunnerplugin.editors.xml.ARGUMENT_EMPTY
 import com.github.rey5137.robotrunnerplugin.editors.xml.Argument
 import com.github.rey5137.robotrunnerplugin.editors.xml.DataType
-import com.github.rey5137.robotrunnerplugin.editors.xml.Variable
 import com.intellij.ui.ColoredTableCellRenderer
 import com.intellij.ui.SimpleTextAttributes
 import com.intellij.ui.table.JBTable
@@ -12,7 +11,7 @@ import java.awt.Component
 import javax.swing.JTable
 import javax.swing.table.TableCellRenderer
 
-class ValueTableCellRenderer(private val argumentModel: ArgumentModel) : TableCellRenderer {
+class ValueTableCellRenderer(private val levelPadding: Int, private val argumentModel: ArgumentModel) : TableCellRenderer {
 
     private val stringCellRenderer = object : ColoredTableCellRenderer() {
         override fun customizeCellRenderer(
@@ -41,33 +40,29 @@ class ValueTableCellRenderer(private val argumentModel: ArgumentModel) : TableCe
         }
     }
 
-    private val variableModel = VariableModel()
-    private val table = JBTable(variableModel)
-
-    init {
-        table.columnModel.getColumn(0).cellRenderer = VariableCellRender(variableModel)
+    private val table = JBTable().apply {
+        setDefaultRenderer(Any::class.java, VariableCellRender(levelPadding))
     }
 
     override fun getTableCellRendererComponent(
-        table: JTable?,
+        table: JTable,
         value: Any?,
         isSelected: Boolean,
         hasFocus: Boolean,
         row: Int,
         column: Int
     ): Component {
-        val argument = argumentModel.getArgument(row)
-        val component = when(argument.dataType) {
-            DataType.DICT, DataType.ARRAY -> getCellRendererComponent(argument.value as List<Variable<*>>, isSelected)
-            else -> stringCellRenderer.getTableCellRendererComponent(table, argument, isSelected, hasFocus, row, column)
-        }
-        table?.setRowHeight(row, component.preferredSize.height)
+        val variableModel = argumentModel.getVariableModel(row)
+        val component = if(variableModel == null)
+            stringCellRenderer.getTableCellRendererComponent(table, argumentModel.getArgument(row), isSelected, hasFocus, row, column)
+        else
+            getCellRendererComponent(variableModel, isSelected)
+        table.setRowHeight(row, component.preferredSize.height)
         return component
     }
 
-    private fun getCellRendererComponent(variables: List<Variable<*>>, isSelected: Boolean): Component {
-        variableModel.addVariables(variables)
-
+    private fun getCellRendererComponent(variableModel: VariableModel, isSelected: Boolean): Component {
+        table.model = variableModel
         if(isSelected) {
             if(variableModel.rowCount > 0)
                 table.setRowSelectionInterval(0, variableModel.rowCount - 1)

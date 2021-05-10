@@ -2,42 +2,40 @@ package com.github.rey5137.robotrunnerplugin.editors.ui.argument
 
 import com.github.rey5137.robotrunnerplugin.editors.xml.DataType
 import com.github.rey5137.robotrunnerplugin.editors.xml.VARIABLE_EMPTY
+import com.intellij.icons.AllIcons
 import com.intellij.ui.ColoredTableCellRenderer
+import com.intellij.ui.LayeredIcon
 import com.intellij.ui.SimpleTextAttributes
+import java.awt.Insets
 import javax.swing.JTable
 
-class VariableCellRender(private val model : VariableModel) : ColoredTableCellRenderer() {
-
-    private val spacingMap = HashMap<Int, String>()
-
-    private fun getSpacing(level: Int) : String {
-        return spacingMap.getOrPut(level) {
-            val builder = StringBuilder()
-            repeat(level * 4) { builder.append(' ')}
-            builder.toString()
-        }
-    }
+class VariableCellRender(private val levelPadding: Int) : ColoredTableCellRenderer() {
 
     override fun customizeCellRenderer(
-        table: JTable?,
+        table: JTable,
         value: Any?,
         selected: Boolean,
         hasFocus: Boolean,
         row: Int,
         column: Int
     ) {
-        val (variable, level) = model.getItem(row)
+        val (variable, level, _, isExpanded) = (table.model as VariableModel).getItem(row)
         if(variable == VARIABLE_EMPTY) {
+            ipad = Insets(0, levelPadding * level + AllIcons.General.ArrowDown.iconWidth, 0, 0)
             append("Empty Data", SimpleTextAttributes.GRAY_SMALL_ATTRIBUTES)
         }
         else if(variable.type == DataType.DICT || variable.type == DataType.ARRAY) {
-            append(getSpacing(level))
-            append("• ", SimpleTextAttributes.GRAYED_ATTRIBUTES)
+            ipad = Insets(0, levelPadding * level, 0, 0)
+            setFocusBorderAroundIcon(true)
+            iconTextGap = 0
+            icon = if(isExpanded)
+                AllIcons.General.ArrowDown
+            else
+                AllIcons.General.ArrowRight
             append(variable.name, SimpleTextAttributes.REGULAR_BOLD_ATTRIBUTES)
         }
         else {
-            append(getSpacing(level))
-            append("• ", SimpleTextAttributes.GRAYED_ATTRIBUTES)
+            ipad = Insets(0, levelPadding * level + AllIcons.General.ArrowDown.iconWidth, 0, 0)
             append(variable.name, SimpleTextAttributes.REGULAR_BOLD_ATTRIBUTES)
             append(" = ", SimpleTextAttributes.GRAYED_ATTRIBUTES)
             when(variable.type) {

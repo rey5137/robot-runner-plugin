@@ -11,7 +11,7 @@ import java.awt.Component
 import javax.swing.JTable
 import javax.swing.table.TableCellRenderer
 
-class ValueTableCellRenderer(private val assignmentModel: AssignmentModel) : TableCellRenderer {
+class ValueTableCellRenderer(private val levelPadding: Int, private val assignmentModel: AssignmentModel) : TableCellRenderer {
 
     private val stringCellRenderer = object : ColoredTableCellRenderer() {
         override fun customizeCellRenderer(
@@ -40,11 +40,8 @@ class ValueTableCellRenderer(private val assignmentModel: AssignmentModel) : Tab
         }
     }
 
-    private val variableModel = VariableModel()
-    private val table = JBTable(variableModel)
-
-    init {
-        table.columnModel.getColumn(0).cellRenderer = VariableCellRender(variableModel)
+    private val table = JBTable().apply {
+        setDefaultRenderer(Any::class.java, VariableCellRender(levelPadding))
     }
 
     override fun getTableCellRendererComponent(
@@ -55,18 +52,17 @@ class ValueTableCellRenderer(private val assignmentModel: AssignmentModel) : Tab
         row: Int,
         column: Int
     ): Component {
-        val assignment = assignmentModel.getAssignment(row)
-        val component = when(assignment.dataType) {
-            DataType.DICT, DataType.ARRAY -> getCellRendererComponent(assignment.value as List<Variable<*>>, isSelected)
-            else -> stringCellRenderer.getTableCellRendererComponent(table, assignment, isSelected, hasFocus, row, column)
-        }
+        val variableModel = assignmentModel.getVariableModel(row)
+        val component = if(variableModel == null)
+            stringCellRenderer.getTableCellRendererComponent(table, assignmentModel.getAssignment(row), isSelected, hasFocus, row, column)
+        else
+            getCellRendererComponent(variableModel, isSelected)
         table?.setRowHeight(row, component.preferredSize.height)
         return component
     }
 
-    private fun getCellRendererComponent(variables: List<Variable<*>>, isSelected: Boolean): Component {
-        variableModel.addVariables(variables)
-
+    private fun getCellRendererComponent(variableModel: VariableModel, isSelected: Boolean): Component {
+        table.model = variableModel
         if(isSelected) {
             if(variableModel.rowCount > 0)
                 table.setRowSelectionInterval(0, variableModel.rowCount - 1)

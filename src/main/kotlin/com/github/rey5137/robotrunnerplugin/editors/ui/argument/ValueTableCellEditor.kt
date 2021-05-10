@@ -1,28 +1,38 @@
 package com.github.rey5137.robotrunnerplugin.editors.ui.argument
 
 import com.github.rey5137.robotrunnerplugin.editors.xml.DataType
-import com.github.rey5137.robotrunnerplugin.editors.xml.Variable
+import com.intellij.icons.AllIcons
 import com.intellij.ui.table.JBTable
 import com.intellij.util.ui.AbstractTableCellEditor
 import java.awt.Component
+import java.awt.Point
+import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
 import java.util.*
 import javax.swing.JTable
 
-class ValueTableCellEditor(private val argumentModel: ArgumentModel) : AbstractTableCellEditor(),
+class ValueTableCellEditor(private val levelPadding: Int, private val argumentModel: ArgumentModel) : AbstractTableCellEditor(),
     VariableCellEditor.EditEventProvider {
 
-    private val variableModel = VariableModel()
-    private val table = JBTable(variableModel)
-    override var editEvent: MouseEvent? = null
-
-    init {
-        table.columnModel.getColumn(0).apply {
-            cellRenderer = VariableCellRender(variableModel)
-            cellEditor = VariableCellEditor(variableModel, this@ValueTableCellEditor)
-        }
-        table.setDefaultEditor(Any::class.java, StringCellEditor())
+    private val table = JBTable().apply {
+        setDefaultRenderer(Any::class.java, VariableCellRender(levelPadding))
+        setDefaultEditor(Any::class.java, VariableCellEditor(this@ValueTableCellEditor))
+        addMouseListener(object : MouseAdapter() {
+            override fun mouseClicked(e: MouseEvent) {
+                val variableModel = model as VariableModel
+                val p = Point(e.point)
+                val row = rowAtPoint(p)
+                val item = variableModel.getItem(row)
+                if (!item.isLeaf && p.x >= levelPadding * item.level && p.x < levelPadding * item.level + AllIcons.General.ArrowDown.iconWidth) {
+                    if(item.isExpanded)
+                        variableModel.collapseAt(row)
+                    else
+                        variableModel.expandAt(row)
+                }
+            }
+        })
     }
+    override var editEvent: MouseEvent? = null
 
     override fun isCellEditable(e: EventObject?): Boolean {
         if (e is MouseEvent) {
@@ -65,14 +75,9 @@ class ValueTableCellEditor(private val argumentModel: ArgumentModel) : AbstractT
                 row,
                 column
             )
-            DataType.DICT, DataType.ARRAY -> getCellEditorComponent(argument.value as List<Variable<*>>)
+            DataType.DICT, DataType.ARRAY -> this.table.apply { model = argumentModel.getVariableModel(row) }
             else -> editor.getTableCellEditorComponent(table, argument.value.toString(), isSelected, row, column)
         }
-    }
-
-    private fun getCellEditorComponent(variables: List<Variable<*>>): Component {
-        variableModel.addVariables(variables)
-        return table
     }
 
 }

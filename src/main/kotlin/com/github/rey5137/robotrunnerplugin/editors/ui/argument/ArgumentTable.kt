@@ -1,5 +1,6 @@
 package com.github.rey5137.robotrunnerplugin.editors.ui.argument
 
+import com.intellij.icons.AllIcons
 import com.intellij.ui.table.JBTable
 import javax.swing.JTable
 
@@ -7,6 +8,7 @@ class ArgumentTable(private val argumentModel: ArgumentModel) : JBTable(argument
 
     init {
         cellSelectionEnabled = true
+        val levelPadding = AllIcons.General.ArrowDown.iconWidth
         autoResizeMode = JTable.AUTO_RESIZE_SUBSEQUENT_COLUMNS
         columnModel.getColumn(ArgumentModel.INDEX_ARGUMENT).apply {
             cellRenderer = ArgumentTableCellRenderer(argumentModel)
@@ -16,8 +18,8 @@ class ArgumentTable(private val argumentModel: ArgumentModel) : JBTable(argument
             cellEditor = InputTableCellEditor(argumentModel)
         }
         columnModel.getColumn(ArgumentModel.INDEX_VALUE).apply {
-            cellRenderer = ValueTableCellRenderer(argumentModel)
-            cellEditor = ValueTableCellEditor(argumentModel)
+            cellRenderer = ValueTableCellRenderer(levelPadding, argumentModel)
+            cellEditor = ValueTableCellEditor(levelPadding, argumentModel)
         }
         setDefaultEditor(Any::class.java, StringCellEditor())
     }

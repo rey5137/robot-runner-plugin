@@ -6,19 +6,10 @@ import java.awt.Component
 import java.awt.event.MouseEvent
 import java.util.*
 import javax.swing.JTable
-import kotlin.collections.HashMap
 
-class VariableCellEditor(private val model : VariableModel, private val editEventProvider: EditEventProvider) : AbstractTableCellEditor() {
+class VariableCellEditor(private val editEventProvider: EditEventProvider) : AbstractTableCellEditor() {
 
-    private val spacingMap = HashMap<Int, String>()
-
-    private fun getSpacing(level: Int) : String {
-        return spacingMap.getOrPut(level) {
-            val builder = StringBuilder()
-            repeat(level * 4) { builder.append(' ')}
-            builder.toString()
-        }
-    }
+    private val stringCellEditor = StringCellEditor()
 
     override fun isCellEditable(e: EventObject?): Boolean {
         if(e is MouseEvent) {
@@ -40,11 +31,9 @@ class VariableCellEditor(private val model : VariableModel, private val editEven
         row: Int,
         column: Int
     ): Component {
-        val (variable, level) = model.getItem(row)
+        val (variable) = (table.model as VariableModel).getItem(row)
         val builder = StringBuilder()
-        builder.append(getSpacing(level))
-            .append("• ")
-            .append(variable.name)
+        builder.append(variable.name)
         if(variable.type != DataType.DICT && variable.type != DataType.ARRAY) {
             builder.append(" = ")
             when(variable.type) {
@@ -53,8 +42,7 @@ class VariableCellEditor(private val model : VariableModel, private val editEven
                 else -> builder.append(variable.value.toString())
             }
         }
-        val editor = table.getDefaultEditor(Any::class.java)
-        return editor.getTableCellEditorComponent(table, builder.toString(), isSelected, row, column)
+        return stringCellEditor.getTableCellEditorComponent(table, builder.toString(), isSelected, row, column)
     }
 
     interface EditEventProvider {

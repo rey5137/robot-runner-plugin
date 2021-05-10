@@ -1,7 +1,7 @@
 package com.github.rey5137.robotrunnerplugin.editors.ui
 
-import com.github.rey5137.robotrunnerplugin.editors.ui.argument.ArgumentModel
 import com.github.rey5137.robotrunnerplugin.editors.ui.argument.ArgumentTable
+import com.github.rey5137.robotrunnerplugin.editors.ui.argument.ArgumentModel
 import com.github.rey5137.robotrunnerplugin.editors.ui.assignment.AssignmentModel
 import com.github.rey5137.robotrunnerplugin.editors.ui.assignment.AssignmentTable
 import com.github.rey5137.robotrunnerplugin.editors.xml.*

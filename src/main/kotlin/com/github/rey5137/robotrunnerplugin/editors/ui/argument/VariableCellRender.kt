@@ -6,6 +6,7 @@ import com.intellij.icons.AllIcons
 import com.intellij.ui.ColoredTableCellRenderer
 import com.intellij.ui.SimpleTextAttributes
 import com.intellij.ui.scale.JBUIScale
+import icons.MyIcons
 import java.awt.Insets
 import javax.swing.JTable
 
@@ -29,13 +30,13 @@ class VariableCellRender : ColoredTableCellRenderer() {
             setFocusBorderAroundIcon(true)
             iconTextGap = 0
             icon = if(isExpanded)
-                AllIcons.General.ArrowDown
+                if (selected) MyIcons.ArrowDownWhite else MyIcons.ArrowDown
             else
-                AllIcons.General.ArrowRight
+                if (selected) MyIcons.ArrowRightWhite else MyIcons.ArrowRight
             append(variable.name, SimpleTextAttributes.REGULAR_BOLD_ATTRIBUTES)
         }
         else {
-            ipad = Insets(PADDING_VERTICAL, PADDING_HORIZONTAL + PADDING_LEVEL * level + AllIcons.General.ArrowDown.iconWidth, PADDING_VERTICAL, PADDING_HORIZONTAL)
+            ipad = Insets(PADDING_VERTICAL, PADDING_HORIZONTAL + PADDING_LEVEL * level + MyIcons.ArrowDown.iconWidth, PADDING_VERTICAL, PADDING_HORIZONTAL)
             append(variable.name, SimpleTextAttributes.REGULAR_BOLD_ATTRIBUTES)
             append(" = ", SimpleTextAttributes.GRAYED_ATTRIBUTES)
             when(variable.type) {
@@ -58,10 +59,10 @@ class VariableCellRender : ColoredTableCellRenderer() {
 
         val PADDING_HORIZONTAL = JBUIScale.scale(1)
         val PADDING_VERTICAL = JBUIScale.scale(2)
-        val PADDING_LEVEL = AllIcons.General.ArrowDown.iconWidth
+        val PADDING_LEVEL = MyIcons.ArrowDown.iconWidth
 
         fun isArrowClicked(x: Int, level: Int) : Boolean {
-            return x >= PADDING_HORIZONTAL + PADDING_LEVEL * level && x < PADDING_HORIZONTAL + PADDING_LEVEL * level + AllIcons.General.ArrowDown.iconWidth
+            return x >= PADDING_HORIZONTAL + PADDING_LEVEL * level && x < PADDING_HORIZONTAL + PADDING_LEVEL * level + MyIcons.ArrowDown.iconWidth
         }
 
     }

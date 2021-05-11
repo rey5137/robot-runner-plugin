@@ -9,6 +9,18 @@ object MyIcons {
     val RunRobot = IconLoader.getIcon("/icons/runRobot.svg", javaClass)
 
     @JvmField
+    val ArrowDown = IconLoader.getIcon("/icons/arrowDown.svg", javaClass)
+
+    @JvmField
+    val ArrowDownWhite = IconLoader.getIcon("/icons/arrowDownWhite.svg", javaClass)
+
+    @JvmField
+    val ArrowRight = IconLoader.getIcon("/icons/arrowRight.svg", javaClass)
+
+    @JvmField
+    val ArrowRightWhite = IconLoader.getIcon("/icons/arrowRightWhite.svg", javaClass)
+
+    @JvmField
     val ElementPass = IconLoader.getIcon("/icons/elementPass.svg", javaClass)
 
     @JvmField

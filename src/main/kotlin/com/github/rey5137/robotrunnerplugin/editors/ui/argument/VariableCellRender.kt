@@ -4,13 +4,13 @@ import com.github.rey5137.robotrunnerplugin.editors.xml.DataType
 import com.github.rey5137.robotrunnerplugin.editors.xml.VARIABLE_EMPTY
 import com.intellij.icons.AllIcons
 import com.intellij.ui.ColoredTableCellRenderer
-import com.intellij.ui.LayeredIcon
 import com.intellij.ui.SimpleTextAttributes
+import com.intellij.ui.scale.JBUIScale
 import java.awt.Insets
 import javax.swing.JTable
 
-class VariableCellRender(private val levelPadding: Int) : ColoredTableCellRenderer() {
-
+class VariableCellRender : ColoredTableCellRenderer() {
+    
     override fun customizeCellRenderer(
         table: JTable,
         value: Any?,
@@ -21,11 +21,11 @@ class VariableCellRender(private val levelPadding: Int) : ColoredTableCellRender
     ) {
         val (variable, level, _, isExpanded) = (table.model as VariableModel).getItem(row)
         if(variable == VARIABLE_EMPTY) {
-            ipad = Insets(0, levelPadding * level + AllIcons.General.ArrowDown.iconWidth, 0, 0)
+            ipad = Insets(PADDING_VERTICAL, PADDING_HORIZONTAL + PADDING_LEVEL * level + AllIcons.General.ArrowDown.iconWidth, PADDING_VERTICAL, PADDING_HORIZONTAL)
             append("Empty Data", SimpleTextAttributes.GRAY_SMALL_ATTRIBUTES)
         }
         else if(variable.type == DataType.DICT || variable.type == DataType.ARRAY) {
-            ipad = Insets(0, levelPadding * level, 0, 0)
+            ipad = Insets(PADDING_VERTICAL, PADDING_HORIZONTAL+ PADDING_LEVEL * level, PADDING_VERTICAL, PADDING_HORIZONTAL)
             setFocusBorderAroundIcon(true)
             iconTextGap = 0
             icon = if(isExpanded)
@@ -35,7 +35,7 @@ class VariableCellRender(private val levelPadding: Int) : ColoredTableCellRender
             append(variable.name, SimpleTextAttributes.REGULAR_BOLD_ATTRIBUTES)
         }
         else {
-            ipad = Insets(0, levelPadding * level + AllIcons.General.ArrowDown.iconWidth, 0, 0)
+            ipad = Insets(PADDING_VERTICAL, PADDING_HORIZONTAL + PADDING_LEVEL * level + AllIcons.General.ArrowDown.iconWidth, PADDING_VERTICAL, PADDING_HORIZONTAL)
             append(variable.name, SimpleTextAttributes.REGULAR_BOLD_ATTRIBUTES)
             append(" = ", SimpleTextAttributes.GRAYED_ATTRIBUTES)
             when(variable.type) {
@@ -54,4 +54,15 @@ class VariableCellRender(private val levelPadding: Int) : ColoredTableCellRender
         }
     }
 
+    companion object {
+
+        val PADDING_HORIZONTAL = JBUIScale.scale(1)
+        val PADDING_VERTICAL = JBUIScale.scale(2)
+        val PADDING_LEVEL = AllIcons.General.ArrowDown.iconWidth
+
+        fun isArrowClicked(x: Int, level: Int) : Boolean {
+            return x >= PADDING_HORIZONTAL + PADDING_LEVEL * level && x < PADDING_HORIZONTAL + PADDING_LEVEL * level + AllIcons.General.ArrowDown.iconWidth
+        }
+
+    }
 }

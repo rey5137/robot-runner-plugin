@@ -1,7 +1,6 @@
 package com.github.rey5137.robotrunnerplugin.editors.ui.assignment
 
 import com.github.rey5137.robotrunnerplugin.editors.ui.argument.*
-import com.intellij.icons.AllIcons
 import com.intellij.ui.table.JBTable
 import java.awt.Point
 import java.awt.event.MouseAdapter
@@ -10,13 +9,12 @@ import java.awt.event.MouseEvent
 class AssignmentTable(private val assignmentModel: AssignmentModel) : JBTable(assignmentModel) {
 
     init {
-        val levelPadding = AllIcons.General.ArrowDown.iconWidth
         columnModel.getColumn(AssignmentModel.INDEX_ASSIGNMENT).apply {
             cellRenderer = AssignmentTableCellRenderer(assignmentModel)
         }
         columnModel.getColumn(AssignmentModel.INDEX_VALUE).apply {
-            cellRenderer = ValueTableCellRenderer(levelPadding, assignmentModel)
-            cellEditor = ValueTableCellEditor(levelPadding, assignmentModel)
+            cellRenderer = ValueTableCellRenderer(assignmentModel)
+            cellEditor = ValueTableCellEditor(assignmentModel)
         }
         setDefaultEditor(Any::class.java, StringCellEditor())
         addMouseListener(object : MouseAdapter() {
@@ -48,7 +46,7 @@ class AssignmentTable(private val assignmentModel: AssignmentModel) : JBTable(as
                         p.translate(-rect.x, -rect.y)
                         val variableRow = p.y * variableModel.rowCount / rect.height
                         val item = variableModel.getItem(variableRow)
-                        if (!item.isLeaf && p.x >= levelPadding * item.level && p.x < levelPadding * item.level + AllIcons.General.ArrowDown.iconWidth)
+                        if (!item.isLeaf && VariableCellRender.isArrowClicked(p.x, item.level))
                             func(row, variableModel, variableRow)
                     }
                 }

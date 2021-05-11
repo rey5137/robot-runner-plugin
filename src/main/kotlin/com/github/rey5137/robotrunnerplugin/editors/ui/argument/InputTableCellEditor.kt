@@ -11,15 +11,11 @@ import javax.swing.JTable
 class InputTableCellEditor(private val argumentModel: ArgumentModel): AbstractTableCellEditor() {
 
     private val inputArgumentModel = InputArgumentModel()
-    private val table = JBTable(inputArgumentModel)
     var editEvent: MouseEvent? = null
 
-    init {
-        table.columnModel.getColumn(0).apply {
-            cellRenderer = InputArgumentCellRender(inputArgumentModel)
-            cellEditor = InputArgumentCellEditor(inputArgumentModel, this@InputTableCellEditor)
-        }
-        table.setDefaultEditor(Any::class.java, StringCellEditor())
+    private val table = JBTable(inputArgumentModel).apply {
+        setDefaultRenderer(Any::class.java, InputArgumentCellRender())
+        setDefaultEditor(Any::class.java, InputArgumentCellEditor(this@InputTableCellEditor))
     }
 
     override fun isCellEditable(e: EventObject?): Boolean {

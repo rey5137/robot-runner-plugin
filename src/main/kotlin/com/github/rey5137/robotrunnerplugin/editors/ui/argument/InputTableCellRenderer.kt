@@ -22,9 +22,8 @@ class InputTableCellRenderer(private val argumentModel: ArgumentModel) : TableCe
             column: Int
         ) {
             val input = value as InputArgument
-            if(input.name == null) {
+            if(input.name == null)
                 append(input.value, SimpleTextAttributes.REGULAR_ATTRIBUTES)
-            }
             else {
                 append(input.name, SimpleTextAttributes.REGULAR_BOLD_ATTRIBUTES)
                 append(" = ", SimpleTextAttributes.GRAYED_ATTRIBUTES)
@@ -34,10 +33,8 @@ class InputTableCellRenderer(private val argumentModel: ArgumentModel) : TableCe
     }
 
     private val inputArgumentModel = InputArgumentModel()
-    private val table = JBTable(inputArgumentModel)
-
-    init {
-        table.columnModel.getColumn(0).cellRenderer = InputArgumentCellRender(inputArgumentModel)
+    private val table = JBTable(inputArgumentModel).apply {
+        setDefaultRenderer(Any::class.java, InputArgumentCellRender())
     }
 
     override fun getTableCellRendererComponent(
@@ -52,10 +49,10 @@ class InputTableCellRenderer(private val argumentModel: ArgumentModel) : TableCe
         return if(inputs.size == 1)
             stringCellRenderer.getTableCellRendererComponent(table, inputs[0], isSelected, hasFocus, row, column)
         else
-            getCellRendererComponent(inputs, isSelected)
+            getCellRendererComponent(inputs, isSelected, hasFocus)
     }
 
-    private fun getCellRendererComponent(inputs: List<InputArgument>, isSelected: Boolean): Component {
+    private fun getCellRendererComponent(inputs: List<InputArgument>, isSelected: Boolean, hasFocus: Boolean): Component {
         if(inputs.isEmpty())
             inputArgumentModel.add(listOf(INPUT_EMPTY))
         else
@@ -63,14 +60,11 @@ class InputTableCellRenderer(private val argumentModel: ArgumentModel) : TableCe
         if(isSelected) {
             if(inputArgumentModel.rowCount > 0)
                 table.setRowSelectionInterval(0, inputArgumentModel.rowCount - 1)
-            table.background = UIUtil.getTableSelectionBackground(true)
-            table.border = UIUtil.getTableFocusCellHighlightBorder()
         }
         else {
             table.clearSelection()
-            table.background = null
-            table.border = null
         }
+        table.border = if (hasFocus) UIUtil.getTableFocusCellHighlightBorder() else null
         return table
     }
 }

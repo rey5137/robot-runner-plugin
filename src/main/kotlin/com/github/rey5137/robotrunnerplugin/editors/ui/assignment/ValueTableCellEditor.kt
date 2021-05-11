@@ -2,7 +2,6 @@ package com.github.rey5137.robotrunnerplugin.editors.ui.assignment
 
 import com.github.rey5137.robotrunnerplugin.editors.ui.argument.*
 import com.github.rey5137.robotrunnerplugin.editors.xml.DataType
-import com.intellij.icons.AllIcons
 import com.intellij.ui.table.JBTable
 import com.intellij.util.ui.AbstractTableCellEditor
 import java.awt.Component
@@ -11,10 +10,10 @@ import java.awt.event.MouseEvent
 import java.util.*
 import javax.swing.JTable
 
-class ValueTableCellEditor(private val levelPadding: Int, private val assignmentModel: AssignmentModel): AbstractTableCellEditor(), VariableCellEditor.EditEventProvider {
+class ValueTableCellEditor(private val assignmentModel: AssignmentModel): AbstractTableCellEditor(), VariableCellEditor.EditEventProvider {
 
     private val table = JBTable().apply {
-        setDefaultRenderer(Any::class.java, VariableCellRender(levelPadding))
+        setDefaultRenderer(Any::class.java, VariableCellRender())
         setDefaultEditor(Any::class.java, VariableCellEditor(this@ValueTableCellEditor))
         addMouseListener(object : MouseAdapter() {
             override fun mousePressed(e: MouseEvent) {
@@ -34,9 +33,8 @@ class ValueTableCellEditor(private val levelPadding: Int, private val assignment
                 val variableModel = model as VariableModel
                 val row = rowAtPoint(point)
                 val item = variableModel.getItem(row)
-                if (!item.isLeaf && point.x >= levelPadding * item.level && point.x < levelPadding * item.level + AllIcons.General.ArrowDown.iconWidth) {
+                if (!item.isLeaf && VariableCellRender.isArrowClicked(point.x, item.level))
                     func(variableModel, row)
-                }
             }
         })
     }

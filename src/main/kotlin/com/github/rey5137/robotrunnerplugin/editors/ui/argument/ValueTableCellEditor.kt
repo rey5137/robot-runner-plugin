@@ -11,11 +11,11 @@ import java.awt.event.MouseEvent
 import java.util.*
 import javax.swing.JTable
 
-class ValueTableCellEditor(private val levelPadding: Int, private val argumentModel: ArgumentModel) : AbstractTableCellEditor(),
+class ValueTableCellEditor(private val argumentModel: ArgumentModel) : AbstractTableCellEditor(),
     VariableCellEditor.EditEventProvider {
 
     private val table = JBTable().apply {
-        setDefaultRenderer(Any::class.java, VariableCellRender(levelPadding))
+        setDefaultRenderer(Any::class.java, VariableCellRender())
         setDefaultEditor(Any::class.java, VariableCellEditor(this@ValueTableCellEditor))
         addMouseListener(object : MouseAdapter() {
             override fun mousePressed(e: MouseEvent) {
@@ -35,9 +35,8 @@ class ValueTableCellEditor(private val levelPadding: Int, private val argumentMo
                 val variableModel = model as VariableModel
                 val row = rowAtPoint(point)
                 val item = variableModel.getItem(row)
-                if (!item.isLeaf && point.x >= levelPadding * item.level && point.x < levelPadding * item.level + AllIcons.General.ArrowDown.iconWidth) {
+                if (!item.isLeaf && VariableCellRender.isArrowClicked(point.x, item.level))
                     func(variableModel, row)
-                }
             }
         })
     }

@@ -11,7 +11,7 @@ import java.awt.Component
 import javax.swing.JTable
 import javax.swing.table.TableCellRenderer
 
-class ValueTableCellRenderer(private val levelPadding: Int, private val argumentModel: ArgumentModel) :
+class ValueTableCellRenderer(private val argumentModel: ArgumentModel) :
     TableCellRenderer {
 
     private val stringCellRenderer = object : ColoredTableCellRenderer() {
@@ -45,7 +45,7 @@ class ValueTableCellRenderer(private val levelPadding: Int, private val argument
     }
 
     private val table = JBTable().apply {
-        setDefaultRenderer(Any::class.java, VariableCellRender(levelPadding))
+        setDefaultRenderer(Any::class.java, VariableCellRender())
     }
 
     override fun getTableCellRendererComponent(

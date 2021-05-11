@@ -1,6 +1,5 @@
 package com.github.rey5137.robotrunnerplugin.editors.ui.argument
 
-import com.intellij.icons.AllIcons
 import com.intellij.ui.table.JBTable
 import java.awt.Point
 import java.awt.event.MouseAdapter
@@ -11,7 +10,6 @@ class ArgumentTable(private val argumentModel: ArgumentModel) : JBTable(argument
 
     init {
         cellSelectionEnabled = true
-        val levelPadding = AllIcons.General.ArrowDown.iconWidth
         autoResizeMode = JTable.AUTO_RESIZE_SUBSEQUENT_COLUMNS
         columnModel.getColumn(ArgumentModel.INDEX_ARGUMENT).apply {
             cellRenderer = ArgumentTableCellRenderer(argumentModel)
@@ -21,8 +19,8 @@ class ArgumentTable(private val argumentModel: ArgumentModel) : JBTable(argument
             cellEditor = InputTableCellEditor(argumentModel)
         }
         columnModel.getColumn(ArgumentModel.INDEX_VALUE).apply {
-            cellRenderer = ValueTableCellRenderer(levelPadding, argumentModel)
-            cellEditor = ValueTableCellEditor(levelPadding, argumentModel)
+            cellRenderer = ValueTableCellRenderer(argumentModel)
+            cellEditor = ValueTableCellEditor(argumentModel)
         }
         setDefaultEditor(Any::class.java, StringCellEditor())
         addMouseListener(object : MouseAdapter() {
@@ -54,7 +52,7 @@ class ArgumentTable(private val argumentModel: ArgumentModel) : JBTable(argument
                         p.translate(-rect.x, -rect.y)
                         val variableRow = p.y * variableModel.rowCount / rect.height
                         val item = variableModel.getItem(variableRow)
-                        if (!item.isLeaf && p.x >= levelPadding * item.level && p.x < levelPadding * item.level + AllIcons.General.ArrowDown.iconWidth)
+                        if (!item.isLeaf && VariableCellRender.isArrowClicked(p.x, item.level))
                             func(row, variableModel, variableRow)
                     }
                 }

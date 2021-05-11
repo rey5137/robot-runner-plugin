@@ -11,7 +11,8 @@ import java.awt.Component
 import javax.swing.JTable
 import javax.swing.table.TableCellRenderer
 
-class ValueTableCellRenderer(private val levelPadding: Int, private val assignmentModel: AssignmentModel) : TableCellRenderer {
+class ValueTableCellRenderer(private val levelPadding: Int, private val assignmentModel: AssignmentModel) :
+    TableCellRenderer {
 
     private val stringCellRenderer = object : ColoredTableCellRenderer() {
         override fun customizeCellRenderer(
@@ -23,12 +24,15 @@ class ValueTableCellRenderer(private val levelPadding: Int, private val assignme
             column: Int
         ) {
             val assignment = value as Assignment<*>
-            if(!assignment.hasValue)
+            if (!assignment.hasValue)
                 append("")
             else
-                when(assignment.dataType) {
+                when (assignment.dataType) {
                     DataType.NONE -> append("None", SimpleTextAttributes.GRAYED_ATTRIBUTES)
-                    DataType.BOOL -> append(if(assignment.value as Boolean) "True" else "False", SimpleTextAttributes.REGULAR_ATTRIBUTES)
+                    DataType.BOOL -> append(
+                        if (assignment.value as Boolean) "True" else "False",
+                        SimpleTextAttributes.REGULAR_ATTRIBUTES
+                    )
                     else -> {
                         val data = assignment.value.toString()
                         if (data.isEmpty())
@@ -53,25 +57,34 @@ class ValueTableCellRenderer(private val levelPadding: Int, private val assignme
         column: Int
     ): Component {
         val variableModel = assignmentModel.getVariableModel(row)
-        val component = if(variableModel == null)
-            stringCellRenderer.getTableCellRendererComponent(table, assignmentModel.getAssignment(row), isSelected, hasFocus, row, column)
+        val component = if (variableModel == null)
+            stringCellRenderer.getTableCellRendererComponent(
+                table,
+                assignmentModel.getAssignment(row),
+                isSelected,
+                hasFocus,
+                row,
+                column
+            )
         else
-            getCellRendererComponent(variableModel, isSelected)
+            getCellRendererComponent(variableModel, isSelected, hasFocus)
         table?.setRowHeight(row, component.preferredSize.height)
         return component
     }
 
-    private fun getCellRendererComponent(variableModel: VariableModel, isSelected: Boolean): Component {
+    private fun getCellRendererComponent(
+        variableModel: VariableModel,
+        isSelected: Boolean,
+        hasFocus: Boolean
+    ): Component {
         table.model = variableModel
-        if(isSelected) {
-            if(variableModel.rowCount > 0)
+        if (isSelected) {
+            if (variableModel.rowCount > 0)
                 table.setRowSelectionInterval(0, variableModel.rowCount - 1)
-            table.border = UIUtil.getTableFocusCellHighlightBorder()
-        }
-        else {
+        } else {
             table.clearSelection()
-            table.border = null
         }
+        table.border = if (hasFocus) UIUtil.getTableFocusCellHighlightBorder() else null
         return table
     }
 }

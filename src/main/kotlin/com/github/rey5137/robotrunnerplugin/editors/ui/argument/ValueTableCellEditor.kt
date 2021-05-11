@@ -18,16 +18,25 @@ class ValueTableCellEditor(private val levelPadding: Int, private val argumentMo
         setDefaultRenderer(Any::class.java, VariableCellRender(levelPadding))
         setDefaultEditor(Any::class.java, VariableCellEditor(this@ValueTableCellEditor))
         addMouseListener(object : MouseAdapter() {
+            override fun mousePressed(e: MouseEvent) {
+                e.isArrowClicked { _, _ -> clearSelection() }
+            }
+
             override fun mouseClicked(e: MouseEvent) {
-                val variableModel = model as VariableModel
-                val p = Point(e.point)
-                val row = rowAtPoint(p)
-                val item = variableModel.getItem(row)
-                if (!item.isLeaf && p.x >= levelPadding * item.level && p.x < levelPadding * item.level + AllIcons.General.ArrowDown.iconWidth) {
-                    if(item.isExpanded)
-                        variableModel.collapseAt(row)
+                e.isArrowClicked { model, row ->
+                    if(model.getItem(row).isExpanded)
+                        model.collapseAt(row)
                     else
-                        variableModel.expandAt(row)
+                        model.expandAt(row)
+                }
+            }
+
+            private fun MouseEvent.isArrowClicked(func: (model: VariableModel, row: Int) -> Unit) {
+                val variableModel = model as VariableModel
+                val row = rowAtPoint(point)
+                val item = variableModel.getItem(row)
+                if (!item.isLeaf && point.x >= levelPadding * item.level && point.x < levelPadding * item.level + AllIcons.General.ArrowDown.iconWidth) {
+                    func(variableModel, row)
                 }
             }
         })

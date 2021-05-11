@@ -11,7 +11,7 @@ import java.awt.event.MouseEvent
 import java.util.*
 import javax.swing.JTable
 
-class ValueTableCellEditor(private val argumentModel: ArgumentModel) : AbstractTableCellEditor(),
+class ValueTableCellEditor(private val parentTable: JBTable, private val argumentModel: ArgumentModel) : AbstractTableCellEditor(),
     VariableCellEditor.EditEventProvider {
 
     private val table = JBTable().apply {
@@ -28,6 +28,8 @@ class ValueTableCellEditor(private val argumentModel: ArgumentModel) : AbstractT
                         model.collapseAt(row)
                     else
                         model.expandAt(row)
+                    parentTable.cellEditor.cancelCellEditing()
+                    parentTable.clearSelection()
                 }
             }
 

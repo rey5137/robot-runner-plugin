@@ -14,7 +14,7 @@ class AssignmentTable(private val assignmentModel: AssignmentModel) : JBTable(as
         }
         columnModel.getColumn(AssignmentModel.INDEX_VALUE).apply {
             cellRenderer = ValueTableCellRenderer(assignmentModel)
-            cellEditor = ValueTableCellEditor(assignmentModel)
+            cellEditor = ValueTableCellEditor(this@AssignmentTable, assignmentModel)
         }
         setDefaultEditor(Any::class.java, StringCellEditor())
         addMouseListener(object : MouseAdapter() {

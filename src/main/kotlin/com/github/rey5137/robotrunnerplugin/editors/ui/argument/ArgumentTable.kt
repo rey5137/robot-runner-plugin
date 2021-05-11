@@ -20,7 +20,7 @@ class ArgumentTable(private val argumentModel: ArgumentModel) : JBTable(argument
         }
         columnModel.getColumn(ArgumentModel.INDEX_VALUE).apply {
             cellRenderer = ValueTableCellRenderer(argumentModel)
-            cellEditor = ValueTableCellEditor(argumentModel)
+            cellEditor = ValueTableCellEditor(this@ArgumentTable, argumentModel)
         }
         setDefaultEditor(Any::class.java, StringCellEditor())
         addMouseListener(object : MouseAdapter() {

@@ -10,7 +10,7 @@ import java.awt.event.MouseEvent
 import java.util.*
 import javax.swing.JTable
 
-class ValueTableCellEditor(private val assignmentModel: AssignmentModel): AbstractTableCellEditor(), VariableCellEditor.EditEventProvider {
+class ValueTableCellEditor(private val parentTable: JBTable, private val assignmentModel: AssignmentModel): AbstractTableCellEditor(), VariableCellEditor.EditEventProvider {
 
     private val table = JBTable().apply {
         setDefaultRenderer(Any::class.java, VariableCellRender())
@@ -26,6 +26,8 @@ class ValueTableCellEditor(private val assignmentModel: AssignmentModel): Abstra
                         model.collapseAt(row)
                     else
                         model.expandAt(row)
+                    parentTable.cellEditor.cancelCellEditing()
+                    parentTable.clearSelection()
                 }
             }
 

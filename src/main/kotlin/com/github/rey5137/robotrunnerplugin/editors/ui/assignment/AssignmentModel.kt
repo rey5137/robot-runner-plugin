@@ -1,5 +1,6 @@
 package com.github.rey5137.robotrunnerplugin.editors.ui.assignment
 
+import com.github.rey5137.robotrunnerplugin.MyBundle
 import com.github.rey5137.robotrunnerplugin.editors.ui.argument.VariableModel
 import com.github.rey5137.robotrunnerplugin.editors.xml.*
 import javax.swing.table.AbstractTableModel
@@ -46,8 +47,8 @@ class AssignmentModel : AbstractTableModel() {
     }
 
     override fun getColumnName(column: Int): String = when (column) {
-        INDEX_ASSIGNMENT -> "Assignment"
-        INDEX_VALUE -> "Value"
+        INDEX_ASSIGNMENT -> MyBundle.message("robot.output.editor.label.assignment")
+        INDEX_VALUE -> MyBundle.message("robot.output.editor.label.value")
         else -> ""
     }
 

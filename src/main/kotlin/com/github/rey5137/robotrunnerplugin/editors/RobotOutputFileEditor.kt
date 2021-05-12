@@ -1,5 +1,6 @@
 package com.github.rey5137.robotrunnerplugin.editors
 
+import com.github.rey5137.robotrunnerplugin.MyBundle
 import com.github.rey5137.robotrunnerplugin.editors.ui.DetailsPanel
 import com.github.rey5137.robotrunnerplugin.editors.ui.TreeNodeWrapper
 import com.github.rey5137.robotrunnerplugin.editors.ui.filter.HideKeywordFilter
@@ -60,7 +61,7 @@ class RobotOutputFileEditor(private val project: Project, private val srcFile: V
 
     override fun getPreferredFocusedComponent(): JComponent = tree
 
-    override fun getName(): String = "Robot Result"
+    override fun getName(): String = MyBundle.message("robot.output.editor.label.robot-result")
 
     override fun setState(state: FileEditorState) {}
 
@@ -127,7 +128,7 @@ class RobotOutputFileEditor(private val project: Project, private val srcFile: V
             .setScrollPaneBorder(JBUI.Borders.empty())
             .setMinimumSize(JBDimension(200, 200))
             .setForcedDnD()
-            .addExtraAction(object : DumbAwareActionButton("Filter Element", AllIcons.General.Filter) {
+            .addExtraAction(object : DumbAwareActionButton(MyBundle.message("robot.output.editor.label.filter-element"), AllIcons.General.Filter) {
                 override fun actionPerformed(e: AnActionEvent) {
                     JBPopupFactory.getInstance().createActionGroupPopup(null, DefaultActionGroup().apply {
                         elementFilters.map { filter ->
@@ -144,17 +145,17 @@ class RobotOutputFileEditor(private val project: Project, private val srcFile: V
                         .show(preferredPopupPoint!!)
                 }
             })
-            .addExtraAction(object : AnActionButton("Refresh", AllIcons.Actions.Refresh) {
+            .addExtraAction(object : AnActionButton(MyBundle.message("robot.output.editor.label.refresh"), AllIcons.Actions.Refresh) {
                 override fun actionPerformed(e: AnActionEvent) {
                     refreshFile()
                 }
             })
-            .addExtraAction(object : AnActionButton("Collapse All", AllIcons.Actions.Collapseall) {
+            .addExtraAction(object : AnActionButton(MyBundle.message("robot.output.editor.label.collapse-all"), AllIcons.Actions.Collapseall) {
                 override fun actionPerformed(e: AnActionEvent) {
                     TreeUtil.collapseAll(tree, 0)
                 }
             })
-            .addExtraAction(object : AnActionButton("Expand All", AllIcons.Actions.Expandall) {
+            .addExtraAction(object : AnActionButton(MyBundle.message("robot.output.editor.label.expand-all"), AllIcons.Actions.Expandall) {
                 override fun actionPerformed(e: AnActionEvent) {
                     tree.ui = null
                     TreeUtil.expandAll(tree) {

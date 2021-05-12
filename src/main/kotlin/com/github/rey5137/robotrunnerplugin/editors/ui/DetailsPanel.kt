@@ -1,5 +1,6 @@
 package com.github.rey5137.robotrunnerplugin.editors.ui
 
+import com.github.rey5137.robotrunnerplugin.MyBundle
 import com.github.rey5137.robotrunnerplugin.editors.xml.*
 import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBTabbedPane
@@ -27,7 +28,7 @@ class DetailsPanel : JPanel(MigLayout(LC().gridGap("10px", "10px").insets("0px")
         add(nameField, CC().cell(0, 0).growX().pushX(1F))
         nameField.isEditable = false
 
-        add(JBLabel("Tags"), CC().cell(0, 1).minWidth("48px"))
+        add(JBLabel(MyBundle.message("robot.output.editor.label.tags")), CC().cell(0, 1).minWidth("48px"))
         add(tagsField, CC().cell(0, 1).growX().pushX(1F))
         tagsField.isEditable = false
 
@@ -48,16 +49,16 @@ class DetailsPanel : JPanel(MigLayout(LC().gridGap("10px", "10px").insets("0px")
 
         tabPane.removeAll()
         if(element is KeywordElement) {
-            tabPane.add("Argument / Assigment", argumentPanel)
+            tabPane.add(MyBundle.message("robot.output.editor.label.argument-tab"), argumentPanel)
             argumentPanel.border = null
             argumentPanel.populateData(element)
 
-            tabPane.add("Messages", messagePanel)
+            tabPane.add(MyBundle.message("robot.output.editor.label.message-tab"), messagePanel)
             messagePanel.border = null
             messagePanel.populateData(element)
         }
 
-        tabPane.add("Miscellaneous", miscPanel)
+        tabPane.add(MyBundle.message("robot.output.editor.label.misc-tab"), miscPanel)
         miscPanel.border = null
         miscPanel.populateData(element)
     }

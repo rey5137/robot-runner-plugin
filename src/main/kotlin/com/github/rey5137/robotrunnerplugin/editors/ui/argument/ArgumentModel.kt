@@ -1,5 +1,6 @@
 package com.github.rey5137.robotrunnerplugin.editors.ui.argument
 
+import com.github.rey5137.robotrunnerplugin.MyBundle
 import com.github.rey5137.robotrunnerplugin.editors.xml.*
 import javax.swing.table.AbstractTableModel
 
@@ -60,9 +61,9 @@ class ArgumentModel : AbstractTableModel() {
     }
 
     override fun getColumnName(column: Int): String = when (column) {
-        INDEX_ARGUMENT -> "Argument"
-        INDEX_INPUT -> "Input"
-        INDEX_VALUE -> "Value"
+        INDEX_ARGUMENT -> MyBundle.message("robot.output.editor.label.argument")
+        INDEX_INPUT -> MyBundle.message("robot.output.editor.label.input")
+        INDEX_VALUE -> MyBundle.message("robot.output.editor.label.value")
         else -> ""
     }
 

@@ -1,5 +1,6 @@
 package com.github.rey5137.robotrunnerplugin.editors.ui
 
+import com.github.rey5137.robotrunnerplugin.MyBundle
 import com.github.rey5137.robotrunnerplugin.editors.ui.message.MessageCellRender
 import com.github.rey5137.robotrunnerplugin.editors.xml.*
 import com.intellij.icons.AllIcons
@@ -54,10 +55,10 @@ class MessagePanel : JPanel(BorderLayout()) {
             .disableDownAction()
             .disableRemoveAction()
             .setToolbarPosition(ActionToolbarPosition.TOP)
-            .addExtraAction(object : DumbAwareActionButton("Filter message", AllIcons.General.Filter) {
+            .addExtraAction(object : DumbAwareActionButton(MyBundle.message("robot.output.editor.label.filter-message"), AllIcons.General.Filter) {
                 override fun actionPerformed(e: AnActionEvent) {
                     JBPopupFactory.getInstance().createActionGroupPopup(null, DefaultActionGroup().apply {
-                        add(object : ToggleAction("Show INFO message") {
+                        add(object : ToggleAction(MyBundle.message("robot.output.editor.desc.show-level-message", "INFO")) {
                             override fun isSelected(e: AnActionEvent): Boolean = showInfoMessage
 
                             override fun setSelected(e: AnActionEvent, state: Boolean) {
@@ -65,7 +66,7 @@ class MessagePanel : JPanel(BorderLayout()) {
                                 populateMessage(element)
                             }
                         })
-                        add(object : ToggleAction("Show DEBUG message") {
+                        add(object : ToggleAction(MyBundle.message("robot.output.editor.desc.show-level-message", "DEBUG")) {
                             override fun isSelected(e: AnActionEvent): Boolean = showDebugMessage
 
                             override fun setSelected(e: AnActionEvent, state: Boolean) {
@@ -73,7 +74,7 @@ class MessagePanel : JPanel(BorderLayout()) {
                                 populateMessage(element)
                             }
                         })
-                        add(object : ToggleAction("Show TRACE message") {
+                        add(object : ToggleAction(MyBundle.message("robot.output.editor.desc.show-level-message", "TRACE")) {
                             override fun isSelected(e: AnActionEvent): Boolean = showTraceMessage
 
                             override fun setSelected(e: AnActionEvent, state: Boolean) {
@@ -81,7 +82,7 @@ class MessagePanel : JPanel(BorderLayout()) {
                                 populateMessage(element)
                             }
                         })
-                        add(object : ToggleAction("Show FAIL message") {
+                        add(object : ToggleAction(MyBundle.message("robot.output.editor.desc.show-level-message", "FAIL")) {
                             override fun isSelected(e: AnActionEvent): Boolean = showFailMessage
 
                             override fun setSelected(e: AnActionEvent, state: Boolean) {

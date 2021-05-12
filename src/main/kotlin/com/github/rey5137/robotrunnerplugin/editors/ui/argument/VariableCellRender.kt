@@ -1,5 +1,6 @@
 package com.github.rey5137.robotrunnerplugin.editors.ui.argument
 
+import com.github.rey5137.robotrunnerplugin.MyBundle
 import com.github.rey5137.robotrunnerplugin.editors.xml.DataType
 import com.github.rey5137.robotrunnerplugin.editors.xml.VARIABLE_EMPTY
 import com.intellij.icons.AllIcons
@@ -23,7 +24,7 @@ class VariableCellRender : ColoredTableCellRenderer() {
         val (variable, level, _, isExpanded) = (table.model as VariableModel).getItem(row)
         if(variable == VARIABLE_EMPTY) {
             ipad = Insets(PADDING_VERTICAL, PADDING_HORIZONTAL + PADDING_LEVEL * level + AllIcons.General.ArrowDown.iconWidth, PADDING_VERTICAL, PADDING_HORIZONTAL)
-            append("Empty Data", SimpleTextAttributes.GRAY_SMALL_ATTRIBUTES)
+            append(MyBundle.message("robot.output.editor.desc.empty-data"), SimpleTextAttributes.GRAY_SMALL_ATTRIBUTES)
         }
         else if(variable.type == DataType.DICT || variable.type == DataType.ARRAY) {
             ipad = Insets(PADDING_VERTICAL, PADDING_HORIZONTAL+ PADDING_LEVEL * level, PADDING_VERTICAL, PADDING_HORIZONTAL)
@@ -46,7 +47,7 @@ class VariableCellRender : ColoredTableCellRenderer() {
                 )
                 DataType.STRING -> {
                     if((variable.value as String).isEmpty())
-                        append("Empty String", SimpleTextAttributes.GRAY_SMALL_ATTRIBUTES)
+                        append(MyBundle.message("robot.output.editor.desc.empty-string"), SimpleTextAttributes.GRAY_SMALL_ATTRIBUTES)
                     else
                         append(variable.value.toString(), SimpleTextAttributes.REGULAR_ATTRIBUTES)
                 }

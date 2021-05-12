@@ -1,5 +1,6 @@
 package com.github.rey5137.robotrunnerplugin.editors.ui.argument
 
+import com.github.rey5137.robotrunnerplugin.MyBundle
 import com.github.rey5137.robotrunnerplugin.editors.xml.ARGUMENT_EMPTY
 import com.github.rey5137.robotrunnerplugin.editors.xml.Argument
 import com.github.rey5137.robotrunnerplugin.editors.xml.DataType
@@ -36,7 +37,7 @@ class ValueTableCellRenderer(private val argumentModel: ArgumentModel) :
                     else -> {
                         val data = argument.value.toString()
                         if (data.isEmpty())
-                            append("Empty String", SimpleTextAttributes.GRAY_SMALL_ATTRIBUTES)
+                            append(MyBundle.message("robot.output.editor.desc.empty-string"), SimpleTextAttributes.GRAY_SMALL_ATTRIBUTES)
                         else
                             append(data, SimpleTextAttributes.REGULAR_ATTRIBUTES)
                     }

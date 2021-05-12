@@ -1,5 +1,6 @@
 package com.github.rey5137.robotrunnerplugin.editors.ui
 
+import com.github.rey5137.robotrunnerplugin.MyBundle
 import com.github.rey5137.robotrunnerplugin.editors.xml.*
 import com.intellij.ui.components.JBScrollPane
 import com.intellij.ui.components.JBTextArea
@@ -23,14 +24,17 @@ class MiscPanel : JPanel(BorderLayout()) {
     fun populateData(element: Element) {
         miscDetail.text = ""
         if(element is HasCommonField) {
-            miscDetail.append("Start time: ")
+            miscDetail.append(MyBundle.message("robot.output.editor.label.start-time"))
+            miscDetail.append(": ")
             miscDetail.append(element.status.startTime)
             miscDetail.append("\n")
-            miscDetail.append("End time: ")
+            miscDetail.append(MyBundle.message("robot.output.editor.label.end-time"))
+            miscDetail.append(": ")
             miscDetail.append(element.status.endTime)
             miscDetail.append("\n")
             if(element.status.message.isNotEmpty()) {
-                miscDetail.append("Status message: ")
+                miscDetail.append(MyBundle.message("robot.output.editor.label.status-message"))
+                miscDetail.append(": ")
                 miscDetail.append(element.status.message)
                 miscDetail.append("\n")
             }
@@ -38,7 +42,8 @@ class MiscPanel : JPanel(BorderLayout()) {
         if(element is KeywordElement) {
             val failMessage = element.messages.firstOrNull { it.level == LOG_LEVEL_FAIL }
             if(failMessage != null) {
-                miscDetail.append("Fail reason: ")
+                miscDetail.append(MyBundle.message("robot.output.editor.label.fail-reason"))
+                miscDetail.append(": ")
                 miscDetail.append(failMessage.value())
                 miscDetail.append("\n")
             }

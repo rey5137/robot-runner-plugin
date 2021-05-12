@@ -10,6 +10,8 @@ import com.intellij.ui.ToolbarDecorator
 import java.awt.BorderLayout
 import javax.swing.JPanel
 import javax.swing.JTable
+import kotlin.math.max
+import kotlin.math.min
 
 class ArgumentPanel : JPanel(BorderLayout()) {
 
@@ -47,7 +49,19 @@ class ArgumentPanel : JPanel(BorderLayout()) {
         argumentTable.adjustColumn(ArgumentModel.INDEX_INPUT)
         assignmentModel.populateModel(element)
         assignmentTable.adjustColumn(AssignmentModel.INDEX_ASSIGNMENT)
+        val argumentLine = argumentModel.countLine()
+        val assigmentLine = assignmentModel.countLine()
+        argumentSplitter.proportion = max(
+            0.2F,
+            min(0.9F,argumentLine * 1F / max(1, (argumentLine + assigmentLine)))
+        )
     }
+
+    private fun ArgumentModel.countLine(): Int =
+        (0 until rowCount).fold(0) { acc, index -> acc + (getVariableModel(index)?.rowCount ?: 1) }
+
+    private fun AssignmentModel.countLine(): Int =
+        (0 until rowCount).fold(0) { acc, index -> acc + (getVariableModel(index)?.rowCount ?: 1) }
 
     private fun ArgumentModel.populateModel(element: KeywordElement) {
         val message = element.messages.asSequence()
@@ -82,7 +96,7 @@ class ArgumentPanel : JPanel(BorderLayout()) {
 
             try {
                 val variable = message?.parseReturn()
-                if(variable == null || variable == VARIABLE_EMPTY)
+                if (variable == null || variable == VARIABLE_EMPTY)
                     setAssignments(emptyList())
                 else
                     setAssignments(

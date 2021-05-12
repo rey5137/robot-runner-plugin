@@ -3,6 +3,7 @@ package com.github.rey5137.robotrunnerplugin.editors.ui.assignment
 import com.github.rey5137.robotrunnerplugin.editors.ui.argument.*
 import com.intellij.ui.table.JBTable
 import java.awt.Point
+import java.awt.Rectangle
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
 
@@ -53,5 +54,9 @@ class AssignmentTable(private val assignmentModel: AssignmentModel) : JBTable(as
             }
 
         })
+    }
+
+    override fun scrollRectToVisible(aRect: Rectangle?) {
+        //disable auto scroll
     }
 }

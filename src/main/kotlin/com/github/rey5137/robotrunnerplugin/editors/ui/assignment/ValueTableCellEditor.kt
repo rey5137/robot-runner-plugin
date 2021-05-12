@@ -26,6 +26,7 @@ class ValueTableCellEditor(private val parentTable: JBTable, private val assignm
                         model.collapseAt(row)
                     else
                         model.expandAt(row)
+                    model.fireTableDataChanged()
                     parentTable.cellEditor.cancelCellEditing()
                     parentTable.clearSelection()
                 }

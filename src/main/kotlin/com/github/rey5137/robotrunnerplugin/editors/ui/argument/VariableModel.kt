@@ -40,7 +40,6 @@ class VariableModel : AbstractTableModel() {
         while(row < items.size - 1 && items[row + 1].level > level) {
             items.removeAt(row + 1)
         }
-        fireTableDataChanged()
     }
 
     fun expandAt(row: Int) {
@@ -62,7 +61,6 @@ class VariableModel : AbstractTableModel() {
                 }
             }
         }
-        fireTableDataChanged()
     }
 
     fun getItem(row: Int) = items[row]

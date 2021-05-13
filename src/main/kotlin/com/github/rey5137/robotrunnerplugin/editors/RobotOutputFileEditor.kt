@@ -329,6 +329,8 @@ class RobotOutputFileEditor(private val project: Project, private val srcFile: V
 
     internal class MyTree(treeModel: TreeModel): Tree(treeModel) {
         override fun getPreferredSize(): Dimension {
+            if(rowCount == 0)
+                return minimumSize
             return Dimension(1000, rowCount * rowHeight + 2)
         }
     }

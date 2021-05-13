@@ -27,9 +27,11 @@ import com.intellij.util.ui.JBUI
 import com.intellij.util.ui.UIUtil
 import com.intellij.util.ui.tree.TreeUtil
 import icons.MyIcons
+import org.eclipse.collections.impl.list.mutable.FastList
 import java.awt.BorderLayout
 import java.awt.Dimension
 import java.beans.PropertyChangeListener
+import java.util.*
 import javax.swing.JComponent
 import javax.swing.JPanel
 import javax.swing.JTree
@@ -328,10 +330,32 @@ class RobotOutputFileEditor(private val project: Project, private val srcFile: V
     }
 
     internal class MyTree(treeModel: TreeModel): Tree(treeModel) {
+
         override fun getPreferredSize(): Dimension {
             if(rowCount == 0)
                 return minimumSize
             return Dimension(1000, rowCount * rowHeight + 2)
+        }
+
+        override fun getExpandedDescendants(parent: TreePath): Enumeration<TreePath>? {
+            return if (!isExpanded(parent))
+                null
+            else Collections.enumeration(getOpenedChild(parent, FastList()))
+        }
+
+        private fun getOpenedChild(paramTreeNode: TreePath, list: MutableList<TreePath>): List<TreePath> {
+            val parent = paramTreeNode.lastPathComponent
+            val model = model
+            val nbChild = model.getChildCount(parent)
+            for (i in 0 until nbChild) {
+                val child = model.getChild(parent, i)
+                val childPath = paramTreeNode.pathByAddingChild(child)
+                if (!model.isLeaf(child) && isExpanded(childPath)) {
+                    list.add(childPath)
+                    getOpenedChild(childPath, list)
+                }
+            }
+            return list
         }
     }
 

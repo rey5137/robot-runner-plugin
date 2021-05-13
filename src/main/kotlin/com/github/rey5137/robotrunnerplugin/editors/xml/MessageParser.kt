@@ -177,7 +177,7 @@ private fun Pointer.parseArgument(): Argument<*> {
     }
 }
 
-private fun Pointer.parseVariable(name: String): Variable<*> {
+private fun Pointer.parseVariable(name: String, parentEndChar: Char? = null): Variable<*> {
     return when (peek()) {
         NONE_START -> Variable(
             name = name,
@@ -219,7 +219,7 @@ private fun Pointer.parseVariable(name: String): Variable<*> {
             value = parseStringValue(STR_START_2),
             type = DataType.STRING
         )
-        else -> {
+        '0', '1', '2', '3', '4', '5', '6', '7', '8', '9' -> {
             val value = parseNumberValue()
             Variable(
                 name = name,
@@ -227,6 +227,14 @@ private fun Pointer.parseVariable(name: String): Variable<*> {
                 type = if (value is Long) DataType.INTEGER else DataType.NUMBER
             )
         }
+        else -> Variable(
+            name = name,
+            value = if (parentEndChar == null)
+                parseRawStringValue(VAR_SEPARATOR)
+            else
+                parseRawStringValue(VAR_SEPARATOR, parentEndChar),
+            type = DataType.STRING
+        )
     }
 }
 
@@ -265,7 +273,7 @@ private fun Pointer.parseDictValue(): List<Variable<*>> {
         if (next == STR_START_1 || next == STR_START_2) {
             val name = parseStringValue(next)
             skipChar(VAR_ASSIGN)
-            variables.add(parseVariable(name))
+            variables.add(parseVariable(name, DICT_END))
             if (skipChar(VAR_SEPARATOR, DICT_END) == DICT_END)
                 break
         } else
@@ -283,7 +291,7 @@ private fun Pointer.parseArrayValue(arrayStart: Char, arrayEnd: Char): List<Vari
             skip(1)
             break
         } else {
-            variables.add(parseVariable("[${variables.size}]"))
+            variables.add(parseVariable("[${variables.size}]", arrayEnd))
             if (skipChar(VAR_SEPARATOR, arrayEnd) == arrayEnd)
                 break
         }
@@ -322,6 +330,17 @@ private fun Pointer.parseNumberValue(): Any {
             break
     }
     return if (dotCount == 0) builder.toString().toLong() else builder.toString().toDouble()
+}
+
+private fun Pointer.parseRawStringValue(vararg stopChars: Char): String {
+    val builder = StringBuilder()
+    while (hasNext()) {
+        val peek = peek()
+        if (peek == null || stopChars.contains(peek))
+            break
+        builder.append(next())
+    }
+    return builder.toString()
 }
 
 private fun Pointer.parseRobotArgumentName(): String {
@@ -410,5 +429,6 @@ private data class Pointer(
         return -1
     }
 
-    override fun toString() = "end=[$end] current=[$current] next=[${peek()}] value=[$value]"
+    override fun toString() =
+        "end=[$end] current=[$current] next=[${peek()}] ${value.substring(current + 1, Math.min(value.length, current + 21))}"
 }

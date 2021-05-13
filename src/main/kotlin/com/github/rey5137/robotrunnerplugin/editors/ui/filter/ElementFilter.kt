@@ -6,7 +6,7 @@ interface ElementFilter {
 
     fun accept(element: Element): Boolean
 
-    fun getTitle(): String
+    val title: String
 
     var isEnabled: Boolean
 }

@@ -8,6 +8,7 @@ class HidePassedSuiteFilter(override var isEnabled: Boolean) : ElementFilter {
 
     override fun accept(element: Element): Boolean = element !is SuiteElement || !element.status.isPassed
 
-    override fun getTitle(): String = MyBundle.message("robot.output.editor.label.hide-passed-suite")
+    override val title: String
+        get() = MyBundle.message("robot.output.editor.label.hide-passed-suite")
 
 }

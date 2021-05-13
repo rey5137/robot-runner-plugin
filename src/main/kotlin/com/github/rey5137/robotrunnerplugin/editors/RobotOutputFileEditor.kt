@@ -134,7 +134,7 @@ class RobotOutputFileEditor(private val project: Project, private val srcFile: V
                 override fun actionPerformed(e: AnActionEvent) {
                     JBPopupFactory.getInstance().createActionGroupPopup(null, DefaultActionGroup().apply {
                         elementFilters.map { filter ->
-                            add(object : ToggleAction(filter.getTitle()) {
+                            add(object : ToggleAction(filter.title) {
                                 override fun isSelected(e: AnActionEvent): Boolean = filter.isEnabled
 
                                 override fun setSelected(e: AnActionEvent, state: Boolean) {

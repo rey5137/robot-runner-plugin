@@ -43,6 +43,8 @@ interface HasCommonField {
     val name: String
 
     val status: StatusElement
+
+    val parent: Element?
 }
 
 interface HasTagsField {

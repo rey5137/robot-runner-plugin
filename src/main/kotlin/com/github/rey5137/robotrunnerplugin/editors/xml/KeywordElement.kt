@@ -12,6 +12,7 @@ data class KeywordElement(
     var keywords: MutableList<KeywordElement> = ArrayList(),
     override var status: StatusElement = StatusElement(),
     val robotElement: RobotElement,
+    override var parent: Element? = null,
 ) : Element, HasCommonField, HasTagsField {
 
     override val name: String

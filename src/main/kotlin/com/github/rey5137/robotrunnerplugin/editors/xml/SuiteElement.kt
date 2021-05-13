@@ -6,4 +6,5 @@ data class SuiteElement(
     var source: String = "",
     var children: MutableList<Element> = ArrayList(),
     override var status: StatusElement = StatusElement(),
+    override var parent: Element? = null,
 ) : Element, HasCommonField

@@ -8,6 +8,7 @@ class HidePassedTestFilter(override var isEnabled: Boolean) : ElementFilter {
 
     override fun accept(element: Element): Boolean = element !is TestElement || !element.status.isPassed
 
-    override fun getTitle(): String = MyBundle.message("robot.output.editor.label.hide-passed-testcase")
+    override val title: String
+        get() = MyBundle.message("robot.output.editor.label.hide-passed-testcase")
 
 }

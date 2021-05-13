@@ -147,22 +147,40 @@ private fun StartElement.toMessageElement(index: Long, robotElement: RobotElemen
 
 private fun Element.addSuite(suite: SuiteElement) {
     when (this) {
-        is SuiteElement -> children.add(suite)
-        is RobotElement -> suites.add(suite)
+        is SuiteElement -> {
+            children.add(suite)
+            suite.parent = this
+        }
+        is RobotElement -> {
+            suites.add(suite)
+            suite.parent = this
+        }
     }
 }
 
 private fun Element.addTest(test: TestElement) {
     when (this) {
-        is SuiteElement -> children.add(test)
+        is SuiteElement -> {
+            children.add(test)
+            test.parent = this
+        }
     }
 }
 
 private fun Element.addKeyword(keyword: KeywordElement) {
     when (this) {
-        is SuiteElement -> children.add(keyword)
-        is TestElement -> keywords.add(keyword)
-        is KeywordElement -> keywords.add(keyword)
+        is SuiteElement -> {
+            children.add(keyword)
+            keyword.parent = this
+        }
+        is TestElement -> {
+            keywords.add(keyword)
+            keyword.parent = this
+        }
+        is KeywordElement -> {
+            keywords.add(keyword)
+            keyword.parent = this
+        }
     }
 }
 

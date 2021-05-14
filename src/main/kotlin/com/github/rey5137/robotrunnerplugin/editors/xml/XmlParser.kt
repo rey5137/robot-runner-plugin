@@ -14,7 +14,8 @@ fun VirtualFile.parseXml(): RobotElement {
     var skipCount = 0
     var messageIndex = 0L
     var docIndex = 0L
-    val keywordMap = mutableMapOf<String, Int>()
+    val keywordNameMap = mutableMapOf<String, Int>()
+    val keywordLibMap = mutableMapOf<String, Int>()
     while (reader.hasNext()) {
         val nextEvent = reader.nextEvent()
         if (nextEvent.isStartElement) {
@@ -32,7 +33,7 @@ fun VirtualFile.parseXml(): RobotElement {
                     TAG_TEST -> startElement.toTestElement().apply {
                         currentElement.addTest(this)
                     }
-                    TAG_KEYWORD -> startElement.toKeywordElement(keywordMap, docIndex++, robotElement).apply {
+                    TAG_KEYWORD -> startElement.toKeywordElement(keywordNameMap, keywordLibMap, docIndex++, robotElement).apply {
                         currentElement.addKeyword(this)
                     }
                     TAG_STATUS -> startElement.toStatusElement().apply {
@@ -116,16 +117,21 @@ private fun StartElement.toTestElement() = TestElement(
     name = getAttributeByName(QName(TAG_NAME))?.value ?: "",
 )
 
-private fun StartElement.toKeywordElement(keywordMap: MutableMap<String, Int>, docIndex: Long, robotElement: RobotElement): KeywordElement {
+private fun StartElement.toKeywordElement(keywordNameMap: MutableMap<String, Int>, keywordLibMap: MutableMap<String, Int>, docIndex: Long, robotElement: RobotElement): KeywordElement {
     val name = getAttributeByName(QName(TAG_NAME))?.value ?: ""
-    val index = keywordMap[name] ?: keywordMap.size.apply {
-        keywordMap[name] = this
+    val library = getAttributeByName(QName(TAG_LIBRARY))?.value ?: ""
+    val nameIndex = keywordNameMap[name] ?: keywordNameMap.size.apply {
+        keywordNameMap[name] = this
         robotElement.keywordNames.add(name)
+    }
+    val libIndex = keywordLibMap[library] ?: keywordLibMap.size.apply {
+        keywordLibMap[library] = this
+        robotElement.keywordLibraries.add(library)
     }
     robotElement.docMap[docIndex] = getAttributeByName(QName(TAG_DOC))?.value ?: ""
     return KeywordElement(
-        nameIndex = index,
-        library = getAttributeByName(QName(TAG_LIBRARY))?.value ?: "",
+        nameIndex = nameIndex,
+        libraryIndex = libIndex,
         docIndex = docIndex,
         type = getAttributeByName(QName(TAG_TYPE))?.value?.toUpperCase() ?: "",
         robotElement = robotElement,

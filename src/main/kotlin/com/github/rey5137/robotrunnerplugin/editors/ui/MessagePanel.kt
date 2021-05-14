@@ -8,20 +8,20 @@ import com.intellij.openapi.actionSystem.ActionToolbarPosition
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.DefaultActionGroup
 import com.intellij.openapi.actionSystem.ToggleAction
+import com.intellij.openapi.fileTypes.FileTypes
+import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.popup.JBPopupFactory
 import com.intellij.ui.DumbAwareActionButton
+import com.intellij.ui.EditorTextField
 import com.intellij.ui.JBSplitter
 import com.intellij.ui.ToolbarDecorator
 import com.intellij.ui.components.JBList
-import com.intellij.ui.components.JBScrollPane
-import com.intellij.ui.components.JBTextArea
 import java.awt.BorderLayout
-import java.awt.Insets
 import javax.swing.DefaultListModel
 import javax.swing.JPanel
 import javax.swing.ListSelectionModel
 
-class MessagePanel : JPanel(BorderLayout()) {
+class MessagePanel(project: Project) : JPanel(BorderLayout()) {
 
     private val messageModel = DefaultListModel<MessageElement>()
     private val messageList = JBList(messageModel).apply {
@@ -33,12 +33,7 @@ class MessagePanel : JPanel(BorderLayout()) {
             }
         }
     }
-    private val messageDetail = JBTextArea().apply {
-        lineWrap = true
-        wrapStyleWord = true
-        isEditable = false
-        margin = Insets(5, 5, 5, 5)
-    }
+    private val messageDetail = EditorTextField(null, project, FileTypes.PLAIN_TEXT, true, false)
     private val messageSplitter = JBSplitter(0.3F)
 
     private lateinit var element: KeywordElement
@@ -95,7 +90,7 @@ class MessagePanel : JPanel(BorderLayout()) {
                 }
             })
             .createPanel()
-        messageSplitter.secondComponent = JBScrollPane(messageDetail)
+        messageSplitter.secondComponent = messageDetail
         messageSplitter.setHonorComponentsMinimumSize(true)
         add(messageSplitter, BorderLayout.CENTER)
     }
@@ -129,7 +124,7 @@ class MessagePanel : JPanel(BorderLayout()) {
     private fun showMessageDetail(messageElement: MessageElement?) {
         selectedMessageElement = messageElement
         messageDetail.text = messageElement?.value() ?: ""
-        messageDetail.caretPosition = 0
+        messageDetail.setCaretPosition(0)
         messageDetail.revalidate()
     }
 

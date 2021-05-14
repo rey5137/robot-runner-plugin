@@ -1,53 +1,57 @@
 package com.github.rey5137.robotrunnerplugin.editors.ui
 
 import com.github.rey5137.robotrunnerplugin.MyBundle
-import com.github.rey5137.robotrunnerplugin.editors.xml.*
-import com.intellij.ui.components.JBScrollPane
-import com.intellij.ui.components.JBTextArea
+import com.github.rey5137.robotrunnerplugin.editors.xml.Element
+import com.github.rey5137.robotrunnerplugin.editors.xml.HasCommonField
+import com.github.rey5137.robotrunnerplugin.editors.xml.KeywordElement
+import com.github.rey5137.robotrunnerplugin.editors.xml.LOG_LEVEL_FAIL
+import com.intellij.openapi.fileTypes.FileTypes
+import com.intellij.openapi.project.Project
+import com.intellij.ui.EditorTextField
 import java.awt.BorderLayout
-import java.awt.Insets
 import javax.swing.JPanel
 
-class MiscPanel : JPanel(BorderLayout()) {
+class MiscPanel(project: Project) : JPanel(BorderLayout()) {
 
-    private val miscDetail = JBTextArea().apply {
-        lineWrap = true
-        wrapStyleWord = true
-        isEditable = false
-        margin = Insets(5, 5, 5, 5)
-    }
+    private val miscDetail = EditorTextField(null, project, FileTypes.PLAIN_TEXT, true, false)
 
     init {
-        add(JBScrollPane(miscDetail), BorderLayout.CENTER)
+        add(miscDetail, BorderLayout.CENTER)
     }
 
     fun populateData(element: Element) {
-        miscDetail.text = ""
-        if(element is HasCommonField) {
-            miscDetail.append(MyBundle.message("robot.output.editor.label.start-time"))
-            miscDetail.append(": ")
-            miscDetail.append(element.status.startTime)
-            miscDetail.append("\n")
-            miscDetail.append(MyBundle.message("robot.output.editor.label.end-time"))
-            miscDetail.append(": ")
-            miscDetail.append(element.status.endTime)
-            miscDetail.append("\n")
-            if(element.status.message.isNotEmpty()) {
-                miscDetail.append(MyBundle.message("robot.output.editor.label.status-message"))
-                miscDetail.append(": ")
-                miscDetail.append(element.status.message)
-                miscDetail.append("\n")
-            }
+        val builder = StringBuilder()
+        if (element is HasCommonField) {
+            builder.append(MyBundle.message("robot.output.editor.label.start-time"))
+                .append(": ")
+                .append(element.status.startTime)
+                .append("\n")
+                .append(MyBundle.message("robot.output.editor.label.end-time"))
+                .append(": ")
+                .append(element.status.endTime)
+                .append("\n")
+            if (element.status.message.isNotEmpty())
+                builder.append(MyBundle.message("robot.output.editor.label.status-message"))
+                    .append(": ")
+                    .append(element.status.message)
+                    .append("\n")
         }
-        if(element is KeywordElement) {
+        if (element is KeywordElement) {
             val failMessage = element.messages.firstOrNull { it.level == LOG_LEVEL_FAIL }
-            if(failMessage != null) {
-                miscDetail.append(MyBundle.message("robot.output.editor.label.fail-reason"))
-                miscDetail.append(": ")
-                miscDetail.append(failMessage.value())
-                miscDetail.append("\n")
-            }
+            if (failMessage != null)
+                builder.append(MyBundle.message("robot.output.editor.label.fail-reason"))
+                    .append(": ")
+                    .append(failMessage.value())
+                    .append("\n")
+            val document = element.doc
+            if(document.isNotEmpty())
+                builder.append(MyBundle.message("robot.output.editor.label.document"))
+                    .append(": ")
+                    .append(document)
+                    .append("\n")
         }
+        miscDetail.text = builder.toString()
+        miscDetail.setCaretPosition(0)
     }
 
 }

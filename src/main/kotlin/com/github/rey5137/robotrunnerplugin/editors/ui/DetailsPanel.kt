@@ -2,6 +2,7 @@ package com.github.rey5137.robotrunnerplugin.editors.ui
 
 import com.github.rey5137.robotrunnerplugin.MyBundle
 import com.github.rey5137.robotrunnerplugin.editors.xml.*
+import com.intellij.openapi.project.Project
 import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBTabbedPane
 import com.intellij.ui.components.JBTextField
@@ -12,7 +13,7 @@ import net.miginfocom.swing.MigLayout
 import javax.swing.JPanel
 
 
-class DetailsPanel : JPanel(MigLayout(LC().gridGap("10px", "10px").insets("0px"))) {
+class DetailsPanel(project: Project) : JPanel(MigLayout(LC().gridGap("10px", "10px").insets("0px"))) {
 
     private val nameField = JBTextField()
     private val statusLabel = JBLabel()
@@ -20,8 +21,8 @@ class DetailsPanel : JPanel(MigLayout(LC().gridGap("10px", "10px").insets("0px")
     private val tabPane = JBTabbedPane()
 
     private val argumentPanel = ArgumentPanel()
-    private val messagePanel = MessagePanel()
-    private val miscPanel = MiscPanel()
+    private val messagePanel = MessagePanel(project)
+    private val miscPanel = MiscPanel(project)
 
     init {
         add(statusLabel, CC().cell(0, 0).minWidth("48px"))

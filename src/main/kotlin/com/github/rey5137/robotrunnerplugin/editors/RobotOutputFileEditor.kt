@@ -52,7 +52,7 @@ class RobotOutputFileEditor(private val project: Project, private val srcFile: V
 
     private val treeModel = DefaultTreeModel(null)
     private val tree = MyTree(treeModel)
-    private val detailsPanel = DetailsPanel()
+    private val detailsPanel = DetailsPanel(project)
     private val myComponent = buildComponent()
 
     override fun dispose() {

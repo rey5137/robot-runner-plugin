@@ -2,7 +2,7 @@ package com.github.rey5137.robotrunnerplugin.editors.xml
 
 data class KeywordElement(
     var nameIndex: Int,
-    var library: String = "",
+    var libraryIndex: Int,
     var docIndex: Long,
     var type: String = "",
     var arguments: MutableList<String> = ArrayList(),
@@ -17,6 +17,9 @@ data class KeywordElement(
 
     override val name: String
         get() = robotElement.keywordNames[nameIndex]
+
+    val library: String
+        get() = robotElement.keywordLibraries[libraryIndex]
 
     val doc: String
         get() = robotElement.docMap[docIndex] ?: ""

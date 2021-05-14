@@ -8,15 +8,15 @@ import com.intellij.openapi.actionSystem.ActionToolbarPosition
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.DefaultActionGroup
 import com.intellij.openapi.actionSystem.ToggleAction
+import com.intellij.openapi.editor.ex.EditorEx
 import com.intellij.openapi.fileTypes.FileTypes
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.popup.JBPopupFactory
-import com.intellij.ui.DumbAwareActionButton
-import com.intellij.ui.EditorTextField
-import com.intellij.ui.JBSplitter
-import com.intellij.ui.ToolbarDecorator
+import com.intellij.ui.*
 import com.intellij.ui.components.JBList
+import com.intellij.util.ui.JBUI
 import java.awt.BorderLayout
+import java.awt.Insets
 import javax.swing.DefaultListModel
 import javax.swing.JPanel
 import javax.swing.ListSelectionModel
@@ -33,7 +33,20 @@ class MessagePanel(project: Project) : JPanel(BorderLayout()) {
             }
         }
     }
-    private val messageDetail = EditorTextField(null, project, FileTypes.PLAIN_TEXT, true, false)
+    private val messageDetail = object : EditorTextField(null, project, FileTypes.PLAIN_TEXT, true, false) {
+        override fun createEditor(): EditorEx {
+            return super.createEditor().apply {
+                setCaretEnabled(true)
+                setCaretVisible(true)
+                setVerticalScrollbarVisible(true)
+                setHorizontalScrollbarVisible(true)
+            }
+        }
+
+        init {
+            border = IdeBorderFactory.createBorder(SideBorder.ALL)
+        }
+    }
     private val messageSplitter = JBSplitter(0.3F)
 
     private lateinit var element: KeywordElement

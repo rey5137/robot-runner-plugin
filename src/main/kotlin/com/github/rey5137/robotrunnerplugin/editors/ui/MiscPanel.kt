@@ -5,15 +5,31 @@ import com.github.rey5137.robotrunnerplugin.editors.xml.Element
 import com.github.rey5137.robotrunnerplugin.editors.xml.HasCommonField
 import com.github.rey5137.robotrunnerplugin.editors.xml.KeywordElement
 import com.github.rey5137.robotrunnerplugin.editors.xml.LOG_LEVEL_FAIL
+import com.intellij.openapi.editor.ex.EditorEx
 import com.intellij.openapi.fileTypes.FileTypes
 import com.intellij.openapi.project.Project
 import com.intellij.ui.EditorTextField
+import com.intellij.ui.IdeBorderFactory
+import com.intellij.ui.SideBorder
 import java.awt.BorderLayout
 import javax.swing.JPanel
 
 class MiscPanel(project: Project) : JPanel(BorderLayout()) {
 
-    private val miscDetail = EditorTextField(null, project, FileTypes.PLAIN_TEXT, true, false)
+    private val miscDetail = object : EditorTextField(null, project, FileTypes.PLAIN_TEXT, true, false) {
+        override fun createEditor(): EditorEx {
+            return super.createEditor().apply {
+                setCaretEnabled(true)
+                setCaretVisible(true)
+                setVerticalScrollbarVisible(true)
+                setHorizontalScrollbarVisible(true)
+            }
+        }
+
+        init {
+            border = IdeBorderFactory.createBorder(SideBorder.ALL)
+        }
+    }
 
     init {
         add(miscDetail, BorderLayout.CENTER)

@@ -2,6 +2,11 @@
 
 # robot-runner-plugin Changelog
 
+## 0.2.0
+### Added
+- View Robot output file directly in IDE
+- Option to wrap name with * in Run Configuration
+
 ## 0.1.2
 ### Added
 - Run Robot Test Suite Action in Editor Context Menu

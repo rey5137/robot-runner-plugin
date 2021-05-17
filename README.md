@@ -38,6 +38,12 @@ Run Configuration to run Robot Framework test suites
 
 - Tick checkbox at column "Test Suite" / "Test Case" to select which configuration will be shown in "Run Robot ..." menu.
 
+### View Robot result 
+
+- Open Robot's output.xml file in IntelliJ
+
+- Choose tab "Robot result"
+
 <!-- Plugin description end -->
 
 ## Installation

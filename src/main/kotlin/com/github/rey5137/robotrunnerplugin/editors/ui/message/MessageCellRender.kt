@@ -21,6 +21,7 @@ class MessageCellRender : ColoredListCellRenderer<MessageElement>() {
             LOG_LEVEL_DEBUG -> MyIcons.LevelDebug
             LOG_LEVEL_TRACE -> MyIcons.LevelTrace
             LOG_LEVEL_FAIL -> MyIcons.LevelFail
+            LOG_LEVEL_ERROR -> MyIcons.LevelError
             else -> null
         }
         isIconOnTheRight = false

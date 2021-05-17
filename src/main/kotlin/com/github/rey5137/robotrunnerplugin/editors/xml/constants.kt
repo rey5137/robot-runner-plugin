@@ -30,6 +30,7 @@ const val LOG_LEVEL_INFO = "INFO"
 const val LOG_LEVEL_DEBUG = "DEBUG"
 const val LOG_LEVEL_TRACE= "TRACE"
 const val LOG_LEVEL_FAIL= "FAIL"
+const val LOG_LEVEL_ERROR= "ERROR"
 
 const val KEYWORD_TYPE_SETUP = "SETUP"
 const val KEYWORD_TYPE_TEARDOWN = "TEARDOWN"

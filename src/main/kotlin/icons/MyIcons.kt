@@ -69,6 +69,9 @@ object MyIcons {
     val LabelTrace = IconLoader.getIcon("/icons/labelTrace.svg", javaClass)
 
     @JvmField
+    val LabelError = IconLoader.getIcon("/icons/labelError.svg", javaClass)
+
+    @JvmField
     val SuitePass = LayeredIcon(ElementPass, LabelSuite)
 
     @JvmField
@@ -126,5 +129,8 @@ object MyIcons {
     val LevelTrace = LayeredIcon(ElementPass, LabelTrace)
 
     @JvmField
-    val LevelFail = LayeredIcon(ElementPass, LabelFail)
+    val LevelFail = LayeredIcon(ElementFail, LabelFail)
+
+    @JvmField
+    val LevelError = LayeredIcon(ElementFail, LabelError)
 }

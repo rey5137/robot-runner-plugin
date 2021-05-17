@@ -14,9 +14,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.popup.JBPopupFactory
 import com.intellij.ui.*
 import com.intellij.ui.components.JBList
-import com.intellij.util.ui.JBUI
 import java.awt.BorderLayout
-import java.awt.Insets
 import javax.swing.DefaultListModel
 import javax.swing.JPanel
 import javax.swing.ListSelectionModel
@@ -56,6 +54,7 @@ class MessagePanel(project: Project) : JPanel(BorderLayout()) {
     private var showDebugMessage = true
     private var showTraceMessage = true
     private var showFailMessage = true
+    private var showErrorMessage = true
 
     init {
         messageSplitter.firstComponent = ToolbarDecorator.createDecorator(messageList)
@@ -66,7 +65,7 @@ class MessagePanel(project: Project) : JPanel(BorderLayout()) {
             .addExtraAction(object : DumbAwareActionButton(MyBundle.message("robot.output.editor.label.filter-message"), AllIcons.General.Filter) {
                 override fun actionPerformed(e: AnActionEvent) {
                     JBPopupFactory.getInstance().createActionGroupPopup(null, DefaultActionGroup().apply {
-                        add(object : ToggleAction(MyBundle.message("robot.output.editor.desc.show-level-message", "INFO")) {
+                        add(object : ToggleAction(MyBundle.message("robot.output.editor.desc.show-level-message", LOG_LEVEL_INFO)) {
                             override fun isSelected(e: AnActionEvent): Boolean = showInfoMessage
 
                             override fun setSelected(e: AnActionEvent, state: Boolean) {
@@ -74,7 +73,7 @@ class MessagePanel(project: Project) : JPanel(BorderLayout()) {
                                 populateMessage(element)
                             }
                         })
-                        add(object : ToggleAction(MyBundle.message("robot.output.editor.desc.show-level-message", "DEBUG")) {
+                        add(object : ToggleAction(MyBundle.message("robot.output.editor.desc.show-level-message", LOG_LEVEL_DEBUG)) {
                             override fun isSelected(e: AnActionEvent): Boolean = showDebugMessage
 
                             override fun setSelected(e: AnActionEvent, state: Boolean) {
@@ -82,7 +81,7 @@ class MessagePanel(project: Project) : JPanel(BorderLayout()) {
                                 populateMessage(element)
                             }
                         })
-                        add(object : ToggleAction(MyBundle.message("robot.output.editor.desc.show-level-message", "TRACE")) {
+                        add(object : ToggleAction(MyBundle.message("robot.output.editor.desc.show-level-message", LOG_LEVEL_TRACE)) {
                             override fun isSelected(e: AnActionEvent): Boolean = showTraceMessage
 
                             override fun setSelected(e: AnActionEvent, state: Boolean) {
@@ -90,11 +89,19 @@ class MessagePanel(project: Project) : JPanel(BorderLayout()) {
                                 populateMessage(element)
                             }
                         })
-                        add(object : ToggleAction(MyBundle.message("robot.output.editor.desc.show-level-message", "FAIL")) {
+                        add(object : ToggleAction(MyBundle.message("robot.output.editor.desc.show-level-message", LOG_LEVEL_FAIL)) {
                             override fun isSelected(e: AnActionEvent): Boolean = showFailMessage
 
                             override fun setSelected(e: AnActionEvent, state: Boolean) {
                                 showFailMessage = state
+                                populateMessage(element)
+                            }
+                        })
+                        add(object : ToggleAction(MyBundle.message("robot.output.editor.desc.show-level-message", LOG_LEVEL_ERROR)) {
+                            override fun isSelected(e: AnActionEvent): Boolean = showErrorMessage
+
+                            override fun setSelected(e: AnActionEvent, state: Boolean) {
+                                showErrorMessage = state
                                 populateMessage(element)
                             }
                         })
@@ -124,6 +131,7 @@ class MessagePanel(project: Project) : JPanel(BorderLayout()) {
                         || (it.level == LOG_LEVEL_DEBUG && showDebugMessage)
                         || (it.level == LOG_LEVEL_TRACE && showTraceMessage)
                         || (it.level == LOG_LEVEL_FAIL && showFailMessage)
+                        || (it.level == LOG_LEVEL_ERROR && showErrorMessage)
             }
             .forEach {
                 messageModel.addElement(it)

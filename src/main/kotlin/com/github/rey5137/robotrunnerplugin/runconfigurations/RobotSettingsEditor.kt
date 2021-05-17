@@ -8,21 +8,13 @@ import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory
 import com.intellij.openapi.options.SettingsEditor
 import com.intellij.openapi.projectRoots.ProjectJdkTable
 import com.intellij.openapi.projectRoots.Sdk
-import com.intellij.openapi.ui.ComboBox
-import com.intellij.openapi.ui.DialogPanel
-import com.intellij.openapi.ui.Messages
-import com.intellij.openapi.ui.TextFieldWithBrowseButton
-import com.intellij.openapi.util.Disposer
+import com.intellij.openapi.ui.*
 import com.intellij.ui.SimpleListCellRenderer
 import com.intellij.ui.ToolbarDecorator
-import com.intellij.ui.components.JBCheckBox
-import com.intellij.ui.components.JBList
-import com.intellij.ui.components.JBTextField
+import com.intellij.ui.components.*
 import com.intellij.ui.layout.CCFlags
 import com.intellij.ui.layout.panel
 import com.intellij.ui.table.JBTable
-import com.intellij.ui.tabs.JBTabsFactory
-import com.intellij.ui.tabs.TabInfo
 import java.awt.Dimension
 import javax.swing.*
 import javax.swing.table.DefaultTableModel
@@ -106,22 +98,21 @@ class RobotSettingsEditor : SettingsEditor<RobotRunConfiguration>() {
             if(!key.isNullOrEmpty() && !value.isNullOrEmpty())
                 options.variables[key] = value
         }
-        options.logLevel = logLevelBox.selectedItem as String ?: "INFO"
-        options.defaultLogLevel = defaultLogLevelBox.selectedItem as String ?: "INFO"
+        options.logLevel = logLevelBox.selectedItem as String
+        options.defaultLogLevel = defaultLogLevelBox.selectedItem as String
         options.dryRun = dryRunCheckBox.isSelected
         options.runEmptySuite = runEmptySuiteCheckBox.isSelected
     }
 
     override fun createEditor(): JComponent = mainPanel
 
-    private fun buildMainPanel(): DialogPanel {
-        val disposable = Disposer.newDisposable()
-        val tabs = JBTabsFactory.createEditorTabs(null, disposable)
+    private fun buildMainPanel(): JComponent {
+        val tabs = JBTabbedPane()
 
-        tabs.addTab(TabInfo(buildTestSuitesPanel()).setText(MyBundle.message("robot.run.configuration.section.suites")))
-        tabs.addTab(TabInfo(buildOutputPanel()).setText(MyBundle.message("robot.run.configuration.section.output")))
-        tabs.addTab(TabInfo(buildVariablesPanel()).setText(MyBundle.message("robot.run.configuration.section.variables")))
-        tabs.addTab(TabInfo(buildExecutionPanel()).setText(MyBundle.message("robot.run.configuration.section.execution")))
+        tabs.add(MyBundle.message("robot.run.configuration.section.suites"), buildTestSuitesPanel())
+        tabs.add(MyBundle.message("robot.run.configuration.section.output"), buildOutputPanel())
+        tabs.add(MyBundle.message("robot.run.configuration.section.variables"), buildVariablesPanel())
+        tabs.add(MyBundle.message("robot.run.configuration.section.execution"), buildExecutionPanel())
 
         return panel {
             row(label = MyBundle.message("robot.run.configuration.label.interpreter")) {
@@ -140,11 +131,11 @@ class RobotSettingsEditor : SettingsEditor<RobotRunConfiguration>() {
                             text = if (sdk == null) "" else "${sdk.name} (${sdk.homePath})"
                         }
                     }
-                ).component
+                ).constraints(CCFlags.growX, CCFlags.pushX).component
             }
 
             row {
-                tabs.component().constraints(CCFlags.pushX)
+                tabs().constraints(CCFlags.growX, CCFlags.pushX)
             }
         }
     }
@@ -298,9 +289,12 @@ class RobotSettingsEditor : SettingsEditor<RobotRunConfiguration>() {
         val decorator = ToolbarDecorator.createDecorator(list)
         decorator.setPreferredSize(Dimension(20000, 50))
         decorator.setAddAction {
-            val name = Messages.showMultilineInputDialog(null, addMessage, title, null, null, null) ?: ""
+            val (name, wrapWord) = showMultilineInput(addMessage, title)
             if(name.isNotBlank())
-                model.addAll(name.split("\n").filter { it.isNotBlank() })
+                model.addAll(name.split("\n")
+                    .filter { it.isNotBlank() }
+                    .map { if(wrapWord) "*$it*" else it }
+                )
         }
         decorator.setEditAction {
             val name = Messages.showInputDialog(null, editMessage, title, null, list.selectedValue, null) ?: ""
@@ -311,6 +305,32 @@ class RobotSettingsEditor : SettingsEditor<RobotRunConfiguration>() {
         decorator.disableUpAction()
         decorator.disableDownAction()
         return decorator.createPanel()
+    }
+
+    private fun showMultilineInput(message: String, title: String): Pair<String, Boolean> {
+        val builder = DialogBuilder()
+        val textArea = JBTextArea(5, 30)
+        lateinit var checkbox: JBCheckBox
+        val panel = panel {
+            row { label(message) }
+            row {
+                JBScrollPane(textArea).apply {
+                    minimumSize = Dimension(textArea.preferredSize.width, textArea.preferredSize.height + 5)
+                }()
+            }
+            row {
+                checkbox = checkBox(MyBundle.message("robot.run.configuration.label.wrap-value")).component
+            }
+        }
+        builder.setTitle(title)
+        builder.setCenterPanel(panel)
+        builder.removeAllActions()
+        builder.addOkAction()
+        builder.addCancelAction()
+        return if(builder.show() == DialogWrapper.OK_EXIT_CODE)
+            textArea.text to checkbox.isSelected
+        else
+            "" to false
     }
 
     private fun variablesPanel(model: DefaultTableModel): JPanel {

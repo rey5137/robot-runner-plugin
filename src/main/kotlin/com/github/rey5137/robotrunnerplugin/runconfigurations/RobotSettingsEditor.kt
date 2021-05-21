@@ -36,6 +36,7 @@ class RobotSettingsEditor : SettingsEditor<RobotRunConfiguration>() {
     private lateinit var defaultLogLevelBox: ComboBox<String>
     private lateinit var dryRunCheckBox: JBCheckBox
     private lateinit var runEmptySuiteCheckBox: JBCheckBox
+    private lateinit var extraArgumentsTextField: JBTextField
 
     private val suitePathModel = DefaultListModel<String>()
     private val testNameModel = DefaultListModel<String>()
@@ -73,6 +74,7 @@ class RobotSettingsEditor : SettingsEditor<RobotRunConfiguration>() {
         defaultLogLevelBox.selectedItem = options.defaultLogLevel
         dryRunCheckBox.isSelected = options.dryRun
         runEmptySuiteCheckBox.isSelected = options.runEmptySuite
+        extraArgumentsTextField.text = options.extraArguments
     }
 
     override fun applyEditorTo(configuration: RobotRunConfiguration) {
@@ -102,6 +104,7 @@ class RobotSettingsEditor : SettingsEditor<RobotRunConfiguration>() {
         options.defaultLogLevel = defaultLogLevelBox.selectedItem as String
         options.dryRun = dryRunCheckBox.isSelected
         options.runEmptySuite = runEmptySuiteCheckBox.isSelected
+        options.extraArguments = extraArgumentsTextField.text
     }
 
     override fun createEditor(): JComponent = mainPanel
@@ -260,6 +263,10 @@ class RobotSettingsEditor : SettingsEditor<RobotRunConfiguration>() {
         }
         row {
             runEmptySuiteCheckBox = checkBox(MyBundle.message("robot.run.configuration.label.run-empty"), false, MyBundle.message("robot.run.configuration.desc.run-empty")).component
+        }
+        row {
+            label(MyBundle.message("robot.run.configuration.label.extra-arguments"))
+            extraArgumentsTextField = textField({ "" }, {}).constraints(CCFlags.pushX).component
         }
     }
 

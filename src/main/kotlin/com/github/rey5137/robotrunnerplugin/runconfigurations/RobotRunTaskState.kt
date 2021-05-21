@@ -41,6 +41,7 @@ class RobotRunTaskState(private val options: RobotRunConfigurationOptions, envir
         options.logLevel.ifNotEmpty { commands.addPair("-L", "${it}:${options.defaultLogLevel}") }
         options.dryRun.ifEnable { commands.add("--dryrun") }
         options.runEmptySuite.ifEnable { commands.add("--runemptysuite") }
+        options.extraArguments.ifNotEmpty { value -> commands.addAll(value.split(" ").filter { it.isNotBlank() }) }
 
         commands.addAll(options.suitePaths)
 

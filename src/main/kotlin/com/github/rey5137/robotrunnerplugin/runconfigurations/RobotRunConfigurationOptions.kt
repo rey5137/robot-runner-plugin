@@ -62,4 +62,7 @@ open class RobotRunConfigurationOptions : RunConfigurationOptions() {
     @get:OptionTag("runEmptySuite")
     var runEmptySuite by property(false)
 
+    @get:OptionTag("extraArguments")
+    var extraArguments by string("")
+
 }

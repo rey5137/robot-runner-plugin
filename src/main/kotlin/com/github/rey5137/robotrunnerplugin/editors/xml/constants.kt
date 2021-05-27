@@ -87,7 +87,8 @@ data class Argument<T>(
 data class Variable<T>(
     val name: String = "",
     val value: T,
-    val type: DataType
+    val type: DataType,
+    val childOrdered: Boolean = false
 )
 
 data class InputArgument(

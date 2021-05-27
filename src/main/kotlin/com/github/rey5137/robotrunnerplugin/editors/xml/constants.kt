@@ -1,5 +1,7 @@
 package com.github.rey5137.robotrunnerplugin.editors.xml
 
+import java.io.File
+
 const val TAG_ROBOT = "robot"
 const val TAG_SUITE = "suite"
 const val TAG_TEST = "test"
@@ -82,14 +84,37 @@ data class Argument<T>(
     val dataType: DataType,
     val argumentType: ArgumentType,
     val rawValue: String,
-)
+) {
+
+    fun isFilePath(): Boolean {
+        if(dataType != DataType.STRING)
+            return false
+        return try {
+            File(value.toString()).exists()
+        } catch(ex: Exception) {
+            false
+        }
+    }
+
+}
 
 data class Variable<T>(
     val name: String = "",
     val value: T,
     val type: DataType,
     val childOrdered: Boolean = false
-)
+) {
+
+    fun isFilePath(): Boolean {
+        if(type != DataType.STRING)
+            return false
+        return try {
+            File(value.toString()).exists()
+        } catch(ex: Exception) {
+            false
+        }
+    }
+}
 
 data class InputArgument(
     val name: String? = null,
@@ -103,7 +128,18 @@ data class Assignment<T>(
     val dataType: DataType,
     val assignmentType: AssignmentType,
     val hasValue: Boolean = true,
-)
+) {
+
+    fun isFilePath(): Boolean {
+        if(dataType != DataType.STRING)
+            return false
+        return try {
+            File(value.toString()).exists()
+        } catch(ex: Exception) {
+            false
+        }
+    }
+}
 
 val ARGUMENT_EMPTY = Argument<Any?>(value = null, dataType = DataType.NONE, argumentType = ArgumentType.SINGLE, rawValue = "")
 val VARIABLE_EMPTY = Variable<Any?>(type = DataType.NONE, value = null)

@@ -20,7 +20,7 @@ class DetailsPanel(project: Project) : JPanel(MigLayout(LC().gridGap("10px", "10
     private val tagsField = JBTextField()
     private val tabPane = JBTabbedPane()
 
-    private val argumentPanel = ArgumentPanel()
+    private val argumentPanel = ArgumentPanel(project)
     private val messagePanel = MessagePanel(project)
     private val miscPanel = MiscPanel(project)
 

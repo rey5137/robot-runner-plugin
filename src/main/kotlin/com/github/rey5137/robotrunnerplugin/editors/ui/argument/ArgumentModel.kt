@@ -18,7 +18,8 @@ class ArgumentModel : AbstractTableModel() {
                 variableModel = if(argument.dataType == DataType.DICT || argument.dataType == DataType.ARRAY)
                     VariableModel().apply { setVariables(argument.value as List<Variable<*>>) }
                 else
-                    null
+                    null,
+                isFilePath = argument.isFilePath()
             )
         }
         fireTableDataChanged()
@@ -29,6 +30,8 @@ class ArgumentModel : AbstractTableModel() {
     fun getInputArguments(index: Int) = items[index].inputs
 
     fun getVariableModel(index: Int) = items[index].variableModel
+
+    fun getItem(index: Int) = items[index]
 
     override fun getRowCount(): Int = items.size
 
@@ -73,11 +76,12 @@ class ArgumentModel : AbstractTableModel() {
         const val INDEX_VALUE = 2
     }
 
-    private data class Item(
+    data class Item(
         val argument: Argument<*>,
         val inputs: List<InputArgument>,
         val argumentValue: String,
         val inputsValue: String,
-        val variableModel: VariableModel?
+        val variableModel: VariableModel?,
+        val isFilePath: Boolean = false,
     )
 }

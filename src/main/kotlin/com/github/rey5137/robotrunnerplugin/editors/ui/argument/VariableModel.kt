@@ -3,6 +3,7 @@ package com.github.rey5137.robotrunnerplugin.editors.ui.argument
 import com.github.rey5137.robotrunnerplugin.editors.xml.DataType
 import com.github.rey5137.robotrunnerplugin.editors.xml.VARIABLE_EMPTY
 import com.github.rey5137.robotrunnerplugin.editors.xml.Variable
+import java.io.File
 import javax.swing.table.AbstractTableModel
 
 class VariableModel : AbstractTableModel() {
@@ -41,7 +42,8 @@ class VariableModel : AbstractTableModel() {
                     variable = variable,
                     level = level,
                     isLeaf = variables.isEmpty(),
-                    isExpanded = true
+                    isExpanded = true,
+                    isFilePath = variable.isFilePath()
                 )
             )
             variables.forEach { addVariable(it, level + 1) }
@@ -52,7 +54,8 @@ class VariableModel : AbstractTableModel() {
                     variable = variable,
                     level = level,
                     isLeaf = true,
-                    isExpanded = true
+                    isExpanded = true,
+                    isFilePath = variable.isFilePath()
                 )
             )
     }
@@ -104,5 +107,6 @@ class VariableModel : AbstractTableModel() {
         val isLeaf: Boolean,
         var isExpanded: Boolean,
         val index: Int,
+        val isFilePath: Boolean = false
     )
 }

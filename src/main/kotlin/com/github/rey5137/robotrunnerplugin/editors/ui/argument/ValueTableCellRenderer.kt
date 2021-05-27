@@ -4,11 +4,15 @@ import com.github.rey5137.robotrunnerplugin.MyBundle
 import com.github.rey5137.robotrunnerplugin.editors.xml.ARGUMENT_EMPTY
 import com.github.rey5137.robotrunnerplugin.editors.xml.Argument
 import com.github.rey5137.robotrunnerplugin.editors.xml.DataType
+import com.intellij.icons.AllIcons
 import com.intellij.ui.ColoredTableCellRenderer
 import com.intellij.ui.SimpleTextAttributes
+import com.intellij.ui.scale.JBUIScale
 import com.intellij.ui.table.JBTable
 import com.intellij.util.ui.UIUtil
+import icons.MyIcons
 import java.awt.Component
+import java.awt.Insets
 import javax.swing.JTable
 import javax.swing.table.TableCellRenderer
 
@@ -24,24 +28,34 @@ class ValueTableCellRenderer(private val argumentModel: ArgumentModel) :
             row: Int,
             column: Int
         ) {
-            val argument = value as Argument<*>
-            if (argument == ARGUMENT_EMPTY)
-                append("")
-            else
-                when (argument.dataType) {
+            val item = value as ArgumentModel.Item
+            ipad = Insets(PADDING_VERTICAL, PADDING_HORIZONTAL, PADDING_VERTICAL, PADDING_HORIZONTAL)
+            when {
+                item.argument == ARGUMENT_EMPTY -> append("")
+                item.isFilePath -> {
+                    setFocusBorderAroundIcon(true)
+                    iconTextGap = 0
+                    icon = if (selected) MyIcons.OpenFileWhite else MyIcons.OpenFile
+                    append(item.argument.value.toString(), SimpleTextAttributes.REGULAR_ATTRIBUTES)
+                }
+                else -> when (item.argument.dataType) {
                     DataType.NONE -> append("None", SimpleTextAttributes.GRAYED_ATTRIBUTES)
                     DataType.BOOL -> append(
-                        if (argument.value as Boolean) "True" else "False",
+                        if (item.argument.value as Boolean) "True" else "False",
                         SimpleTextAttributes.REGULAR_ATTRIBUTES
                     )
                     else -> {
-                        val data = argument.value.toString()
+                        val data = item.argument.value.toString()
                         if (data.isEmpty())
-                            append(MyBundle.message("robot.output.editor.desc.empty-string"), SimpleTextAttributes.GRAY_SMALL_ATTRIBUTES)
+                            append(
+                                MyBundle.message("robot.output.editor.desc.empty-string"),
+                                SimpleTextAttributes.GRAY_SMALL_ATTRIBUTES
+                            )
                         else
                             append(data, SimpleTextAttributes.REGULAR_ATTRIBUTES)
                     }
                 }
+            }
         }
     }
 
@@ -61,7 +75,7 @@ class ValueTableCellRenderer(private val argumentModel: ArgumentModel) :
         val component = if (variableModel == null)
             stringCellRenderer.getTableCellRendererComponent(
                 table,
-                argumentModel.getArgument(row),
+                argumentModel.getItem(row),
                 isSelected,
                 hasFocus,
                 row,
@@ -89,4 +103,16 @@ class ValueTableCellRenderer(private val argumentModel: ArgumentModel) :
         table.border = if (hasFocus) UIUtil.getTableFocusCellHighlightBorder() else null
         return table
     }
+
+    companion object {
+
+        val PADDING_HORIZONTAL = JBUIScale.scale(1)
+        val PADDING_VERTICAL = JBUIScale.scale(2)
+
+        fun isIconClicked(x: Int): Boolean {
+            return x >= PADDING_HORIZONTAL && x < PADDING_HORIZONTAL + MyIcons.OpenFile.iconWidth
+        }
+
+    }
+
 }

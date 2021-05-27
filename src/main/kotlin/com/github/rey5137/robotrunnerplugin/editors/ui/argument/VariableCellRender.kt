@@ -22,7 +22,7 @@ class VariableCellRender : ColoredTableCellRenderer() {
         row: Int,
         column: Int
     ) {
-        val (variable, level, isLeaf, isExpanded) = (table.model as VariableModel).getItem(row)
+        val (variable, level, isLeaf, isExpanded, _, isFilePath) = (table.model as VariableModel).getItem(row)
         if(variable == VARIABLE_EMPTY) {
             ipad = Insets(PADDING_VERTICAL, PADDING_HORIZONTAL + PADDING_LEVEL * level + AllIcons.General.ArrowDown.iconWidth, PADDING_VERTICAL, PADDING_HORIZONTAL)
             append(MyBundle.message("robot.output.editor.desc.empty-data"), SimpleTextAttributes.GRAY_SMALL_ATTRIBUTES)
@@ -51,7 +51,20 @@ class VariableCellRender : ColoredTableCellRenderer() {
             }
         }
         else {
-            ipad = Insets(PADDING_VERTICAL, PADDING_HORIZONTAL + PADDING_LEVEL * level + MyIcons.ArrowDown.iconWidth, PADDING_VERTICAL, PADDING_HORIZONTAL)
+            if(isFilePath) {
+                ipad = Insets(PADDING_VERTICAL, PADDING_HORIZONTAL+ PADDING_LEVEL * level, PADDING_VERTICAL, PADDING_HORIZONTAL)
+                setFocusBorderAroundIcon(true)
+                iconTextGap = 0
+                icon = if (selected) MyIcons.OpenFileWhite else MyIcons.OpenFile
+            }
+            else {
+                ipad = Insets(
+                    PADDING_VERTICAL,
+                    PADDING_HORIZONTAL + PADDING_LEVEL * level + MyIcons.ArrowDown.iconWidth,
+                    PADDING_VERTICAL,
+                    PADDING_HORIZONTAL
+                )
+            }
             append(variable.name, SimpleTextAttributes.REGULAR_BOLD_ATTRIBUTES)
             append(" = ", SimpleTextAttributes.GRAYED_ATTRIBUTES)
             when(variable.type) {
@@ -76,7 +89,7 @@ class VariableCellRender : ColoredTableCellRenderer() {
         val PADDING_VERTICAL = JBUIScale.scale(2)
         val PADDING_LEVEL = MyIcons.ArrowDown.iconWidth
 
-        fun isArrowClicked(x: Int, level: Int) : Boolean {
+        fun isIconClicked(x: Int, level: Int) : Boolean {
             return x >= PADDING_HORIZONTAL + PADDING_LEVEL * level && x < PADDING_HORIZONTAL + PADDING_LEVEL * level + MyIcons.ArrowDown.iconWidth
         }
 

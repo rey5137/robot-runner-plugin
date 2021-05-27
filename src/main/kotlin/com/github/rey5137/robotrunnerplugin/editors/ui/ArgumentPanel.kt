@@ -5,6 +5,7 @@ import com.github.rey5137.robotrunnerplugin.editors.ui.argument.ArgumentModel
 import com.github.rey5137.robotrunnerplugin.editors.ui.assignment.AssignmentModel
 import com.github.rey5137.robotrunnerplugin.editors.ui.assignment.AssignmentTable
 import com.github.rey5137.robotrunnerplugin.editors.xml.*
+import com.intellij.openapi.project.Project
 import com.intellij.ui.JBSplitter
 import com.intellij.ui.ToolbarDecorator
 import java.awt.BorderLayout
@@ -13,15 +14,15 @@ import javax.swing.JTable
 import kotlin.math.max
 import kotlin.math.min
 
-class ArgumentPanel : JPanel(BorderLayout()) {
+class ArgumentPanel(project: Project) : JPanel(BorderLayout()) {
 
     private val argumentModel = ArgumentModel()
-    private val argumentTable = ArgumentTable(argumentModel).apply {
+    private val argumentTable = ArgumentTable(project, argumentModel).apply {
         cellSelectionEnabled = true
         autoResizeMode = JTable.AUTO_RESIZE_SUBSEQUENT_COLUMNS
     }
     private val assignmentModel = AssignmentModel()
-    private val assignmentTable = AssignmentTable(assignmentModel).apply {
+    private val assignmentTable = AssignmentTable(project, assignmentModel).apply {
         cellSelectionEnabled = true
         autoResizeMode = JTable.AUTO_RESIZE_SUBSEQUENT_COLUMNS
     }

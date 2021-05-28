@@ -53,12 +53,6 @@ class MiscPanel(project: Project) : JPanel(BorderLayout()) {
                     .append("\n")
         }
         if (element is KeywordElement) {
-            val failMessage = element.messages.firstOrNull { it.level == LOG_LEVEL_FAIL }
-            if (failMessage != null)
-                builder.append(MyBundle.message("robot.output.editor.label.fail-reason"))
-                    .append(": ")
-                    .append(failMessage.value())
-                    .append("\n")
             val document = element.doc
             if(document.isNotEmpty())
                 builder.append(MyBundle.message("robot.output.editor.label.document"))

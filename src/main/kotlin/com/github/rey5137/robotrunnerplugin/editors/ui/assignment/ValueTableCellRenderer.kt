@@ -74,7 +74,7 @@ class ValueTableCellRenderer(private val assignmentModel: AssignmentModel) :
         val component = if (variableModel == null)
             stringCellRenderer.getTableCellRendererComponent(
                 table,
-                assignmentModel.getAssignment(row),
+                assignmentModel.getItem(row),
                 isSelected,
                 hasFocus,
                 row,

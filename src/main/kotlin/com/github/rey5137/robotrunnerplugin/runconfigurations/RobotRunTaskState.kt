@@ -41,6 +41,7 @@ class RobotRunTaskState(private val options: RobotRunConfigurationOptions, envir
         options.logLevel.ifNotEmpty { commands.addPair("-L", "${it}:${options.defaultLogLevel}") }
         options.dryRun.ifEnable { commands.add("--dryrun") }
         options.runEmptySuite.ifEnable { commands.add("--runemptysuite") }
+        options.extraArguments.ifNotEmpty { value -> commands.addAll(value.parseCommandLineArguments()) }
 
         commands.addAll(options.suitePaths)
 
@@ -72,5 +73,33 @@ class RobotRunTaskState(private val options: RobotRunConfigurationOptions, envir
     private inline fun Boolean.ifEnable(func: () -> Unit) {
         if(this)
             func()
+    }
+
+    private fun String.parseCommandLineArguments(): List<String> {
+        val args = mutableListOf<String>()
+        val builder = StringBuilder()
+        val quoteChar = '"'
+        val spaceChar = ' '
+        var skipChar = spaceChar
+        forEach { c ->
+            if(c != skipChar) {
+                if(c == quoteChar && builder.isEmpty())
+                    skipChar = quoteChar
+                else
+                    builder.append(c)
+            } else if(c == quoteChar) {
+                if(builder.isNotEmpty() && builder.isNotBlank()) {
+                    args.add(builder.toString())
+                    builder.clear()
+                }
+                skipChar = spaceChar
+            } else {
+                if(builder.isNotEmpty() && builder.isNotBlank()) {
+                    args.add(builder.toString())
+                    builder.clear()
+                }
+            }
+        }
+        return args.toList()
     }
 }

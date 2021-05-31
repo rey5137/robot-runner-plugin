@@ -1,5 +1,6 @@
 package icons
 
+import com.intellij.icons.AllIcons
 import com.intellij.openapi.util.IconLoader
 import com.intellij.ui.LayeredIcon
 
@@ -133,4 +134,10 @@ object MyIcons {
 
     @JvmField
     val LevelError = LayeredIcon(ElementFail, LabelError)
+
+    @JvmField
+    val OpenFile = IconLoader.getIcon("/icons/openFile.svg", javaClass)
+
+    @JvmField
+    val OpenFileWhite = IconLoader.getIcon("/icons/openFileWhite.svg", javaClass)
 }

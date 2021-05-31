@@ -1,17 +1,17 @@
 package com.github.rey5137.robotrunnerplugin.editors.ui.argument
 
+import com.github.rey5137.robotrunnerplugin.editors.ui.openFile
 import com.github.rey5137.robotrunnerplugin.editors.xml.DataType
-import com.intellij.icons.AllIcons
+import com.intellij.openapi.project.Project
 import com.intellij.ui.table.JBTable
 import com.intellij.util.ui.AbstractTableCellEditor
 import java.awt.Component
-import java.awt.Point
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
 import java.util.*
 import javax.swing.JTable
 
-class ValueTableCellEditor(private val parentTable: JBTable, private val argumentModel: ArgumentModel) : AbstractTableCellEditor(),
+class ValueTableCellEditor(project: Project, private val parentTable: JBTable, private val argumentModel: ArgumentModel) : AbstractTableCellEditor(),
     VariableCellEditor.EditEventProvider {
 
     private val table = JBTable().apply {
@@ -19,26 +19,31 @@ class ValueTableCellEditor(private val parentTable: JBTable, private val argumen
         setDefaultEditor(Any::class.java, VariableCellEditor(this@ValueTableCellEditor))
         addMouseListener(object : MouseAdapter() {
             override fun mousePressed(e: MouseEvent) {
-                e.isArrowClicked { _, _ -> clearSelection() }
+                e.isIconClicked { _, _ -> clearSelection() }
             }
 
             override fun mouseClicked(e: MouseEvent) {
-                e.isArrowClicked { model, row ->
-                    if(model.getItem(row).isExpanded)
-                        model.collapseAt(row)
-                    else
-                        model.expandAt(row)
-                    model.fireTableDataChanged()
-                    parentTable.cellEditor.cancelCellEditing()
-                    parentTable.clearSelection()
+                e.isIconClicked { model, row ->
+                    val item = model.getItem(row)
+                    if(item.isFilePath)
+                        project.openFile(item.variable.value.toString())
+                    else {
+                        if (model.getItem(row).isExpanded)
+                            model.collapseAt(row)
+                        else
+                            model.expandAt(row)
+                        model.fireTableDataChanged()
+                        parentTable.cellEditor.cancelCellEditing()
+                        parentTable.clearSelection()
+                    }
                 }
             }
 
-            private fun MouseEvent.isArrowClicked(func: (model: VariableModel, row: Int) -> Unit) {
+            private fun MouseEvent.isIconClicked(func: (model: VariableModel, row: Int) -> Unit) {
                 val variableModel = model as VariableModel
                 val row = rowAtPoint(point)
                 val item = variableModel.getItem(row)
-                if (!item.isLeaf && VariableCellRender.isArrowClicked(point.x, item.level))
+                if ((!item.isLeaf || item.isFilePath) && VariableCellRender.isIconClicked(point.x, item.level))
                     func(variableModel, row)
             }
         })

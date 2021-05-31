@@ -43,6 +43,8 @@ const val PATTERN_ARGUMENT_MESSAGE = "Arguments:\\s*\\[\\s*(.*)\\s*\\]"
 const val PATTERN_PYTHON_ARGUMENT = "^[\\w\\d]*$"
 const val PATTERN_RETURN_MESSAGE = "Return:\\s*(.*)"
 
+const val VAL_ORDERED_DICT = "OrderedDict"
+
 fun String.isArgumentMessage() = PATTERN_ARGUMENT_MESSAGE.toRegex(option = RegexOption.DOT_MATCHES_ALL).matches(this)
 fun String.isReturnMessage() = PATTERN_RETURN_MESSAGE.toRegex(option = RegexOption.DOT_MATCHES_ALL).matches(this)
 
@@ -227,14 +229,19 @@ private fun Pointer.parseVariable(name: String, parentEndChar: Char? = null): Va
                 type = if (value is Long) DataType.INTEGER else DataType.NUMBER
             )
         }
-        else -> Variable(
-            name = name,
-            value = if (parentEndChar == null)
-                parseRawStringValue(VAR_SEPARATOR)
-            else
-                parseRawStringValue(VAR_SEPARATOR, parentEndChar),
-            type = DataType.STRING
-        )
+        else -> {
+            val isOrderedDict = peek(VAL_ORDERED_DICT.length) == VAL_ORDERED_DICT
+            Variable(
+                name = name,
+                value = when {
+                    isOrderedDict -> parseOrderedDictValue()
+                    parentEndChar == null -> parseRawStringValue(VAR_SEPARATOR)
+                    else -> parseRawStringValue(VAR_SEPARATOR, parentEndChar)
+                },
+                type = if (isOrderedDict) DataType.DICT else DataType.STRING,
+                childOrdered = isOrderedDict
+            )
+        }
     }
 }
 
@@ -343,6 +350,26 @@ private fun Pointer.parseRawStringValue(vararg stopChars: Char): String {
     return builder.toString()
 }
 
+private fun Pointer.parseOrderedDictValue(): List<Variable<*>> {
+    skip(VAL_ORDERED_DICT.length)
+    skipChar(ARRAY_START_2)
+    val variables = if (peek() == ARRAY_START_1) {
+        parseArrayValue(ARRAY_START_1, ARRAY_END_1)
+            .map { itemVar ->
+                val children = itemVar.value as List<Variable<*>>
+                Variable(
+                    name = children[0].value.toString(),
+                    value = children[1].value,
+                    type = children[1].type,
+                )
+            }
+    }
+    else
+        emptyList()
+    skipChar(ARRAY_END_2)
+    return variables
+}
+
 private fun Pointer.parseRobotArgumentName(): String {
     skip(1)
     val builder = StringBuilder()
@@ -430,5 +457,10 @@ private data class Pointer(
     }
 
     override fun toString() =
-        "end=[$end] current=[$current] next=[${peek()}] ${value.substring(current + 1, Math.min(value.length, current + 21))}"
+        "end=[$end] current=[$current] next=[${peek()}] ${
+            value.substring(
+                current + 1,
+                Math.min(value.length, current + 21)
+            )
+        }"
 }

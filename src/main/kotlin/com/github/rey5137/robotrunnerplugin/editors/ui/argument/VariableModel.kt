@@ -3,6 +3,7 @@ package com.github.rey5137.robotrunnerplugin.editors.ui.argument
 import com.github.rey5137.robotrunnerplugin.editors.xml.DataType
 import com.github.rey5137.robotrunnerplugin.editors.xml.VARIABLE_EMPTY
 import com.github.rey5137.robotrunnerplugin.editors.xml.Variable
+import java.io.File
 import javax.swing.table.AbstractTableModel
 
 class VariableModel : AbstractTableModel() {
@@ -13,8 +14,16 @@ class VariableModel : AbstractTableModel() {
 
     fun setVariables(variables: List<Variable<*>>) {
         allItems.clear()
-        if(variables.isEmpty())
-            allItems.add(Item(index = allItems.size, variable = VARIABLE_EMPTY, level = 0, isLeaf = true, isExpanded = true))
+        if (variables.isEmpty())
+            allItems.add(
+                Item(
+                    index = allItems.size,
+                    variable = VARIABLE_EMPTY,
+                    level = 0,
+                    isLeaf = true,
+                    isExpanded = true
+                )
+            )
         else
             variables.forEach { addVariable(it, 0) }
         items.clear()
@@ -23,40 +32,59 @@ class VariableModel : AbstractTableModel() {
     }
 
     private fun addVariable(variable: Variable<*>, level: Int) {
-        if(variable.type == DataType.DICT || variable.type == DataType.ARRAY) {
-            val variables = (variable.value as List<Variable<*>>).sortedBy { it.name }
-            allItems.add(Item(index = allItems.size, variable = variable, level = level, isLeaf = variables.isEmpty(), isExpanded = true))
+        if (variable.type == DataType.DICT || variable.type == DataType.ARRAY) {
+            var variables = (variable.value as List<Variable<*>>)
+            if (variable.type == DataType.DICT && !variable.childOrdered)
+                variables = variables.sortedBy { it.name }
+            allItems.add(
+                Item(
+                    index = allItems.size,
+                    variable = variable,
+                    level = level,
+                    isLeaf = variables.isEmpty(),
+                    isExpanded = true,
+                    isFilePath = variable.isFilePath()
+                )
+            )
             variables.forEach { addVariable(it, level + 1) }
-        }
-        else
-            allItems.add(Item(index = allItems.size, variable = variable, level = level, isLeaf = true, isExpanded = true))
+        } else
+            allItems.add(
+                Item(
+                    index = allItems.size,
+                    variable = variable,
+                    level = level,
+                    isLeaf = true,
+                    isExpanded = true,
+                    isFilePath = variable.isFilePath()
+                )
+            )
     }
 
     fun collapseAt(row: Int) {
-        if(items[row].isLeaf)
+        if (items[row].isLeaf)
             return
         items[row].isExpanded = false
         val level = items[row].level
-        while(row < items.size - 1 && items[row + 1].level > level) {
+        while (row < items.size - 1 && items[row + 1].level > level) {
             items.removeAt(row + 1)
         }
     }
 
     fun expandAt(row: Int) {
-        if(items[row].isLeaf)
+        if (items[row].isLeaf)
             return
         items[row].isExpanded = true
         var index = items[row].index + 1
         val level = items[row].level
         var row = row + 1
 
-        while(index < allItems.size && allItems[index].level > level) {
+        while (index < allItems.size && allItems[index].level > level) {
             val item = allItems[index]
             items.add(row, item)
             row++
             index++
-            if(!item.isLeaf && !item.isExpanded) {
-                while(index < allItems.size && allItems[index].level > item.level) {
+            if (!item.isLeaf && !item.isExpanded) {
+                while (index < allItems.size && allItems[index].level > item.level) {
                     index++
                 }
             }
@@ -65,7 +93,7 @@ class VariableModel : AbstractTableModel() {
 
     fun getItem(row: Int) = items[row]
 
-    override fun getRowCount(): Int  = items.size
+    override fun getRowCount(): Int = items.size
 
     override fun getColumnCount(): Int = 1
 
@@ -79,5 +107,6 @@ class VariableModel : AbstractTableModel() {
         val isLeaf: Boolean,
         var isExpanded: Boolean,
         val index: Int,
+        val isFilePath: Boolean = false
     )
 }

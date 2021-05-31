@@ -16,7 +16,8 @@ class AssignmentModel : AbstractTableModel() {
             variableModel = if(it.dataType == DataType.DICT || it.dataType == DataType.ARRAY)
                 VariableModel().apply { setVariables(it.value as List<Variable<*>>) }
             else
-                null
+                null,
+            isFilePath = it.isFilePath(),
         ) }
         fireTableDataChanged()
     }
@@ -24,6 +25,8 @@ class AssignmentModel : AbstractTableModel() {
     fun getAssignment(rowIndex: Int) = items[rowIndex].assignment
 
     fun getVariableModel(rowIndex: Int) = items[rowIndex].variableModel
+
+    fun getItem(rowIndex: Int) = items[rowIndex]
 
     override fun getRowCount(): Int = items.size
 
@@ -61,5 +64,6 @@ class AssignmentModel : AbstractTableModel() {
         val assignment: Assignment<*>,
         val assigmentValue: String,
         val variableModel: VariableModel?,
+        val isFilePath: Boolean = false,
     )
 }

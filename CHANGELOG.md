@@ -2,6 +2,11 @@
 
 # robot-runner-plugin Changelog
 
+## 0.2.1
+### Added
+- Add Open file action for file path in Value column of Argument/Assignment table
+- Support parsing OrderedDict object
+
 ## 0.2.0
 ### Added
 - View Robot output file directly in IDE

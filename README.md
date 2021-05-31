@@ -36,13 +36,19 @@ Run Configuration to run Robot Framework test suites
 
 - Open Settings/Preferences > Tools > Robot Runner Settings.
 
-- Tick checkbox at column "Test Suite" / "Test Case" to select which configuration will be shown in "Run Robot ..." menu.
+- Tick checkbox at the column "Test Suite" / "Test Case" to select which configuration will be shown in "Run Robot ..." menu.
 
 ### View Robot result 
 
 - Open Robot's output.xml file in IntelliJ
 
-- Choose tab "Robot result"
+- Choose the tab "Robot result"
+
+### View file in Argument/Assignment table
+
+- In Value column of Argument/Assignment table, if a value is a file path, then an open file icon will be shown in left size of cell.
+
+- Click the open file icon to view file.
 
 <!-- Plugin description end -->
 

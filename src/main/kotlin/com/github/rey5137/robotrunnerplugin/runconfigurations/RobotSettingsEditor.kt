@@ -32,6 +32,7 @@ class RobotSettingsEditor : SettingsEditor<RobotRunConfiguration>() {
     private lateinit var reportTitleTextField: JBTextField
     private lateinit var timestampOutputsCheckBox: JBCheckBox
     private lateinit var splitLogsCheckBox: JBCheckBox
+    private lateinit var suffixWithConfigNameCheckBox: JBCheckBox
     private lateinit var logLevelBox: ComboBox<String>
     private lateinit var defaultLogLevelBox: ComboBox<String>
     private lateinit var dryRunCheckBox: JBCheckBox
@@ -68,6 +69,7 @@ class RobotSettingsEditor : SettingsEditor<RobotRunConfiguration>() {
         reportTitleTextField.text = options.reportTitle ?: ""
         timestampOutputsCheckBox.isSelected = options.timestampOutputs
         splitLogsCheckBox.isSelected = options.splitLog
+        suffixWithConfigNameCheckBox.isSelected = options.suffixWithConfigName
         ((variablesModel.rowCount -1) downTo 0).forEach { variablesModel.removeRow(it) }
         options.variables.forEach { (key, value) -> variablesModel.addRow(arrayOf(key, value)) }
         logLevelBox.selectedItem = options.logLevel
@@ -93,6 +95,7 @@ class RobotSettingsEditor : SettingsEditor<RobotRunConfiguration>() {
         options.reportTitle = reportTitleTextField.text
         options.timestampOutputs = timestampOutputsCheckBox.isSelected
         options.splitLog = splitLogsCheckBox.isSelected
+        options.suffixWithConfigName = suffixWithConfigNameCheckBox.isSelected
         options.variables.clear()
         (0 until variablesModel.rowCount).forEach {
             val key = variablesModel.getValueAt(it, 0) as String?
@@ -225,6 +228,7 @@ class RobotSettingsEditor : SettingsEditor<RobotRunConfiguration>() {
             cell(isVerticalFlow = true) {
                 timestampOutputsCheckBox = checkBox(MyBundle.message("robot.run.configuration.label.output-timestamp")).component
                 splitLogsCheckBox = checkBox(MyBundle.message("robot.run.configuration.label.log-split")).component
+                suffixWithConfigNameCheckBox = checkBox(MyBundle.message("robot.run.configuration.label.output-suffix-config-name")).component
             }
         }
     }

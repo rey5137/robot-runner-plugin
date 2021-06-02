@@ -44,6 +44,9 @@ open class RobotRunConfigurationOptions : RunConfigurationOptions() {
     @get:OptionTag("timestampOutputs")
     var timestampOutputs by property(false)
 
+    @get:OptionTag("suffixWithConfigName")
+    var suffixWithConfigName by property(false)
+
     @get:OptionTag("splitLog")
     var splitLog by property(false)
 

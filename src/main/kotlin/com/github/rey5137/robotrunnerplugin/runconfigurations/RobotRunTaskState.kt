@@ -12,7 +12,7 @@ import com.intellij.openapi.projectRoots.Sdk
 import com.intellij.openapi.roots.OrderRootType
 import com.intellij.openapi.vfs.VirtualFile
 
-class RobotRunTaskState(private val options: RobotRunConfigurationOptions, environment: ExecutionEnvironment): CommandLineState(environment) {
+class RobotRunTaskState(private val name: String, private val options: RobotRunConfigurationOptions, environment: ExecutionEnvironment): CommandLineState(environment) {
 
     override fun startProcess(): ProcessHandler {
         val commands = mutableListOf<String>()
@@ -30,10 +30,17 @@ class RobotRunTaskState(private val options: RobotRunConfigurationOptions, envir
         options.includeTags.forEach { commands.addPair("-i", it) }
         options.excludeTags.forEach { commands.addPair("-e", it) }
         options.outputDirPath.ifNotEmpty { commands.addPair("-d", it) }
-        options.outputFilePath.ifNotEmpty { commands.addPair("-o", it) }
-        options.logFilePath.ifNotEmpty { commands.addPair("-l", it) }
+        if(options.suffixWithConfigName) {
+            commands.addPair("-o", (options.outputFilePath ?: "output").suffixFileName(name))
+            commands.addPair("-l", (options.logFilePath ?: "log").suffixFileName(name))
+            commands.addPair("-r", (options.reportFilePath ?: "report").suffixFileName(name))
+        }
+        else {
+            options.outputFilePath.ifNotEmpty { commands.addPair("-o", it) }
+            options.logFilePath.ifNotEmpty { commands.addPair("-l", it) }
+            options.reportFilePath.ifNotEmpty { commands.addPair("-r", it) }
+        }
         options.logTitle.ifNotEmpty { commands.addPair("--logtitle", it) }
-        options.reportFilePath.ifNotEmpty { commands.addPair("-r", it) }
         options.reportTitle.ifNotEmpty { commands.addPair("--reporttitle", it) }
         options.timestampOutputs.ifEnable { commands.add("-T") }
         options.splitLog.ifEnable { commands.add("--splitlog") }
@@ -73,6 +80,16 @@ class RobotRunTaskState(private val options: RobotRunConfigurationOptions, envir
     private inline fun Boolean.ifEnable(func: () -> Unit) {
         if(this)
             func()
+    }
+
+    private fun String.suffixFileName(value: String): String {
+        if(this.equals("None", ignoreCase = true))
+            return this
+        val index = this.lastIndexOf('.')
+        return if(index >= 0)
+            "${substring(0, index)}_$value${substring(index)}"
+        else
+            "${this}_$value"
     }
 
     private fun String.parseCommandLineArguments(): List<String> {

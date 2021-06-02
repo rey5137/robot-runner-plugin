@@ -21,11 +21,11 @@ import com.intellij.refactoring.listeners.RefactoringElementListener
 class RobotRunConfiguration(
     project: Project,
     factory: RobotRunConfigurationFactory,
-    name: String?
+    name: String
 ) : RunConfigurationBase<RobotRunConfigurationOptions>(project, factory, name), RefactoringListenerProvider {
 
     override fun getState(executor: Executor, environment: ExecutionEnvironment) =
-        RobotRunTaskState(options, environment)
+        RobotRunTaskState(name, options, environment)
 
     override fun getOptionsClass(): Class<out RunConfigurationOptions> =
         RobotRunConfigurationOptions::class.java

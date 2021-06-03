@@ -41,6 +41,8 @@ class RobotRunSettingModel: AbstractTableModel(), EditableModel {
 
     fun getConfiguration(index: Int) = configurationMap[items[index].first]
 
+    fun getSetting(index: Int) = items[index].second
+
     override fun getRowCount(): Int = items.size
 
     override fun getColumnCount(): Int = 3

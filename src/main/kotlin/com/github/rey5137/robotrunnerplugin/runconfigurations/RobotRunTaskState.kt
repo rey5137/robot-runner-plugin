@@ -1,18 +1,33 @@
 package com.github.rey5137.robotrunnerplugin.runconfigurations
 
+import com.github.rey5137.robotrunnerplugin.MyBundle
+import com.github.rey5137.robotrunnerplugin.editors.ui.openFile
 import com.intellij.execution.ExecutionException
+import com.intellij.execution.Executor
 import com.intellij.execution.configurations.CommandLineState
 import com.intellij.execution.configurations.GeneralCommandLine
+import com.intellij.execution.impl.ConsoleViewImpl
 import com.intellij.execution.process.ProcessHandler
 import com.intellij.execution.process.ProcessHandlerFactory
 import com.intellij.execution.process.ProcessTerminatedListener
 import com.intellij.execution.runners.ExecutionEnvironment
+import com.intellij.execution.ui.ConsoleView
+import com.intellij.icons.AllIcons
+import com.intellij.openapi.actionSystem.AnAction
+import com.intellij.openapi.actionSystem.AnActionEvent
+import com.intellij.openapi.project.DumbAwareAction
+import com.intellij.openapi.project.Project
 import com.intellij.openapi.projectRoots.ProjectJdkTable
 import com.intellij.openapi.projectRoots.Sdk
 import com.intellij.openapi.roots.OrderRootType
 import com.intellij.openapi.vfs.VirtualFile
 
-class RobotRunTaskState(private val name: String, private val options: RobotRunConfigurationOptions, environment: ExecutionEnvironment): CommandLineState(environment) {
+class RobotRunTaskState(
+    private val project: Project,
+    private val name: String,
+    private val options: RobotRunConfigurationOptions,
+    environment: ExecutionEnvironment
+) : CommandLineState(environment) {
 
     override fun startProcess(): ProcessHandler {
         val commands = mutableListOf<String>()
@@ -30,12 +45,11 @@ class RobotRunTaskState(private val name: String, private val options: RobotRunC
         options.includeTags.forEach { commands.addPair("-i", it) }
         options.excludeTags.forEach { commands.addPair("-e", it) }
         options.outputDirPath.ifNotEmpty { commands.addPair("-d", it) }
-        if(options.suffixWithConfigName) {
+        if (options.suffixWithConfigName) {
             commands.addPair("-o", (options.outputFilePath ?: "output").suffixFileName(name))
             commands.addPair("-l", (options.logFilePath ?: "log").suffixFileName(name))
             commands.addPair("-r", (options.reportFilePath ?: "report").suffixFileName(name))
-        }
-        else {
+        } else {
             options.outputFilePath.ifNotEmpty { commands.addPair("-o", it) }
             options.logFilePath.ifNotEmpty { commands.addPair("-l", it) }
             options.reportFilePath.ifNotEmpty { commands.addPair("-r", it) }
@@ -58,8 +72,31 @@ class RobotRunTaskState(private val name: String, private val options: RobotRunC
         return processHandler
     }
 
+    override fun createActions(
+        console: ConsoleView,
+        processHandler: ProcessHandler,
+        executor: Executor
+    ): Array<AnAction> {
+        val openAction = object : DumbAwareAction(MyBundle.message("robot.run.configuration.label.open-output"), null, AllIcons.Actions.Menu_open), AnAction.TransparentUpdate {
+            override fun update(e: AnActionEvent) {
+                e.presentation.isEnabled = processHandler.isProcessTerminated
+            }
+
+            override fun actionPerformed(e: AnActionEvent) {
+                if (processHandler.isProcessTerminated) {
+                    val outputFilePath = (console as ConsoleViewImpl).text.findOutputFilePath()
+                    if (outputFilePath != null)
+                        project.openFile(outputFilePath)
+                }
+            }
+        }
+        return arrayOf(
+            openAction
+        )
+    }
+
     private fun VirtualFile.findRobotRunFile(): VirtualFile? {
-        if(!isDirectory || name != "site-packages")
+        if (!isDirectory || name != "site-packages")
             return null
         return this.findChild("robot")?.findChild("run.py")
     }
@@ -73,20 +110,20 @@ class RobotRunTaskState(private val name: String, private val options: RobotRunC
     }
 
     private inline fun String?.ifNotEmpty(func: (String) -> Unit) {
-        if(!isNullOrEmpty())
+        if (!isNullOrEmpty())
             func(this)
     }
 
     private inline fun Boolean.ifEnable(func: () -> Unit) {
-        if(this)
+        if (this)
             func()
     }
 
     private fun String.suffixFileName(value: String): String {
-        if(this.equals("None", ignoreCase = true))
+        if (this.equals("None", ignoreCase = true))
             return this
         val index = this.lastIndexOf('.')
-        return if(index >= 0)
+        return if (index >= 0)
             "${substring(0, index)}_$value${substring(index)}"
         else
             "${this}_$value"
@@ -99,24 +136,33 @@ class RobotRunTaskState(private val name: String, private val options: RobotRunC
         val spaceChar = ' '
         var skipChar = spaceChar
         forEach { c ->
-            if(c != skipChar) {
-                if(c == quoteChar && builder.isEmpty())
+            if (c != skipChar) {
+                if (c == quoteChar && builder.isEmpty())
                     skipChar = quoteChar
                 else
                     builder.append(c)
-            } else if(c == quoteChar) {
-                if(builder.isNotEmpty() && builder.isNotBlank()) {
+            } else if (c == quoteChar) {
+                if (builder.isNotEmpty() && builder.isNotBlank()) {
                     args.add(builder.toString())
                     builder.clear()
                 }
                 skipChar = spaceChar
             } else {
-                if(builder.isNotEmpty() && builder.isNotBlank()) {
+                if (builder.isNotEmpty() && builder.isNotBlank()) {
                     args.add(builder.toString())
                     builder.clear()
                 }
             }
         }
         return args.toList()
+    }
+
+    private fun String.findOutputFilePath(): String? {
+        val regex = "^.*Output:\\s+([^\\n]*).*$".toRegex(option = RegexOption.DOT_MATCHES_ALL)
+        val result = regex.matchEntire(this)
+        return if (result == null)
+            null
+        else
+            result.groupValues[1]
     }
 }

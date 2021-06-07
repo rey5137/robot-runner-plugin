@@ -25,7 +25,7 @@ class RobotRunConfiguration(
 ) : RunConfigurationBase<RobotRunConfigurationOptions>(project, factory, name), RefactoringListenerProvider {
 
     override fun getState(executor: Executor, environment: ExecutionEnvironment) =
-        RobotRunTaskState(name, options, environment)
+        RobotRunTaskState(project, name, options, environment)
 
     override fun getOptionsClass(): Class<out RunConfigurationOptions> =
         RobotRunConfigurationOptions::class.java

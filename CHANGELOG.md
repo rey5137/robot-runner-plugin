@@ -2,6 +2,12 @@
 
 # robot-runner-plugin Changelog
 
+## 0.2.2
+### Added
+- Import/Export robot run settings
+- Option to suffix output file with config name
+- Action open output.xml in run robot panel
+
 ## 0.2.1
 ### Added
 - Add Open file action for file path in Value column of Argument/Assignment table

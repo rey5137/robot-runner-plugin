@@ -67,6 +67,8 @@ class RobotRunTaskState(
         commands.addAll(options.suitePaths)
 
         val commandLine = GeneralCommandLine(commands)
+        commandLine.setWorkDirectory(project.basePath)
+
         val processHandler = ProcessHandlerFactory.getInstance().createColoredProcessHandler(commandLine)
         ProcessTerminatedListener.attach(processHandler)
         return processHandler

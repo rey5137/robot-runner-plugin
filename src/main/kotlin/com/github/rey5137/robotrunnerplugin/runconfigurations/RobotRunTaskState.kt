@@ -1,21 +1,20 @@
 package com.github.rey5137.robotrunnerplugin.runconfigurations
 
-import com.github.rey5137.robotrunnerplugin.MyBundle
-import com.github.rey5137.robotrunnerplugin.editors.ui.openFile
+import com.github.rey5137.robotrunnerplugin.runconfigurations.actions.OpenOutputFileAction
+import com.github.rey5137.robotrunnerplugin.runconfigurations.actions.RerunRobotFailedTestsAction
+import com.intellij.execution.DefaultExecutionResult
 import com.intellij.execution.ExecutionException
+import com.intellij.execution.ExecutionResult
 import com.intellij.execution.Executor
 import com.intellij.execution.configurations.CommandLineState
 import com.intellij.execution.configurations.GeneralCommandLine
-import com.intellij.execution.impl.ConsoleViewImpl
 import com.intellij.execution.process.ProcessHandler
 import com.intellij.execution.process.ProcessHandlerFactory
 import com.intellij.execution.process.ProcessTerminatedListener
 import com.intellij.execution.runners.ExecutionEnvironment
+import com.intellij.execution.runners.ProgramRunner
 import com.intellij.execution.ui.ConsoleView
-import com.intellij.icons.AllIcons
 import com.intellij.openapi.actionSystem.AnAction
-import com.intellij.openapi.actionSystem.AnActionEvent
-import com.intellij.openapi.project.DumbAwareAction
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.projectRoots.ProjectJdkTable
 import com.intellij.openapi.projectRoots.Sdk
@@ -24,14 +23,15 @@ import com.intellij.openapi.vfs.VirtualFile
 
 class RobotRunTaskState(
     private val project: Project,
-    private val name: String,
-    private val options: RobotRunConfigurationOptions,
-    environment: ExecutionEnvironment
+    private val configuration: RobotRunConfiguration,
+    environment: ExecutionEnvironment,
+    private val rerunFailedCaseConfig: RerunFailedCaseConfig? = null
 ) : CommandLineState(environment) {
 
     override fun startProcess(): ProcessHandler {
         val commands = mutableListOf<String>()
 
+        val options = configuration.options
         val sdk = options.sdkHomePath.toSdk() ?: throw ExecutionException("SDK is not configured")
         commands += sdk.homePath!!
 
@@ -40,19 +40,31 @@ class RobotRunTaskState(
             .firstOrNull() ?: throw ExecutionException("Cannot find Robot's run.py file")
         commands += robotRunFile.path
 
-        options.testNames.forEach { commands.addPair("-t", it) }
+        if(rerunFailedCaseConfig == null)
+            options.testNames.forEach { commands.addPair("-t", it) }
+        else
+            rerunFailedCaseConfig.testcases.forEach { commands.addPair("-t", it) }
+
         options.suiteNames.forEach { commands.addPair("-s", it) }
         options.includeTags.forEach { commands.addPair("-i", it) }
         options.excludeTags.forEach { commands.addPair("-e", it) }
         options.outputDirPath.ifNotEmpty { commands.addPair("-d", it) }
-        if (options.suffixWithConfigName) {
-            commands.addPair("-o", (options.outputFilePath ?: "output").suffixFileName(name))
-            commands.addPair("-l", (options.logFilePath ?: "log").suffixFileName(name))
-            commands.addPair("-r", (options.reportFilePath ?: "report").suffixFileName(name))
-        } else {
-            options.outputFilePath.ifNotEmpty { commands.addPair("-o", it) }
-            options.logFilePath.ifNotEmpty { commands.addPair("-l", it) }
-            options.reportFilePath.ifNotEmpty { commands.addPair("-r", it) }
+        if(rerunFailedCaseConfig == null) {
+            if (options.suffixWithConfigName) {
+                commands.addPair("-o", (options.outputFilePath ?: "output").suffixFileName(configuration.name))
+                commands.addPair("-l", (options.logFilePath ?: "log").suffixFileName(configuration.name))
+                commands.addPair("-r", (options.reportFilePath ?: "report").suffixFileName(configuration.name))
+            } else {
+                options.outputFilePath.ifNotEmpty { commands.addPair("-o", it) }
+                options.logFilePath.ifNotEmpty { commands.addPair("-l", it) }
+                options.reportFilePath.ifNotEmpty { commands.addPair("-r", it) }
+            }
+        }
+        else {
+            val suffix = "rerun_${rerunFailedCaseConfig.rerunTime}"
+            commands.addPair("-o", rerunFailedCaseConfig.outputFile.suffixFileName(suffix))
+            commands.addPair("-l", rerunFailedCaseConfig.logFile.suffixFileName(suffix))
+            commands.addPair("-r", rerunFailedCaseConfig.reportFile.suffixFileName(suffix))
         }
         options.logTitle.ifNotEmpty { commands.addPair("--logtitle", it) }
         options.reportTitle.ifNotEmpty { commands.addPair("--reporttitle", it) }
@@ -78,23 +90,22 @@ class RobotRunTaskState(
         console: ConsoleView,
         processHandler: ProcessHandler,
         executor: Executor
-    ): Array<AnAction> {
-        val openAction = object : DumbAwareAction(MyBundle.message("robot.run.configuration.label.open-output"), null, AllIcons.Actions.Menu_open), AnAction.TransparentUpdate {
-            override fun update(e: AnActionEvent) {
-                e.presentation.isEnabled = processHandler.isProcessTerminated
-            }
+    ): Array<AnAction> = arrayOf(
+        OpenOutputFileAction(project, processHandler, console)
+    )
 
-            override fun actionPerformed(e: AnActionEvent) {
-                if (processHandler.isProcessTerminated) {
-                    val outputFilePath = (console as ConsoleViewImpl).text.findOutputFilePath()
-                    if (outputFilePath != null)
-                        project.openFile(outputFilePath)
-                }
-            }
-        }
-        return arrayOf(
-            openAction
+    override fun execute(executor: Executor, runner: ProgramRunner<*>): ExecutionResult {
+        val result = super.execute(executor, runner) as DefaultExecutionResult
+        result.setRestartActions(
+            RerunRobotFailedTestsAction(
+                result.processHandler,
+                result.executionConsole,
+                environment,
+                configuration,
+                rerunFailedCaseConfig,
+            )
         )
+        return result
     }
 
     private fun VirtualFile.findRobotRunFile(): VirtualFile? {
@@ -159,12 +170,4 @@ class RobotRunTaskState(
         return args.toList()
     }
 
-    private fun String.findOutputFilePath(): String? {
-        val regex = "^.*Output:\\s+([^\\n]*).*$".toRegex(option = RegexOption.DOT_MATCHES_ALL)
-        val result = regex.matchEntire(this)
-        return if (result == null)
-            null
-        else
-            result.groupValues[1]
-    }
 }

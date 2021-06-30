@@ -75,19 +75,22 @@ fun VirtualFile.parseXml(): RobotElement {
                     currentElement = stack.last()
                     when (element) {
                         is StringElement -> {
-                            if (currentElement is MessageElement) {
-                                val text = element.value.toString().trim()
-                                currentElement.title = text.extractMessageTitle()
-                                robotElement.messageMap[currentElement.valueIndex] = text
-                                stack.removeAt(stack.size - 1)
-                                currentElement = stack.last()
-                            } else if (currentElement is StatusElement) {
-                                val text = element.value.toString().trim()
-                                currentElement.message = text
-                                stack.removeAt(stack.size - 1)
-                                currentElement = stack.last()
-                            } else
-                                currentElement.addString(element)
+                            when (currentElement) {
+                                is MessageElement -> {
+                                    val text = element.value.toString().trim()
+                                    currentElement.title = text.extractMessageTitle()
+                                    robotElement.messageMap[currentElement.valueIndex] = text
+                                    stack.removeAt(stack.size - 1)
+                                    currentElement = stack.last()
+                                }
+                                is StatusElement -> {
+                                    val text = element.value.toString().trim()
+                                    currentElement.message = text
+                                    stack.removeAt(stack.size - 1)
+                                    currentElement = stack.last()
+                                }
+                                else -> currentElement.addString(element)
+                            }
                         }
                         is ArgumentsElement -> (currentElement as KeywordElement).arguments = element.arguments
                         is AssignsElement -> (currentElement as KeywordElement).assigns = element.vars
@@ -99,6 +102,49 @@ fun VirtualFile.parseXml(): RobotElement {
         }
     }
     return robotElement
+}
+
+fun VirtualFile.extractFailedTestCases(): List<String> {
+    val xmlInputFactory = XMLInputFactory.newInstance()
+    val reader = xmlInputFactory.createXMLEventReader(this.inputStream)
+    val result: MutableList<String> = ArrayList()
+    var currentTestName = ""
+    var skipCount = 0
+    while (reader.hasNext()) {
+        val nextEvent = reader.nextEvent()
+        if (nextEvent.isStartElement) {
+            if (skipCount > 0)
+                skipCount++
+            else {
+                val startElement = nextEvent.asStartElement()
+                when (startElement.name.localPart) {
+                    TAG_ROBOT, TAG_SUITE -> {
+                    }
+                    TAG_TEST -> {
+                        currentTestName = startElement.getAttributeByName(QName(TAG_NAME))?.value ?: ""
+                    }
+                    TAG_STATUS -> {
+                        if (currentTestName.isNotEmpty()) {
+                            val status = startElement.getAttributeByName(QName(TAG_STATUS))?.value ?: ""
+                            val isPassed = "PASS".equals(status, ignoreCase = true)
+                            if (!isPassed)
+                                result.add(currentTestName)
+                            currentTestName = ""
+                        }
+                    }
+                    else -> {
+                        skipCount++
+                        continue
+                    }
+                }
+            }
+        }
+        else if (nextEvent.isEndElement) {
+            if (skipCount > 0)
+                skipCount--
+        }
+    }
+    return result
 }
 
 private fun StartElement.toRobotElement() = RobotElement(

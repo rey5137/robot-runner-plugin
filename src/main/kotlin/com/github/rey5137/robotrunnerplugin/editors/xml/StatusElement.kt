@@ -9,4 +9,5 @@ data class StatusElement(
 
     val isPassed = "PASS".equals(status, ignoreCase = true)
 
+    override fun toString() = "StatusElement"
 }

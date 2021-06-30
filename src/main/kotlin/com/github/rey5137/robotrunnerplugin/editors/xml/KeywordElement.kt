@@ -23,4 +23,6 @@ data class KeywordElement(
 
     val doc: String
         get() = robotElement.docMap[docIndex] ?: ""
+
+    override fun toString() = "KeywordElement"
 }

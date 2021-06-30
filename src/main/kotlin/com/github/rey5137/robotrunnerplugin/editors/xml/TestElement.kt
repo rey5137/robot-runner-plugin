@@ -7,4 +7,7 @@ data class TestElement(
     override var tags: MutableList<String> = ArrayList(),
     override var status: StatusElement = StatusElement(),
     override var parent: Element? = null,
-) : Element, HasCommonField, HasTagsField
+) : Element, HasCommonField, HasTagsField {
+
+    override fun toString() = "TestElement"
+}

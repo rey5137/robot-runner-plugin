@@ -166,12 +166,25 @@ private fun Pointer.parseArgument(): Argument<*> {
             argumentType = argumentType,
             rawValue = value.substring(startIndex, current + 1).trim()
         )
-        else -> {
+        '0', '1', '2', '3', '4', '5', '6', '7', '8', '9' -> {
             val numValue = parseNumberValue()
             Argument(
                 name = name,
                 value = numValue,
                 dataType = if (numValue is Long) DataType.INTEGER else DataType.NUMBER,
+                argumentType = argumentType,
+                rawValue = value.substring(startIndex, current + 1).trim()
+            )
+        }
+        else -> {
+            val isOrderedDict = peek(VAL_ORDERED_DICT.length) == VAL_ORDERED_DICT
+            Argument(
+                name = name,
+                value = when {
+                    isOrderedDict -> parseOrderedDictValue()
+                    else -> parseRawStringValue(ARG_SEPARATOR)
+                },
+                dataType = if (isOrderedDict) DataType.DICT else DataType.STRING,
                 argumentType = argumentType,
                 rawValue = value.substring(startIndex, current + 1).trim()
             )

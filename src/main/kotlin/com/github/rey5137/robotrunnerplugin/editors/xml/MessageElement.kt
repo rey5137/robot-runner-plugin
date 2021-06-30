@@ -9,4 +9,6 @@ data class MessageElement(
 ) : Element {
 
     fun value() = robotElement.messageMap[valueIndex]
+
+    override fun toString() = "MessageElement"
 }

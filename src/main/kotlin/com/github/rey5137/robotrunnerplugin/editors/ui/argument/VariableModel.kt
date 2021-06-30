@@ -66,6 +66,8 @@ class VariableModel : AbstractTableModel() {
         items[row].isExpanded = false
         val level = items[row].level
         while (row < items.size - 1 && items[row + 1].level > level) {
+            if(!items[row + 1].isLeaf)
+                items[row + 1].isExpanded = false
             items.removeAt(row + 1)
         }
     }

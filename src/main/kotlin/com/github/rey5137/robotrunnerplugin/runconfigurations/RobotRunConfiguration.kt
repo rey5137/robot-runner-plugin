@@ -1,10 +1,8 @@
 package com.github.rey5137.robotrunnerplugin.runconfigurations
 
+import com.github.rey5137.robotrunnerplugin.MyBundle
 import com.intellij.execution.Executor
-import com.intellij.execution.configurations.RefactoringListenerProvider
-import com.intellij.execution.configurations.RunConfiguration
-import com.intellij.execution.configurations.RunConfigurationBase
-import com.intellij.execution.configurations.RunConfigurationOptions
+import com.intellij.execution.configurations.*
 import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.openapi.components.State
 import com.intellij.openapi.components.Storage
@@ -36,7 +34,10 @@ class RobotRunConfiguration(
     override fun getConfigurationEditor(): SettingsEditor<out RunConfiguration> =
         RobotSettingsEditor()
 
-    override fun checkConfiguration() {}
+    override fun checkConfiguration() {
+        if(options.sdkHomePath == null)
+            throw RuntimeConfigurationException(MyBundle.message("robot.run.configuration.message.interpreter-missing"))
+    }
 
     override fun getRefactoringElementListener(element: PsiElement): RefactoringElementListener? {
         val index = options.suitePaths.indexOf(element.getPath() ?: "")

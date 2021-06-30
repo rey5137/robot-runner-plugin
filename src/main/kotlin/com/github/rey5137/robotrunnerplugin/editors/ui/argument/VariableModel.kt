@@ -12,7 +12,7 @@ class VariableModel : AbstractTableModel() {
 
     private val allItems = ArrayList<Item>()
 
-    fun setVariables(variables: List<Variable<*>>) {
+    fun setVariables(rootName: String, rootDataType: DataType, variables: List<Variable<*>>) {
         allItems.clear()
         if (variables.isEmpty())
             allItems.add(
@@ -24,8 +24,22 @@ class VariableModel : AbstractTableModel() {
                     isExpanded = true
                 )
             )
-        else
-            variables.forEach { addVariable(it, 0) }
+        else {
+            allItems.add(
+                Item(
+                    index = allItems.size,
+                    variable = Variable(
+                        name = rootName,
+                        value = null,
+                        type = rootDataType
+                    ),
+                    level = 0,
+                    isLeaf = false,
+                    isExpanded = true
+                )
+            )
+            variables.forEach { addVariable(it, 1) }
+        }
         items.clear()
         items.addAll(allItems)
         fireTableDataChanged()

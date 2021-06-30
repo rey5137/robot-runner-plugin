@@ -14,7 +14,7 @@ class AssignmentModel : AbstractTableModel() {
             assignment = it,
             assigmentValue = it.getFullName(),
             variableModel = if(it.dataType == DataType.DICT || it.dataType == DataType.ARRAY)
-                VariableModel().apply { setVariables(it.value as List<Variable<*>>) }
+                VariableModel().apply { setVariables(it.name.ifEmpty { "Assignment" }, it.dataType, it.value as List<Variable<*>>) }
             else
                 null,
             isFilePath = it.isFilePath(),

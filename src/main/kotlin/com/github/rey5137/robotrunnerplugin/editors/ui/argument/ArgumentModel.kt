@@ -16,7 +16,7 @@ class ArgumentModel : AbstractTableModel() {
                 argumentValue = argument.getFullName(),
                 inputsValue = inputArguments[index].joinToString(separator = "    ") { it.rawInput },
                 variableModel = if(argument.dataType == DataType.DICT || argument.dataType == DataType.ARRAY)
-                    VariableModel().apply { setVariables(argument.value as List<Variable<*>>) }
+                    VariableModel().apply { setVariables(argument.name.ifEmpty { "Argument" }, argument.dataType, argument.value as List<Variable<*>>) }
                 else
                     null,
                 isFilePath = argument.isFilePath()

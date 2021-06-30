@@ -41,13 +41,21 @@ class VariableCellRender : ColoredTableCellRenderer() {
                     if (selected) MyIcons.ArrowRightWhite else MyIcons.ArrowRight
             }
             append(variable.name, SimpleTextAttributes.REGULAR_BOLD_ATTRIBUTES)
-            val hasChild = (variable.value as List<Variable<*>>).isNotEmpty()
-            if(!hasChild) {
-                append(" = ", SimpleTextAttributes.GRAYED_ATTRIBUTES)
-                if(variable.type == DataType.DICT)
-                    append(MyBundle.message("robot.output.editor.desc.empty-dict"), SimpleTextAttributes.GRAY_SMALL_ATTRIBUTES)
-                else
-                    append(MyBundle.message("robot.output.editor.desc.empty-array"), SimpleTextAttributes.GRAY_SMALL_ATTRIBUTES)
+            if(variable.value != null) {
+                val hasChild = (variable.value as List<Variable<*>>).isNotEmpty()
+                if (!hasChild) {
+                    append(" = ", SimpleTextAttributes.GRAYED_ATTRIBUTES)
+                    if (variable.type == DataType.DICT)
+                        append(
+                            MyBundle.message("robot.output.editor.desc.empty-dict"),
+                            SimpleTextAttributes.GRAY_SMALL_ATTRIBUTES
+                        )
+                    else
+                        append(
+                            MyBundle.message("robot.output.editor.desc.empty-array"),
+                            SimpleTextAttributes.GRAY_SMALL_ATTRIBUTES
+                        )
+                }
             }
         }
         else {

@@ -84,7 +84,7 @@ class ValueTableCellRenderer(private val argumentModel: ArgumentModel) :
         else {
             getCellRendererComponent(variableModel, isSelected, hasFocus)
         }
-        table.setRowHeight(row, component.preferredSize.height)
+        table.setRowHeight(row, argumentModel.addColumnHeight(row, column, component.preferredSize.height))
         return component
     }
 

@@ -38,7 +38,7 @@ class InputTableCellRenderer(private val argumentModel: ArgumentModel) : TableCe
     }
 
     override fun getTableCellRendererComponent(
-        table: JTable?,
+        table: JTable,
         value: Any?,
         isSelected: Boolean,
         hasFocus: Boolean,
@@ -46,10 +46,12 @@ class InputTableCellRenderer(private val argumentModel: ArgumentModel) : TableCe
         column: Int
     ): Component {
         val inputs = argumentModel.getInputArguments(row)
-        return if(inputs.size == 1)
+        val component = if(inputs.size == 1)
             stringCellRenderer.getTableCellRendererComponent(table, inputs[0], isSelected, hasFocus, row, column)
         else
             getCellRendererComponent(inputs, isSelected, hasFocus)
+        table.setRowHeight(row, argumentModel.addColumnHeight(row, column, component.preferredSize.height))
+        return component
     }
 
     private fun getCellRendererComponent(inputs: List<InputArgument>, isSelected: Boolean, hasFocus: Boolean): Component {

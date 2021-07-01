@@ -3,10 +3,22 @@ package com.github.rey5137.robotrunnerplugin.editors.ui.argument
 import com.github.rey5137.robotrunnerplugin.MyBundle
 import com.github.rey5137.robotrunnerplugin.editors.xml.*
 import javax.swing.table.AbstractTableModel
+import kotlin.math.max
 
 class ArgumentModel : AbstractTableModel() {
 
     private var items: List<Item> = emptyList()
+    private val rowHeightMap = mutableMapOf<Int, RowHeight>()
+
+    fun addColumnHeight(row: Int, column: Int, height: Int): Int {
+        val rowHeight = rowHeightMap.computeIfAbsent(row) { RowHeight() }
+        when (column) {
+            INDEX_ARGUMENT -> rowHeight.argumentColumn = height
+            INDEX_INPUT -> rowHeight.inputColumn = height
+            INDEX_VALUE -> rowHeight.valueColumn = height
+        }
+        return rowHeight.rowHeight
+    }
 
     fun setArguments(arguments: List<Argument<*>>, inputArguments: List<List<InputArgument>>) {
         items = arguments.mapIndexed { index, argument ->
@@ -22,6 +34,7 @@ class ArgumentModel : AbstractTableModel() {
                 isFilePath = argument.isFilePath()
             )
         }
+        rowHeightMap.clear()
         fireTableDataChanged()
     }
 
@@ -84,4 +97,14 @@ class ArgumentModel : AbstractTableModel() {
         val variableModel: VariableModel?,
         val isFilePath: Boolean = false,
     )
+
+    data class RowHeight(
+        var argumentColumn: Int = 0,
+        var inputColumn: Int = 0,
+        var valueColumn: Int = 0,
+    ) {
+        val rowHeight: Int
+            get() = max(max(argumentColumn, inputColumn), valueColumn)
+    }
+
 }

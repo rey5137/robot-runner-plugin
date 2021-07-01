@@ -8,7 +8,7 @@ import javax.swing.JTable
 class ArgumentTableCellRenderer(private val model: ArgumentModel) : ColoredTableCellRenderer() {
 
     override fun customizeCellRenderer(
-        table: JTable?,
+        table: JTable,
         value: Any?,
         selected: Boolean,
         hasFocus: Boolean,
@@ -33,6 +33,10 @@ class ArgumentTableCellRenderer(private val model: ArgumentModel) : ColoredTable
             if(sign.isNotEmpty())
                 append(ARG_NAME_END.toString(), SimpleTextAttributes.GRAY_ATTRIBUTES)
         }
+        table.setRowHeight(row, model.addColumnHeight(row, column, this.preferredSize.height))
     }
+
+
+
 
 }

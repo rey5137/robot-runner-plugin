@@ -12,6 +12,8 @@ import javax.swing.JTable
 
 class ArgumentTable(project: Project, private val argumentModel: ArgumentModel) : JBTable(argumentModel) {
 
+
+
     init {
         cellSelectionEnabled = true
         autoResizeMode = JTable.AUTO_RESIZE_SUBSEQUENT_COLUMNS

@@ -8,16 +8,15 @@ import kotlin.math.max
 class ArgumentModel : AbstractTableModel() {
 
     private var items: List<Item> = emptyList()
-    private val rowHeightMap = mutableMapOf<Int, RowHeight>()
 
     fun addColumnHeight(row: Int, column: Int, height: Int): Int {
-        val rowHeight = rowHeightMap.computeIfAbsent(row) { RowHeight() }
+        val item = items[row]
         when (column) {
-            INDEX_ARGUMENT -> rowHeight.argumentColumn = height
-            INDEX_INPUT -> rowHeight.inputColumn = height
-            INDEX_VALUE -> rowHeight.valueColumn = height
+            INDEX_ARGUMENT -> item.argumentColumn = height
+            INDEX_INPUT -> item.inputColumn = height
+            INDEX_VALUE -> item.valueColumn = height
         }
-        return rowHeight.rowHeight
+        return item.rowHeight
     }
 
     fun setArguments(arguments: List<Argument<*>>, inputArguments: List<List<InputArgument>>) {
@@ -34,7 +33,6 @@ class ArgumentModel : AbstractTableModel() {
                 isFilePath = argument.isFilePath()
             )
         }
-        rowHeightMap.clear()
         fireTableDataChanged()
     }
 
@@ -96,9 +94,6 @@ class ArgumentModel : AbstractTableModel() {
         val inputsValue: String,
         val variableModel: VariableModel?,
         val isFilePath: Boolean = false,
-    )
-
-    data class RowHeight(
         var argumentColumn: Int = 0,
         var inputColumn: Int = 0,
         var valueColumn: Int = 0,

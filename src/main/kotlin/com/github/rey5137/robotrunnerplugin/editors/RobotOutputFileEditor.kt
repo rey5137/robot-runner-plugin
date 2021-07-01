@@ -30,6 +30,8 @@ import icons.MyIcons
 import org.eclipse.collections.impl.list.mutable.FastList
 import java.awt.BorderLayout
 import java.awt.Dimension
+import java.awt.Toolkit
+import java.awt.datatransfer.StringSelection
 import java.beans.PropertyChangeListener
 import java.util.*
 import javax.swing.JComponent
@@ -163,6 +165,18 @@ class RobotOutputFileEditor(private val project: Project, private val srcFile: V
                     TreeUtil.expandAll(tree) {
                         tree.ui = MyTreeUI()
                     }
+                }
+            })
+            .addExtraAction(object : AnActionButton(MyBundle.message("robot.output.editor.label.copy-test-case-name"), AllIcons.Actions.Copy) {
+                override fun actionPerformed(e: AnActionEvent) {
+                    val tests = mutableListOf<String>()
+                    TreeUtil.treeNodeTraverser(robotTreeNodeWrapper!!.node).forEach { node ->
+                        val userObject = (node as DefaultMutableTreeNode).userObject
+                        if(userObject is TestElement)
+                            tests.add(userObject.name)
+                    }
+                    val stringSelection = StringSelection(tests.joinToString(separator = "\n"))
+                    Toolkit.getDefaultToolkit().systemClipboard.setContents(stringSelection, null)
                 }
             })
         val panel = JPanel(BorderLayout())

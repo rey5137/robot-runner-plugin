@@ -2,6 +2,11 @@
 
 # robot-runner-plugin Changelog
 
+## 0.2.3
+### Added
+- Action copy test case name in Robot output file viewer
+- Action rerun failed case in run robot panel
+
 ## 0.2.2
 ### Added
 - Import/Export robot run settings

@@ -35,3 +35,14 @@ fun String.findNumberOfFailedCases(): Int? {
     else
         result.groupValues[1].toIntOrNull()
 }
+
+fun String.escapeCharsInTestName(): String {
+    val builder = StringBuilder()
+    forEach { c ->
+        when(c) {
+            '*', '?', '[', ']' -> builder.append('[').append(c).append(']')
+            else -> builder.append(c)
+        }
+    }
+    return builder.toString()
+}

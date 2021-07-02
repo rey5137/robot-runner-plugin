@@ -43,7 +43,7 @@ class RobotRunTaskState(
         if(rerunFailedCaseConfig == null)
             options.testNames.forEach { commands.addPair("-t", it) }
         else
-            rerunFailedCaseConfig.testcases.forEach { commands.addPair("-t", it) }
+            rerunFailedCaseConfig.testcases.forEach { commands.addPair("-t", it.escapeCharsInTestName()) }
 
         options.suiteNames.forEach { commands.addPair("-s", it) }
         options.includeTags.forEach { commands.addPair("-i", it) }

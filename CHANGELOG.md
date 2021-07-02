@@ -2,6 +2,10 @@
 
 # robot-runner-plugin Changelog
 
+## 0.2.4
+### Fixed
+- Bug not escape special characters in test name with Run Robot Test Case Action
+
 ## 0.2.3
 ### Added
 - Action copy test case name in Robot output file viewer

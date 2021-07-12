@@ -27,7 +27,11 @@ class RerunRobotFailedTestsAction(
     private val environment: ExecutionEnvironment,
     private val configuration: RobotRunConfiguration,
     private val rerunFailedCaseConfig: RerunFailedCaseConfig?,
-) : AnAction(MyBundle.message("robot.run.configuration.label.rerun-failed-cases"), "", AllIcons.RunConfigurations.RerunFailedTests), AnAction.TransparentUpdate {
+) : AnAction(
+    MyBundle.message("robot.run.configuration.label.rerun-failed-cases"),
+    "",
+    AllIcons.RunConfigurations.RerunFailedTests
+), AnAction.TransparentUpdate {
 
     override fun update(e: AnActionEvent) {
         if (processHandler.isProcessTerminated) {
@@ -45,14 +49,15 @@ class RerunRobotFailedTestsAction(
             if (testcases.isEmpty())
                 return
 
-            val config = rerunFailedCaseConfig?.copy(rerunTime = rerunFailedCaseConfig.rerunTime + 1)
-                ?: RerunFailedCaseConfig(
-                    outputFile = outputFile,
-                    logFile = text.findLogFilePath() ?: return,
-                    reportFile = text.findReportFilePath() ?: return,
-                    rerunTime = 1,
-                    testcases = testcases
-                )
+            val config =
+                rerunFailedCaseConfig?.copy(rerunTime = rerunFailedCaseConfig.rerunTime + 1, testcases = testcases)
+                    ?: RerunFailedCaseConfig(
+                        outputFile = outputFile,
+                        logFile = text.findLogFilePath() ?: return,
+                        reportFile = text.findReportFilePath() ?: return,
+                        rerunTime = 1,
+                        testcases = testcases
+                    )
 
             val runProfile = MyRunProfile(configuration, config)
             val environmentBuilder = ExecutionEnvironmentBuilder(environment)

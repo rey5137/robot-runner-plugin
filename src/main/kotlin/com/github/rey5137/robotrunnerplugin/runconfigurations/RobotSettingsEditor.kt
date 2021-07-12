@@ -300,10 +300,11 @@ class RobotSettingsEditor : SettingsEditor<RobotRunConfiguration>() {
         val decorator = ToolbarDecorator.createDecorator(list)
         decorator.setPreferredSize(Dimension(20000, 50))
         decorator.setAddAction {
-            val (name, wrapWord) = showMultilineInput(addMessage, title)
+            val (name, wrapWord, escapeSpecialChars) = showMultilineInput(addMessage, title)
             if(name.isNotBlank())
                 model.addAll(name.split("\n")
                     .filter { it.isNotBlank() }
+                    .map { if(escapeSpecialChars) it.escapeCharsInTestName() else it }
                     .map { if(wrapWord) "*$it*" else it }
                 )
         }
@@ -318,10 +319,11 @@ class RobotSettingsEditor : SettingsEditor<RobotRunConfiguration>() {
         return decorator.createPanel()
     }
 
-    private fun showMultilineInput(message: String, title: String): Pair<String, Boolean> {
+    private fun showMultilineInput(message: String, title: String): MultilineInput {
         val builder = DialogBuilder()
         val textArea = JBTextArea(5, 30)
-        lateinit var checkbox: JBCheckBox
+        lateinit var wrapCheckbox: JBCheckBox
+        lateinit var escapeCheckbox: JBCheckBox
         val panel = panel {
             row { label(message) }
             row {
@@ -330,7 +332,10 @@ class RobotSettingsEditor : SettingsEditor<RobotRunConfiguration>() {
                 }()
             }
             row {
-                checkbox = checkBox(MyBundle.message("robot.run.configuration.label.wrap-value")).component
+                wrapCheckbox = checkBox(MyBundle.message("robot.run.configuration.label.wrap-value")).component
+            }
+            row {
+                escapeCheckbox = checkBox(MyBundle.message("robot.run.configuration.label.escape-special-chars")).component
             }
         }
         builder.setTitle(title)
@@ -339,9 +344,17 @@ class RobotSettingsEditor : SettingsEditor<RobotRunConfiguration>() {
         builder.addOkAction()
         builder.addCancelAction()
         return if(builder.show() == DialogWrapper.OK_EXIT_CODE)
-            textArea.text to checkbox.isSelected
+            MultilineInput(
+                text = textArea.text,
+                wrapWord = wrapCheckbox.isSelected,
+                escapeSpecialChars = escapeCheckbox.isSelected
+            )
         else
-            "" to false
+            MultilineInput(
+                text = "",
+                wrapWord = false,
+                escapeSpecialChars = false
+            )
     }
 
     private fun variablesPanel(model: DefaultTableModel): JPanel {
@@ -361,4 +374,10 @@ class RobotSettingsEditor : SettingsEditor<RobotRunConfiguration>() {
     private fun <T> DefaultListModel<T>.addAll(values: List<T>) {
         values.forEach { this.addElement(it) }
     }
+
+    data class MultilineInput(
+        val text: String,
+        val wrapWord: Boolean,
+        val escapeSpecialChars: Boolean
+    )
 }

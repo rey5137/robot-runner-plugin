@@ -80,14 +80,17 @@ class ValueTableCellEditor(project: Project, private val parentTable: JBTable, p
         row: Int,
         column: Int
     ): Component {
-        val assignment = assignmentModel.getAssignment(row)
+        val assignmentHolder = assignmentModel.getAssignmentHolder(row)
+        val assignment = assignmentHolder.value
         val editor = table.getDefaultEditor(Any::class.java)
-        return when(assignment.dataType) {
+        val component = when(assignment.dataType) {
             DataType.NONE -> editor.getTableCellEditorComponent(table, "None", isSelected, row, column)
             DataType.BOOL -> editor.getTableCellEditorComponent(table, if(assignment.value as Boolean) "True" else "False", isSelected, row, column)
             DataType.DICT, DataType.ARRAY -> this.table.apply { model = assignmentModel.getVariableModel(row) }
             else -> editor.getTableCellEditorComponent(table, assignment.value.toString(), isSelected, row, column)
         }
+        table.setRowHeight(row, component.preferredSize.height)
+        return component
     }
 
 }

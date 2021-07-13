@@ -30,7 +30,8 @@ class InputArgumentCellEditor(private val inputTableCellEditor: InputTableCellEd
         row: Int,
         column: Int
     ): Component {
-        val input = (table.model as InputArgumentModel).getItem(row)
+        val inputHolder = (table.model as InputArgumentModel).getItem(row)
+        val input = inputHolder.value
         return if(input.name == null)
             stringCellEditor.getTableCellEditorComponent(table, input.value, isSelected, row, column)
         else

@@ -21,13 +21,13 @@ import javax.swing.ListSelectionModel
 
 class MessagePanel(project: Project) : JPanel(BorderLayout()) {
 
-    private val messageModel = DefaultListModel<ElementHolder<MessageElement>>()
+    private val messageModel = DefaultListModel<HighlightHolder<MessageElement>>()
     private val messageList = JBList(messageModel).apply {
         cellRenderer = MessageCellRender()
         selectionMode = ListSelectionModel.SINGLE_SELECTION
         addListSelectionListener {
             if (!it.valueIsAdjusting) {
-                showMessageDetail(selectedValue?.element)
+                showMessageDetail(selectedValue?.value)
             }
         }
     }
@@ -137,7 +137,7 @@ class MessagePanel(project: Project) : JPanel(BorderLayout()) {
                         || (it.level == LOG_LEVEL_ERROR && showErrorMessage)
             }
             .forEach {
-                messageModel.addElement(ElementHolder(it, it.shouldHighlight(highlightInfo)))
+                messageModel.addElement(HighlightHolder(it, it.shouldHighlight(highlightInfo)))
                 if(it == selectedMessageElement)
                     selectedIndex = messageModel.size() - 1
             }

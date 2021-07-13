@@ -1,7 +1,6 @@
 package com.github.rey5137.robotrunnerplugin.editors.ui.assignment
 
 import com.github.rey5137.robotrunnerplugin.MyBundle
-import com.github.rey5137.robotrunnerplugin.editors.ui.argument.ValueTableCellRenderer
 import com.github.rey5137.robotrunnerplugin.editors.ui.argument.VariableCellRender
 import com.github.rey5137.robotrunnerplugin.editors.ui.argument.VariableModel
 import com.github.rey5137.robotrunnerplugin.editors.xml.*
@@ -29,23 +28,24 @@ class ValueTableCellRenderer(private val assignmentModel: AssignmentModel) :
             column: Int
         ) {
             val item = value as AssignmentModel.Item
+            val assignment = item.assignmentHolder.value
             ipad = Insets(PADDING_VERTICAL, PADDING_HORIZONTAL, PADDING_VERTICAL, PADDING_HORIZONTAL)
-            if (!item.assignment.hasValue)
+            if (!assignment.hasValue)
                 append("")
             else if (item.isFilePath) {
                 setFocusBorderAroundIcon(true)
                 iconTextGap = 0
                 icon = if (selected) MyIcons.OpenFileWhite else MyIcons.OpenFile
-                append(item.assignment.value.toString(), SimpleTextAttributes.REGULAR_ATTRIBUTES)
+                append(assignment.value.toString(), SimpleTextAttributes.REGULAR_ATTRIBUTES)
             } else
-                when (item.assignment.dataType) {
+                when (assignment.dataType) {
                     DataType.NONE -> append("None", SimpleTextAttributes.GRAYED_ATTRIBUTES)
                     DataType.BOOL -> append(
-                        if (item.assignment.value as Boolean) "True" else "False",
+                        if (assignment.value as Boolean) "True" else "False",
                         SimpleTextAttributes.REGULAR_ATTRIBUTES
                     )
                     else -> {
-                        val data = item.assignment.value.toString()
+                        val data = assignment.value.toString()
                         if (data.isEmpty())
                             append(
                                 MyBundle.message("robot.output.editor.desc.empty-string"),

@@ -3,6 +3,8 @@ package com.github.rey5137.robotrunnerplugin.editors.ui.assignment
 import com.github.rey5137.robotrunnerplugin.editors.xml.*
 import com.intellij.ui.ColoredTableCellRenderer
 import com.intellij.ui.SimpleTextAttributes
+import java.awt.Color
+import javax.swing.BorderFactory
 import javax.swing.JTable
 
 class AssignmentTableCellRenderer(private val model: AssignmentModel) : ColoredTableCellRenderer() {
@@ -15,7 +17,13 @@ class AssignmentTableCellRenderer(private val model: AssignmentModel) : ColoredT
         row: Int,
         column: Int
     ) {
-        val assignment = model.getAssignment(row)
+        val assignmentHolder = model.getAssignmentHolder(row)
+        border = if (assignmentHolder.highlight)
+            BorderFactory.createLineBorder(Color.RED)
+        else
+            BorderFactory.createEmptyBorder()
+
+        val assignment = assignmentHolder.value
         if(assignment.name.isNotEmpty()) {
             val sign = when (assignment.assignmentType) {
                 AssignmentType.SINGLE -> ARG_SINGLE

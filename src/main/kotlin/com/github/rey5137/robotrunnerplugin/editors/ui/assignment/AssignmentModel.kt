@@ -1,6 +1,8 @@
 package com.github.rey5137.robotrunnerplugin.editors.ui.assignment
 
 import com.github.rey5137.robotrunnerplugin.MyBundle
+import com.github.rey5137.robotrunnerplugin.editors.ui.HighlightHolder
+import com.github.rey5137.robotrunnerplugin.editors.ui.HighlightInfo
 import com.github.rey5137.robotrunnerplugin.editors.ui.argument.VariableModel
 import com.github.rey5137.robotrunnerplugin.editors.xml.*
 import javax.swing.table.AbstractTableModel
@@ -9,20 +11,30 @@ class AssignmentModel : AbstractTableModel() {
 
     private var items: List<Item> = emptyList()
 
-    fun setAssignments(assignments: List<Assignment<*>>) {
-        items = assignments.map { Item(
-            assignment = it,
-            assigmentValue = it.getFullName(),
-            variableModel = if(it.dataType == DataType.DICT || it.dataType == DataType.ARRAY)
-                VariableModel().apply { setVariables(it.name.ifEmpty { "Assignment" }, it.dataType, it.value as List<Variable<*>>) }
-            else
-                null,
-            isFilePath = it.isFilePath(),
-        ) }
+    fun setAssignments(assignments: List<Assignment<*>>, highlightInfo: HighlightInfo?) {
+        items = assignments.map {
+            val fullName = it.getFullName()
+            Item(
+                assignmentHolder = HighlightHolder(value = it, highlight = highlightInfo?.match(fullName) ?: false),
+                assigmentValue = fullName,
+                variableModel = if (it.dataType == DataType.DICT || it.dataType == DataType.ARRAY)
+                    VariableModel().apply {
+                        setVariables(
+                            it.name.ifEmpty { "Assignment" },
+                            it.dataType,
+                            it.value as List<Variable<*>>,
+                            highlightInfo
+                        )
+                    }
+                else
+                    null,
+                isFilePath = it.isFilePath(),
+            )
+        }
         fireTableDataChanged()
     }
 
-    fun getAssignment(rowIndex: Int) = items[rowIndex].assignment
+    fun getAssignmentHolder(rowIndex: Int) = items[rowIndex].assignmentHolder
 
     fun getVariableModel(rowIndex: Int) = items[rowIndex].variableModel
 
@@ -33,8 +45,8 @@ class AssignmentModel : AbstractTableModel() {
     override fun getColumnCount(): Int = 2
 
     override fun isCellEditable(rowIndex: Int, columnIndex: Int): Boolean = when (columnIndex) {
-        INDEX_ASSIGNMENT -> items[rowIndex].assignment.name.isNotEmpty()
-        INDEX_VALUE -> items[rowIndex].assignment.hasValue
+        INDEX_ASSIGNMENT -> items[rowIndex].assignmentHolder.value.name.isNotEmpty()
+        INDEX_VALUE -> items[rowIndex].assignmentHolder.value.hasValue
         else -> true
     }
 
@@ -61,7 +73,7 @@ class AssignmentModel : AbstractTableModel() {
     }
 
     data class Item(
-        val assignment: Assignment<*>,
+        val assignmentHolder: HighlightHolder<Assignment<*>>,
         val assigmentValue: String,
         val variableModel: VariableModel?,
         val isFilePath: Boolean = false,

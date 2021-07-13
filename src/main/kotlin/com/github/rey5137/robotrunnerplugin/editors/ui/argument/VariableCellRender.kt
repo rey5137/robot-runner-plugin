@@ -9,7 +9,9 @@ import com.intellij.ui.ColoredTableCellRenderer
 import com.intellij.ui.SimpleTextAttributes
 import com.intellij.ui.scale.JBUIScale
 import icons.MyIcons
+import java.awt.Color
 import java.awt.Insets
+import javax.swing.BorderFactory
 import javax.swing.JTable
 
 class VariableCellRender : ColoredTableCellRenderer() {
@@ -22,7 +24,12 @@ class VariableCellRender : ColoredTableCellRenderer() {
         row: Int,
         column: Int
     ) {
-        val (variable, level, isLeaf, isExpanded, _, isFilePath) = (table.model as VariableModel).getItem(row)
+        val (variable, level, isLeaf, isExpanded, _, isFilePath, isHighlight) = (table.model as VariableModel).getItem(row)
+        border = if (isHighlight)
+            BorderFactory.createLineBorder(Color.RED)
+        else
+            BorderFactory.createEmptyBorder()
+
         if(variable == VARIABLE_EMPTY) {
             ipad = Insets(PADDING_VERTICAL, PADDING_HORIZONTAL + PADDING_LEVEL * level + AllIcons.General.ArrowDown.iconWidth, PADDING_VERTICAL, PADDING_HORIZONTAL)
             append(MyBundle.message("robot.output.editor.desc.empty-data"), SimpleTextAttributes.GRAY_SMALL_ATTRIBUTES)

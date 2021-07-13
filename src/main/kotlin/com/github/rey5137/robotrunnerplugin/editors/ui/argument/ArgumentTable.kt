@@ -61,7 +61,7 @@ class ArgumentTable(project: Project, private val argumentModel: ArgumentModel) 
                     else {
                         val item = argumentModel.getItem(row)
                         if(item.isFilePath)
-                            project.openFile(item.argument.value.toString())
+                            project.openFile(item.argumentHolder.value.toString())
                     }
                 }
             }

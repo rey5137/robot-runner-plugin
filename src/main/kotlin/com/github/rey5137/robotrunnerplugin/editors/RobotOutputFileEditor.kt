@@ -192,8 +192,8 @@ class RobotOutputFileEditor(private val project: Project, private val srcFile: V
                     val tests = mutableListOf<String>()
                     TreeUtil.treeNodeTraverser(robotTreeNodeWrapper!!.node).forEach { node ->
                         val elementHolder = (node as DefaultMutableTreeNode).getElementHolder<Element>()
-                        if (elementHolder.element is TestElement)
-                            tests.add(elementHolder.element.name)
+                        if (elementHolder.value is TestElement)
+                            tests.add(elementHolder.value.name)
                     }
                     val stringSelection = StringSelection(tests.joinToString(separator = "\n"))
                     Toolkit.getDefaultToolkit().systemClipboard.setContents(stringSelection, null)
@@ -300,7 +300,7 @@ class RobotOutputFileEditor(private val project: Project, private val srcFile: V
     private fun RobotElement.toNode(oldNodeWrapper: TreeNodeWrapper? = null): TreeNodeWrapper {
         val children = mutableListOf<TreeNodeWrapper>()
         suites.forEachIndexed { index, suite -> children.add(suite.toNode(oldNodeWrapper.childAt(index))) }
-        return TreeNodeWrapper(node = oldNodeWrapper.copyNode(ElementHolder(this, false)), children = children)
+        return TreeNodeWrapper(node = oldNodeWrapper.copyNode(HighlightHolder(this, false)), children = children)
     }
 
     private fun SuiteElement.toNode(oldNodeWrapper: TreeNodeWrapper? = null): TreeNodeWrapper {
@@ -318,7 +318,7 @@ class RobotOutputFileEditor(private val project: Project, private val srcFile: V
                 children.add(nodeWrapper)
             }
         }
-        return TreeNodeWrapper(node = oldNodeWrapper.copyNode(ElementHolder(this, highlight)), children = children)
+        return TreeNodeWrapper(node = oldNodeWrapper.copyNode(HighlightHolder(this, highlight)), children = children)
     }
 
     private fun TestElement.toNode(oldNodeWrapper: TreeNodeWrapper? = null): TreeNodeWrapper {
@@ -329,7 +329,7 @@ class RobotOutputFileEditor(private val project: Project, private val srcFile: V
             highlight = highlight || nodeWrapper.node.getElementHolder<Element>().highlight
             children.add(nodeWrapper)
         }
-        return TreeNodeWrapper(node = oldNodeWrapper.copyNode(ElementHolder(this, highlight)), children = children)
+        return TreeNodeWrapper(node = oldNodeWrapper.copyNode(HighlightHolder(this, highlight)), children = children)
     }
 
     private fun KeywordElement.toNode(oldNodeWrapper: TreeNodeWrapper? = null): TreeNodeWrapper {
@@ -340,7 +340,7 @@ class RobotOutputFileEditor(private val project: Project, private val srcFile: V
             highlight = highlight || nodeWrapper.node.getElementHolder<Element>().highlight
             children.add(nodeWrapper)
         }
-        return TreeNodeWrapper(node = oldNodeWrapper.copyNode(ElementHolder(this, highlight)), children = children)
+        return TreeNodeWrapper(node = oldNodeWrapper.copyNode(HighlightHolder(this, highlight)), children = children)
     }
 
     private fun TreeNodeWrapper?.copyNode(obj: Any) =
@@ -355,9 +355,9 @@ class RobotOutputFileEditor(private val project: Project, private val srcFile: V
     }
 
 
-    private fun <T: Element> DefaultMutableTreeNode.getElementHolder() = userObject as ElementHolder<T>
+    private fun <T: Element> DefaultMutableTreeNode.getElementHolder() = userObject as HighlightHolder<T>
 
-    private fun <T: Element> DefaultMutableTreeNode.getElement() = (userObject as ElementHolder<T>).element
+    private fun <T: Element> DefaultMutableTreeNode.getElement() = (userObject as HighlightHolder<T>).value
 
     private fun showSearchInput(): HighlightInfo? {
         val builder = DialogBuilder()
@@ -402,13 +402,13 @@ class RobotOutputFileEditor(private val project: Project, private val srcFile: V
                 return
             }
             setFocusBorderAroundIcon(true)
-            val elementHolder = value.userObject as ElementHolder<Element>
+            val elementHolder = value.userObject as HighlightHolder<Element>
             border = if (elementHolder.highlight)
                 BorderFactory.createLineBorder(Color.RED)
             else
                 BorderFactory.createEmptyBorder()
 
-            when (val element = elementHolder.element) {
+            when (val element = elementHolder.value) {
                 is SuiteElement -> {
                     icon = if (element.status.isPassed) MyIcons.SuitePass else MyIcons.SuiteFail
                     append(element.name, SimpleTextAttributes.REGULAR_BOLD_ATTRIBUTES)

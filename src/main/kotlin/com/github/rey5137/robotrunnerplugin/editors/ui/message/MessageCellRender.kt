@@ -1,6 +1,6 @@
 package com.github.rey5137.robotrunnerplugin.editors.ui.message
 
-import com.github.rey5137.robotrunnerplugin.editors.ui.ElementHolder
+import com.github.rey5137.robotrunnerplugin.editors.ui.HighlightHolder
 import com.github.rey5137.robotrunnerplugin.editors.xml.*
 import com.intellij.ui.ColoredListCellRenderer
 import com.intellij.ui.SimpleTextAttributes
@@ -9,11 +9,11 @@ import java.awt.Color
 import javax.swing.BorderFactory
 import javax.swing.JList
 
-class MessageCellRender : ColoredListCellRenderer<ElementHolder<MessageElement>>() {
+class MessageCellRender : ColoredListCellRenderer<HighlightHolder<MessageElement>>() {
 
     override fun customizeCellRenderer(
-        list: JList<out ElementHolder<MessageElement>>,
-        value: ElementHolder<MessageElement>,
+        list: JList<out HighlightHolder<MessageElement>>,
+        value: HighlightHolder<MessageElement>,
         index: Int,
         selected: Boolean,
         hasFocus: Boolean
@@ -23,7 +23,7 @@ class MessageCellRender : ColoredListCellRenderer<ElementHolder<MessageElement>>
         else
             BorderFactory.createEmptyBorder()
 
-        val messageElement = value.element
+        val messageElement = value.value
         icon = when(messageElement.level) {
             LOG_LEVEL_INFO -> MyIcons.LevelInfo
             LOG_LEVEL_DEBUG -> MyIcons.LevelDebug

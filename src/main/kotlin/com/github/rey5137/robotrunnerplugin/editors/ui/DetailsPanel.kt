@@ -52,7 +52,7 @@ class DetailsPanel(project: Project) : JPanel(MigLayout(LC().gridGap("10px", "5p
         if(element is KeywordElement) {
             tabPane.add(MyBundle.message("robot.output.editor.label.argument-tab"), argumentPanel)
             argumentPanel.border = null
-            argumentPanel.populateData(element)
+            argumentPanel.populateData(element, highlightInfo)
 
             tabPane.add(MyBundle.message("robot.output.editor.label.message-tab"), messagePanel)
             messagePanel.border = null

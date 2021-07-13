@@ -1,22 +1,30 @@
 package com.github.rey5137.robotrunnerplugin.editors.ui.message
 
+import com.github.rey5137.robotrunnerplugin.editors.ui.ElementHolder
 import com.github.rey5137.robotrunnerplugin.editors.xml.*
 import com.intellij.ui.ColoredListCellRenderer
-import com.intellij.ui.LayeredIcon
 import com.intellij.ui.SimpleTextAttributes
 import icons.MyIcons
+import java.awt.Color
+import javax.swing.BorderFactory
 import javax.swing.JList
 
-class MessageCellRender : ColoredListCellRenderer<MessageElement>() {
+class MessageCellRender : ColoredListCellRenderer<ElementHolder<MessageElement>>() {
 
     override fun customizeCellRenderer(
-        list: JList<out MessageElement>,
-        value: MessageElement,
+        list: JList<out ElementHolder<MessageElement>>,
+        value: ElementHolder<MessageElement>,
         index: Int,
         selected: Boolean,
         hasFocus: Boolean
     ) {
-        icon = when(value.level) {
+        border = if (value.highlight)
+            BorderFactory.createLineBorder(Color.RED)
+        else
+            BorderFactory.createEmptyBorder()
+
+        val messageElement = value.element
+        icon = when(messageElement.level) {
             LOG_LEVEL_INFO -> MyIcons.LevelInfo
             LOG_LEVEL_DEBUG -> MyIcons.LevelDebug
             LOG_LEVEL_TRACE -> MyIcons.LevelTrace
@@ -25,7 +33,7 @@ class MessageCellRender : ColoredListCellRenderer<MessageElement>() {
             else -> null
         }
         isIconOnTheRight = false
-        append("${value.title} ...", SimpleTextAttributes.REGULAR_ATTRIBUTES)
+        append("${messageElement.title} ...", SimpleTextAttributes.REGULAR_ATTRIBUTES)
     }
 
 }

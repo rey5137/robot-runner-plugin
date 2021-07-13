@@ -30,7 +30,7 @@ class DetailsPanel(project: Project) : JPanel(MigLayout(LC().gridGap("10px", "5p
         relayout(false)
     }
 
-    fun showDetails(element: Element) {
+    fun showDetails(element: Element, highlightInfo: HighlightInfo?) {
         var failReason: String? = null
         if(element is KeywordElement) {
             failReason = element.messages.firstOrNull { it.level == LOG_LEVEL_FAIL }?.value()
@@ -56,7 +56,7 @@ class DetailsPanel(project: Project) : JPanel(MigLayout(LC().gridGap("10px", "5p
 
             tabPane.add(MyBundle.message("robot.output.editor.label.message-tab"), messagePanel)
             messagePanel.border = null
-            messagePanel.populateData(element)
+            messagePanel.populateData(element, highlightInfo)
 
             val failMessage = element.messages.firstOrNull { it.level == LOG_LEVEL_FAIL }
             if (failMessage != null) {

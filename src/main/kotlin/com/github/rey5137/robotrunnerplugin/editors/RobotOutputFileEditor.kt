@@ -1,14 +1,11 @@
 package com.github.rey5137.robotrunnerplugin.editors
 
 import com.github.rey5137.robotrunnerplugin.MyBundle
-import com.github.rey5137.robotrunnerplugin.editors.ui.DetailsPanel
-import com.github.rey5137.robotrunnerplugin.editors.ui.HighlightInfo
-import com.github.rey5137.robotrunnerplugin.editors.ui.TreeNodeWrapper
+import com.github.rey5137.robotrunnerplugin.editors.ui.*
 import com.github.rey5137.robotrunnerplugin.editors.ui.filter.HideKeywordFilter
 import com.github.rey5137.robotrunnerplugin.editors.ui.filter.HidePassedSuiteFilter
 import com.github.rey5137.robotrunnerplugin.editors.ui.filter.HidePassedTestFilter
 import com.github.rey5137.robotrunnerplugin.editors.xml.*
-import com.github.rey5137.robotrunnerplugin.runconfigurations.RobotSettingsEditor
 import com.intellij.icons.AllIcons
 import com.intellij.openapi.actionSystem.ActionToolbarPosition
 import com.intellij.openapi.actionSystem.AnActionEvent
@@ -119,7 +116,7 @@ class RobotOutputFileEditor(private val project: Project, private val srcFile: V
         TreeUtil.installActions(tree)
         TreeSpeedSearch(tree) { o ->
             val node = o.lastPathComponent as DefaultMutableTreeNode
-            when (val element = (node.userObject as ElementHolder).element) {
+            when (val element = node.getElement<Element>()) {
                 is SuiteElement -> element.name
                 is TestElement -> element.name
                 is KeywordElement -> element.name
@@ -134,7 +131,7 @@ class RobotOutputFileEditor(private val project: Project, private val srcFile: V
             val selectionPath = tree.selectionPath
             if (selectionPath != null) {
                 val node = selectionPath.lastPathComponent as DefaultMutableTreeNode
-                detailsPanel.showDetails((node.userObject as ElementHolder).element)
+                detailsPanel.showDetails(node.getElement(), highlightInfo)
             }
         }
 
@@ -194,7 +191,7 @@ class RobotOutputFileEditor(private val project: Project, private val srcFile: V
                 override fun actionPerformed(e: AnActionEvent) {
                     val tests = mutableListOf<String>()
                     TreeUtil.treeNodeTraverser(robotTreeNodeWrapper!!.node).forEach { node ->
-                        val elementHolder = (node as DefaultMutableTreeNode).userObject as ElementHolder
+                        val elementHolder = (node as DefaultMutableTreeNode).getElementHolder<Element>()
                         if (elementHolder.element is TestElement)
                             tests.add(elementHolder.element.name)
                     }
@@ -210,7 +207,7 @@ class RobotOutputFileEditor(private val project: Project, private val srcFile: V
                     val info = showSearchInput()
                     if(info != null) {
                         highlightInfo = info
-                        refreshNodes((robotTreeNodeWrapper!!.node.userObject as ElementHolder).element as RobotElement)
+                        refreshNodes(robotTreeNodeWrapper!!.node.getElement())
                     }
                 }
             })
@@ -220,7 +217,7 @@ class RobotOutputFileEditor(private val project: Project, private val srcFile: V
             ) {
                 override fun actionPerformed(e: AnActionEvent) {
                     highlightInfo = null
-                    refreshNodes((robotTreeNodeWrapper!!.node.userObject as ElementHolder).element as RobotElement)
+                    refreshNodes(robotTreeNodeWrapper!!.node.getElement())
                 }
             })
         val panel = JPanel(BorderLayout())
@@ -248,7 +245,7 @@ class RobotOutputFileEditor(private val project: Project, private val srcFile: V
 
     private fun cleanUp() {
         robotTreeNodeWrapper?.let {
-            val robotElement = (it.node.userObject as ElementHolder).element as RobotElement
+            val robotElement = it.node.getElement<RobotElement>()
             robotElement.db.close()
         }
     }
@@ -270,7 +267,7 @@ class RobotOutputFileEditor(private val project: Project, private val srcFile: V
             restoreSelectionNode(selectedPaths)
         } else {
             TreeUtil.promiseExpand(tree) { path ->
-                val element = ((path.lastPathComponent as DefaultMutableTreeNode).userObject as ElementHolder).element
+                val element = (path.lastPathComponent as DefaultMutableTreeNode).getElement<Element>()
                 if (element is KeywordElement || element is TestElement)
                     TreeVisitor.Action.SKIP_CHILDREN
                 else
@@ -294,7 +291,7 @@ class RobotOutputFileEditor(private val project: Project, private val srcFile: V
         node.removeAllChildren()
         val filters = elementFilters.filter { it.isEnabled }
         children.forEach { nodeWrapper ->
-            if (filters.firstOrNull { !it.accept((nodeWrapper.node.userObject as ElementHolder).element) } == null)
+            if (filters.firstOrNull { !it.accept(nodeWrapper.node.getElement()) } == null)
                 node.add(nodeWrapper.rebuildNode())
         }
         return node
@@ -307,7 +304,7 @@ class RobotOutputFileEditor(private val project: Project, private val srcFile: V
     }
 
     private fun SuiteElement.toNode(oldNodeWrapper: TreeNodeWrapper? = null): TreeNodeWrapper {
-        var highlight = shouldHighlight()
+        var highlight = shouldHighlight(highlightInfo)
         val children = mutableListOf<TreeNodeWrapper>()
         this.children.forEachIndexed { index, element ->
             val nodeWrapper = when (element) {
@@ -317,7 +314,7 @@ class RobotOutputFileEditor(private val project: Project, private val srcFile: V
                 else -> null
             }
             if (nodeWrapper != null) {
-                highlight = highlight || (nodeWrapper.node.userObject as ElementHolder).highlight
+                highlight = highlight || nodeWrapper.node.getElementHolder<Element>().highlight
                 children.add(nodeWrapper)
             }
         }
@@ -325,51 +322,25 @@ class RobotOutputFileEditor(private val project: Project, private val srcFile: V
     }
 
     private fun TestElement.toNode(oldNodeWrapper: TreeNodeWrapper? = null): TreeNodeWrapper {
-        var highlight = shouldHighlight()
+        var highlight = shouldHighlight(highlightInfo)
         val children = mutableListOf<TreeNodeWrapper>()
         keywords.forEachIndexed { index, keyword ->
             val nodeWrapper = keyword.toNode(oldNodeWrapper.childAt(index))
-            highlight = highlight || (nodeWrapper.node.userObject as ElementHolder).highlight
+            highlight = highlight || nodeWrapper.node.getElementHolder<Element>().highlight
             children.add(nodeWrapper)
         }
         return TreeNodeWrapper(node = oldNodeWrapper.copyNode(ElementHolder(this, highlight)), children = children)
     }
 
     private fun KeywordElement.toNode(oldNodeWrapper: TreeNodeWrapper? = null): TreeNodeWrapper {
-        var highlight = shouldHighlight()
+        var highlight = shouldHighlight(highlightInfo)
         val children = mutableListOf<TreeNodeWrapper>()
         keywords.forEachIndexed { index, keyword ->
             val nodeWrapper = keyword.toNode(oldNodeWrapper.childAt(index))
-            highlight = highlight || (nodeWrapper.node.userObject as ElementHolder).highlight
+            highlight = highlight || nodeWrapper.node.getElementHolder<Element>().highlight
             children.add(nodeWrapper)
         }
         return TreeNodeWrapper(node = oldNodeWrapper.copyNode(ElementHolder(this, highlight)), children = children)
-    }
-
-    private fun SuiteElement.shouldHighlight(): Boolean {
-        val info = highlightInfo ?: return false
-        if (info.match(name))
-            return true
-        return false
-    }
-
-    private fun TestElement.shouldHighlight(): Boolean {
-        val info = highlightInfo ?: return false
-        if (info.match(name))
-            return true
-        tags.forEach { if (info.match(it)) return true }
-        return false
-    }
-
-    private fun KeywordElement.shouldHighlight(): Boolean {
-        val info = highlightInfo ?: return false
-        if (info.match(name))
-            return true
-        arguments.forEach { if (info.match(it)) return true }
-        assigns.forEach { if (info.match(it)) return true }
-        tags.forEach { if (info.match(it)) return true }
-        messages.forEach { if (info.match(it.value())) return true }
-        return false
     }
 
     private fun TreeNodeWrapper?.copyNode(obj: Any) =
@@ -382,6 +353,11 @@ class RobotOutputFileEditor(private val project: Project, private val srcFile: V
             return null
         return children[index]
     }
+
+
+    private fun <T: Element> DefaultMutableTreeNode.getElementHolder() = userObject as ElementHolder<T>
+
+    private fun <T: Element> DefaultMutableTreeNode.getElement() = (userObject as ElementHolder<T>).element
 
     private fun showSearchInput(): HighlightInfo? {
         val builder = DialogBuilder()
@@ -426,7 +402,7 @@ class RobotOutputFileEditor(private val project: Project, private val srcFile: V
                 return
             }
             setFocusBorderAroundIcon(true)
-            val elementHolder = value.userObject as ElementHolder
+            val elementHolder = value.userObject as ElementHolder<Element>
             border = if (elementHolder.highlight)
                 BorderFactory.createLineBorder(Color.RED)
             else
@@ -509,10 +485,5 @@ class RobotOutputFileEditor(private val project: Project, private val srcFile: V
         }
 
     }
-
-    internal data class ElementHolder(
-        val element: Element,
-        val highlight: Boolean = false,
-    )
 
 }

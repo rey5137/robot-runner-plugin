@@ -21,13 +21,13 @@ import javax.swing.ListSelectionModel
 
 class MessagePanel(project: Project) : JPanel(BorderLayout()) {
 
-    private val messageModel = DefaultListModel<MessageElement>()
+    private val messageModel = DefaultListModel<ElementHolder<MessageElement>>()
     private val messageList = JBList(messageModel).apply {
         cellRenderer = MessageCellRender()
         selectionMode = ListSelectionModel.SINGLE_SELECTION
         addListSelectionListener {
             if (!it.valueIsAdjusting) {
-                showMessageDetail(selectedValue)
+                showMessageDetail(selectedValue?.element)
             }
         }
     }
@@ -56,6 +56,8 @@ class MessagePanel(project: Project) : JPanel(BorderLayout()) {
     private var showFailMessage = true
     private var showErrorMessage = true
 
+    private var highlightInfo: HighlightInfo? = null
+
     init {
         messageSplitter.firstComponent = ToolbarDecorator.createDecorator(messageList)
             .disableUpAction()
@@ -70,7 +72,7 @@ class MessagePanel(project: Project) : JPanel(BorderLayout()) {
 
                             override fun setSelected(e: AnActionEvent, state: Boolean) {
                                 showInfoMessage = state
-                                populateMessage(element)
+                                populateMessage(element, highlightInfo)
                             }
                         })
                         add(object : ToggleAction(MyBundle.message("robot.output.editor.desc.show-level-message", LOG_LEVEL_DEBUG)) {
@@ -78,7 +80,7 @@ class MessagePanel(project: Project) : JPanel(BorderLayout()) {
 
                             override fun setSelected(e: AnActionEvent, state: Boolean) {
                                 showDebugMessage = state
-                                populateMessage(element)
+                                populateMessage(element, highlightInfo)
                             }
                         })
                         add(object : ToggleAction(MyBundle.message("robot.output.editor.desc.show-level-message", LOG_LEVEL_TRACE)) {
@@ -86,7 +88,7 @@ class MessagePanel(project: Project) : JPanel(BorderLayout()) {
 
                             override fun setSelected(e: AnActionEvent, state: Boolean) {
                                 showTraceMessage = state
-                                populateMessage(element)
+                                populateMessage(element, highlightInfo)
                             }
                         })
                         add(object : ToggleAction(MyBundle.message("robot.output.editor.desc.show-level-message", LOG_LEVEL_FAIL)) {
@@ -94,7 +96,7 @@ class MessagePanel(project: Project) : JPanel(BorderLayout()) {
 
                             override fun setSelected(e: AnActionEvent, state: Boolean) {
                                 showFailMessage = state
-                                populateMessage(element)
+                                populateMessage(element, highlightInfo)
                             }
                         })
                         add(object : ToggleAction(MyBundle.message("robot.output.editor.desc.show-level-message", LOG_LEVEL_ERROR)) {
@@ -102,7 +104,7 @@ class MessagePanel(project: Project) : JPanel(BorderLayout()) {
 
                             override fun setSelected(e: AnActionEvent, state: Boolean) {
                                 showErrorMessage = state
-                                populateMessage(element)
+                                populateMessage(element, highlightInfo)
                             }
                         })
                     }, e.dataContext, JBPopupFactory.ActionSelectionAid.SPEEDSEARCH, false)
@@ -115,13 +117,14 @@ class MessagePanel(project: Project) : JPanel(BorderLayout()) {
         add(messageSplitter, BorderLayout.CENTER)
     }
 
-    fun populateData(element: KeywordElement) {
+    fun populateData(element: KeywordElement, highlightInfo: HighlightInfo?) {
         this.element = element
+        this.highlightInfo = highlightInfo
         selectedMessageElement = null
-        populateMessage(element)
+        populateMessage(element, highlightInfo)
     }
 
-    private fun populateMessage(element: KeywordElement) {
+    private fun populateMessage(element: KeywordElement, highlightInfo: HighlightInfo?) {
         val selectedMessageElement = this.selectedMessageElement
         messageModel.clear()
         var selectedIndex = -1
@@ -134,7 +137,7 @@ class MessagePanel(project: Project) : JPanel(BorderLayout()) {
                         || (it.level == LOG_LEVEL_ERROR && showErrorMessage)
             }
             .forEach {
-                messageModel.addElement(it)
+                messageModel.addElement(ElementHolder(it, it.shouldHighlight(highlightInfo)))
                 if(it == selectedMessageElement)
                     selectedIndex = messageModel.size() - 1
             }

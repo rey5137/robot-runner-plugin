@@ -7,10 +7,7 @@ import com.github.rey5137.robotrunnerplugin.editors.ui.filter.HidePassedSuiteFil
 import com.github.rey5137.robotrunnerplugin.editors.ui.filter.HidePassedTestFilter
 import com.github.rey5137.robotrunnerplugin.editors.xml.*
 import com.intellij.icons.AllIcons
-import com.intellij.openapi.actionSystem.ActionToolbarPosition
-import com.intellij.openapi.actionSystem.AnActionEvent
-import com.intellij.openapi.actionSystem.DefaultActionGroup
-import com.intellij.openapi.actionSystem.ToggleAction
+import com.intellij.openapi.actionSystem.*
 import com.intellij.openapi.fileEditor.FileEditor
 import com.intellij.openapi.fileEditor.FileEditorLocation
 import com.intellij.openapi.fileEditor.FileEditorState
@@ -199,25 +196,33 @@ class RobotOutputFileEditor(private val project: Project, private val srcFile: V
                     Toolkit.getDefaultToolkit().systemClipboard.setContents(stringSelection, null)
                 }
             })
-            .addExtraAction(object : AnActionButton(
+            .addExtraAction(object : DumbAwareActionButton(
                 MyBundle.message("robot.output.editor.label.deep-search"),
                 AllIcons.Actions.Search
             ) {
                 override fun actionPerformed(e: AnActionEvent) {
-                    val info = showSearchInput()
-                    if(info != null) {
-                        highlightInfo = info
-                        refreshNodes(robotTreeNodeWrapper!!.node.getElement())
-                    }
-                }
-            })
-            .addExtraAction(object : AnActionButton(
-                MyBundle.message("robot.output.editor.label.clear-deep-search"),
-                AllIcons.Actions.Restart
-            ) {
-                override fun actionPerformed(e: AnActionEvent) {
-                    highlightInfo = null
-                    refreshNodes(robotTreeNodeWrapper!!.node.getElement())
+                    JBPopupFactory.getInstance().createActionGroupPopup(null, DefaultActionGroup().apply {
+                        addAll(
+                            object : AnAction(MyBundle.message("robot.output.editor.label.deep-search")) {
+                                override fun actionPerformed(e: AnActionEvent) {
+                                    val info = showSearchInput()
+                                    if (info != null) {
+                                        highlightInfo = info
+                                        refreshNodes(robotTreeNodeWrapper!!.node.getElement())
+                                        detailsPanel.updateHighlightInfo(highlightInfo)
+                                    }
+                                }
+                            },
+                            object : AnAction(MyBundle.message("robot.output.editor.label.clear-deep-search")) {
+                                override fun actionPerformed(e: AnActionEvent) {
+                                    highlightInfo = null
+                                    refreshNodes(robotTreeNodeWrapper!!.node.getElement())
+                                    detailsPanel.updateHighlightInfo(highlightInfo)
+                                }
+                            }
+                        )
+                    }, e.dataContext, JBPopupFactory.ActionSelectionAid.SPEEDSEARCH, false)
+                        .show(preferredPopupPoint!!)
                 }
             })
         val panel = JPanel(BorderLayout())
@@ -300,11 +305,14 @@ class RobotOutputFileEditor(private val project: Project, private val srcFile: V
     private fun RobotElement.toNode(oldNodeWrapper: TreeNodeWrapper? = null): TreeNodeWrapper {
         val children = mutableListOf<TreeNodeWrapper>()
         suites.forEachIndexed { index, suite -> children.add(suite.toNode(oldNodeWrapper.childAt(index))) }
-        return TreeNodeWrapper(node = oldNodeWrapper.copyNode(HighlightHolder(this, HighlightType.UNMATCHED)), children = children)
+        return TreeNodeWrapper(
+            node = oldNodeWrapper.copyNode(HighlightHolder(this, HighlightType.UNMATCHED)),
+            children = children
+        )
     }
 
     private fun SuiteElement.toNode(oldNodeWrapper: TreeNodeWrapper? = null): TreeNodeWrapper {
-        var highlight = if(highlightInfo.match(this)) HighlightType.MATCHED else HighlightType.UNMATCHED
+        var highlight = if (highlightInfo.match(this)) HighlightType.MATCHED else HighlightType.UNMATCHED
         val children = mutableListOf<TreeNodeWrapper>()
         this.children.forEachIndexed { index, element ->
             val nodeWrapper = when (element) {
@@ -314,7 +322,7 @@ class RobotOutputFileEditor(private val project: Project, private val srcFile: V
                 else -> null
             }
             if (nodeWrapper != null) {
-                if(highlight == HighlightType.UNMATCHED && nodeWrapper.node.getElementHolder<Element>().highlight != HighlightType.UNMATCHED)
+                if (highlight == HighlightType.UNMATCHED && nodeWrapper.node.getElementHolder<Element>().highlight != HighlightType.UNMATCHED)
                     highlight = HighlightType.CONTAINED
                 children.add(nodeWrapper)
             }
@@ -323,11 +331,11 @@ class RobotOutputFileEditor(private val project: Project, private val srcFile: V
     }
 
     private fun TestElement.toNode(oldNodeWrapper: TreeNodeWrapper? = null): TreeNodeWrapper {
-        var highlight = if(highlightInfo.match(this)) HighlightType.MATCHED else HighlightType.UNMATCHED
+        var highlight = if (highlightInfo.match(this)) HighlightType.MATCHED else HighlightType.UNMATCHED
         val children = mutableListOf<TreeNodeWrapper>()
         keywords.forEachIndexed { index, keyword ->
             val nodeWrapper = keyword.toNode(oldNodeWrapper.childAt(index))
-            if(highlight == HighlightType.UNMATCHED && nodeWrapper.node.getElementHolder<Element>().highlight != HighlightType.UNMATCHED)
+            if (highlight == HighlightType.UNMATCHED && nodeWrapper.node.getElementHolder<Element>().highlight != HighlightType.UNMATCHED)
                 highlight = HighlightType.CONTAINED
             children.add(nodeWrapper)
         }
@@ -335,11 +343,11 @@ class RobotOutputFileEditor(private val project: Project, private val srcFile: V
     }
 
     private fun KeywordElement.toNode(oldNodeWrapper: TreeNodeWrapper? = null): TreeNodeWrapper {
-        var highlight = if(highlightInfo.match(this)) HighlightType.MATCHED else HighlightType.UNMATCHED
+        var highlight = if (highlightInfo.match(this)) HighlightType.MATCHED else HighlightType.UNMATCHED
         val children = mutableListOf<TreeNodeWrapper>()
         keywords.forEachIndexed { index, keyword ->
             val nodeWrapper = keyword.toNode(oldNodeWrapper.childAt(index))
-            if(highlight == HighlightType.UNMATCHED && nodeWrapper.node.getElementHolder<Element>().highlight != HighlightType.UNMATCHED)
+            if (highlight == HighlightType.UNMATCHED && nodeWrapper.node.getElementHolder<Element>().highlight != HighlightType.UNMATCHED)
                 highlight = HighlightType.CONTAINED
             children.add(nodeWrapper)
         }
@@ -358,9 +366,9 @@ class RobotOutputFileEditor(private val project: Project, private val srcFile: V
     }
 
 
-    private fun <T: Element> DefaultMutableTreeNode.getElementHolder() = userObject as HighlightHolder<T>
+    private fun <T : Element> DefaultMutableTreeNode.getElementHolder() = userObject as HighlightHolder<T>
 
-    private fun <T: Element> DefaultMutableTreeNode.getElement() = (userObject as HighlightHolder<T>).value
+    private fun <T : Element> DefaultMutableTreeNode.getElement() = (userObject as HighlightHolder<T>).value
 
     private fun showSearchInput(): HighlightInfo? {
         val builder = DialogBuilder()
@@ -368,7 +376,7 @@ class RobotOutputFileEditor(private val project: Project, private val srcFile: V
         lateinit var caseCheckbox: JBCheckBox
         val panel = panel {
             row {
-                textField = textField({""}, {}, 30).component
+                textField = textField({ "" }, {}, 30).component
             }
             row {
                 caseCheckbox = checkBox(MyBundle.message("robot.output.editor.label.case-sensitive")).component
@@ -381,7 +389,7 @@ class RobotOutputFileEditor(private val project: Project, private val srcFile: V
         builder.removeAllActions()
         builder.addOkAction()
         builder.addCancelAction()
-        return if(builder.show() == DialogWrapper.OK_EXIT_CODE && textField.text.isNotEmpty())
+        return if (builder.show() == DialogWrapper.OK_EXIT_CODE && textField.text.isNotEmpty())
             HighlightInfo(
                 value = textField.text,
                 ignoreCase = !caseCheckbox.isSelected

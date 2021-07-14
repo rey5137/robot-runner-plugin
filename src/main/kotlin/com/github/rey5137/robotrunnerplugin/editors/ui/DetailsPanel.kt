@@ -26,11 +26,18 @@ class DetailsPanel(project: Project) : JPanel(MigLayout(LC().gridGap("10px", "5p
     private val messagePanel = MessagePanel(project)
     private val miscPanel = MiscPanel(project)
 
+    private var element: Element? = null
+
     init {
         relayout(false)
     }
 
+    fun updateHighlightInfo(highlightInfo: HighlightInfo?) {
+        element?.let { showDetails(it, highlightInfo) }
+    }
+
     fun showDetails(element: Element, highlightInfo: HighlightInfo?) {
+        this.element = element
         var failReason: String? = null
         if(element is KeywordElement) {
             failReason = element.messages.firstOrNull { it.level == LOG_LEVEL_FAIL }?.value()

@@ -1,6 +1,8 @@
 package com.github.rey5137.robotrunnerplugin.editors.ui.argument
 
 import com.github.rey5137.robotrunnerplugin.editors.ui.HighlightHolder
+import com.github.rey5137.robotrunnerplugin.editors.ui.HighlightType
+import com.github.rey5137.robotrunnerplugin.editors.ui.setHighlightBorder
 import com.github.rey5137.robotrunnerplugin.editors.xml.INPUT_EMPTY
 import com.github.rey5137.robotrunnerplugin.editors.xml.InputArgument
 import com.intellij.ui.ColoredTableCellRenderer
@@ -25,10 +27,7 @@ class InputTableCellRenderer(private val argumentModel: ArgumentModel) : TableCe
             column: Int
         ) {
             val inputHolder = value as HighlightHolder<InputArgument>
-            border = if (inputHolder.highlight)
-                BorderFactory.createLineBorder(Color.RED)
-            else
-                BorderFactory.createEmptyBorder()
+            setHighlightBorder(inputHolder.highlight)
 
             val input = inputHolder.value
             if(input.name == null)
@@ -66,7 +65,7 @@ class InputTableCellRenderer(private val argumentModel: ArgumentModel) : TableCe
 
     private fun getCellRendererComponent(inputs: List<HighlightHolder<InputArgument>>, isSelected: Boolean, hasFocus: Boolean): Component {
         if(inputs.isEmpty())
-            inputArgumentModel.add(listOf(HighlightHolder(INPUT_EMPTY, false)))
+            inputArgumentModel.add(listOf(HighlightHolder(INPUT_EMPTY, HighlightType.UNMATCHED)))
         else
             inputArgumentModel.add(inputs)
         if(isSelected) {

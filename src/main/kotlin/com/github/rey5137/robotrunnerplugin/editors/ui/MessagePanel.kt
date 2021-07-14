@@ -137,7 +137,7 @@ class MessagePanel(project: Project) : JPanel(BorderLayout()) {
                         || (it.level == LOG_LEVEL_ERROR && showErrorMessage)
             }
             .forEach {
-                messageModel.addElement(HighlightHolder(it, it.shouldHighlight(highlightInfo)))
+                messageModel.addElement(it.toHighlightHolder(highlightInfo.match(it)))
                 if(it == selectedMessageElement)
                     selectedIndex = messageModel.size() - 1
             }

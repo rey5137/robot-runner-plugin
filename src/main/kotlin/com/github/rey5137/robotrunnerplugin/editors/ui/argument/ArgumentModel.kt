@@ -1,8 +1,7 @@
 package com.github.rey5137.robotrunnerplugin.editors.ui.argument
 
 import com.github.rey5137.robotrunnerplugin.MyBundle
-import com.github.rey5137.robotrunnerplugin.editors.ui.HighlightHolder
-import com.github.rey5137.robotrunnerplugin.editors.ui.HighlightInfo
+import com.github.rey5137.robotrunnerplugin.editors.ui.*
 import com.github.rey5137.robotrunnerplugin.editors.xml.*
 import javax.swing.table.AbstractTableModel
 import kotlin.math.max
@@ -25,8 +24,8 @@ class ArgumentModel : AbstractTableModel() {
         items = arguments.mapIndexed { index, argument ->
             val argumentFullName = argument.getFullName()
             Item(
-                argumentHolder = HighlightHolder(value = argument, highlight = highlightInfo?.match(argumentFullName) ?: false),
-                inputs = inputArguments[index].map { HighlightHolder(value = it, highlight = highlightInfo?.match(it.rawInput) ?: false) },
+                argumentHolder = argument.toHighlightHolder(highlightInfo.match(argumentFullName)),
+                inputs = inputArguments[index].map { it.toHighlightHolder(highlightInfo.match(it.rawInput)) },
                 argumentValue = argumentFullName,
                 inputsValue = inputArguments[index].joinToString(separator = "    ") { it.rawInput },
                 variableModel = if(argument.dataType == DataType.DICT || argument.dataType == DataType.ARRAY)
@@ -34,10 +33,12 @@ class ArgumentModel : AbstractTableModel() {
                 else
                     null,
                 isFilePath = argument.isFilePath(),
-                isValueHighlight = if(argument.dataType == DataType.DICT || argument.dataType == DataType.ARRAY)
-                    false
+                valueHighlightType = if(argument.dataType == DataType.DICT || argument.dataType == DataType.ARRAY)
+                    HighlightType.UNMATCHED
+                else if(highlightInfo.match(argument.rawValue))
+                    HighlightType.MATCHED
                 else
-                    highlightInfo?.match(argument.rawValue) ?: false
+                    HighlightType.UNMATCHED
             )
         }
         fireTableDataChanged()
@@ -101,7 +102,7 @@ class ArgumentModel : AbstractTableModel() {
         val inputsValue: String,
         val variableModel: VariableModel?,
         val isFilePath: Boolean = false,
-        val isValueHighlight: Boolean = false,
+        val valueHighlightType: HighlightType = HighlightType.UNMATCHED,
         var argumentColumn: Int = 0,
         var inputColumn: Int = 0,
         var valueColumn: Int = 0,

@@ -1,6 +1,7 @@
 package com.github.rey5137.robotrunnerplugin.editors.ui.message
 
 import com.github.rey5137.robotrunnerplugin.editors.ui.HighlightHolder
+import com.github.rey5137.robotrunnerplugin.editors.ui.setHighlightBorder
 import com.github.rey5137.robotrunnerplugin.editors.xml.*
 import com.intellij.ui.ColoredListCellRenderer
 import com.intellij.ui.SimpleTextAttributes
@@ -18,10 +19,7 @@ class MessageCellRender : ColoredListCellRenderer<HighlightHolder<MessageElement
         selected: Boolean,
         hasFocus: Boolean
     ) {
-        border = if (value.highlight)
-            BorderFactory.createLineBorder(Color.RED)
-        else
-            BorderFactory.createEmptyBorder()
+        setHighlightBorder(value.highlight)
 
         val messageElement = value.value
         icon = when(messageElement.level) {

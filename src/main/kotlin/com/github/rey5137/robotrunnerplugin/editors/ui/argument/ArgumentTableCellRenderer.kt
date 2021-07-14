@@ -1,5 +1,6 @@
 package com.github.rey5137.robotrunnerplugin.editors.ui.argument
 
+import com.github.rey5137.robotrunnerplugin.editors.ui.setHighlightBorder
 import com.github.rey5137.robotrunnerplugin.editors.xml.*
 import com.intellij.ui.ColoredTableCellRenderer
 import com.intellij.ui.SimpleTextAttributes
@@ -18,10 +19,7 @@ class ArgumentTableCellRenderer(private val model: ArgumentModel) : ColoredTable
         column: Int
     ) {
         val argumentHolder = model.getArgumentHolder(row)
-        border = if (argumentHolder.highlight)
-            BorderFactory.createLineBorder(Color.RED)
-        else
-            BorderFactory.createEmptyBorder()
+        setHighlightBorder(argumentHolder.highlight)
 
         if(argumentHolder.value.name.isEmpty())
             append("")

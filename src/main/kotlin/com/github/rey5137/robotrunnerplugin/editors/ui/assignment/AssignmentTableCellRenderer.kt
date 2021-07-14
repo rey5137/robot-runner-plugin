@@ -1,5 +1,6 @@
 package com.github.rey5137.robotrunnerplugin.editors.ui.assignment
 
+import com.github.rey5137.robotrunnerplugin.editors.ui.setHighlightBorder
 import com.github.rey5137.robotrunnerplugin.editors.xml.*
 import com.intellij.ui.ColoredTableCellRenderer
 import com.intellij.ui.SimpleTextAttributes
@@ -18,10 +19,7 @@ class AssignmentTableCellRenderer(private val model: AssignmentModel) : ColoredT
         column: Int
     ) {
         val assignmentHolder = model.getAssignmentHolder(row)
-        border = if (assignmentHolder.highlight)
-            BorderFactory.createLineBorder(Color.RED)
-        else
-            BorderFactory.createEmptyBorder()
+        setHighlightBorder(assignmentHolder.highlight)
 
         val assignment = assignmentHolder.value
         if(assignment.name.isNotEmpty()) {

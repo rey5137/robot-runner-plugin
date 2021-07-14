@@ -300,11 +300,11 @@ class RobotOutputFileEditor(private val project: Project, private val srcFile: V
     private fun RobotElement.toNode(oldNodeWrapper: TreeNodeWrapper? = null): TreeNodeWrapper {
         val children = mutableListOf<TreeNodeWrapper>()
         suites.forEachIndexed { index, suite -> children.add(suite.toNode(oldNodeWrapper.childAt(index))) }
-        return TreeNodeWrapper(node = oldNodeWrapper.copyNode(HighlightHolder(this, false)), children = children)
+        return TreeNodeWrapper(node = oldNodeWrapper.copyNode(HighlightHolder(this, HighlightType.UNMATCHED)), children = children)
     }
 
     private fun SuiteElement.toNode(oldNodeWrapper: TreeNodeWrapper? = null): TreeNodeWrapper {
-        var highlight = shouldHighlight(highlightInfo)
+        var highlight = if(highlightInfo.match(this)) HighlightType.MATCHED else HighlightType.UNMATCHED
         val children = mutableListOf<TreeNodeWrapper>()
         this.children.forEachIndexed { index, element ->
             val nodeWrapper = when (element) {
@@ -314,7 +314,8 @@ class RobotOutputFileEditor(private val project: Project, private val srcFile: V
                 else -> null
             }
             if (nodeWrapper != null) {
-                highlight = highlight || nodeWrapper.node.getElementHolder<Element>().highlight
+                if(highlight == HighlightType.UNMATCHED && nodeWrapper.node.getElementHolder<Element>().highlight != HighlightType.UNMATCHED)
+                    highlight = HighlightType.CONTAINED
                 children.add(nodeWrapper)
             }
         }
@@ -322,22 +323,24 @@ class RobotOutputFileEditor(private val project: Project, private val srcFile: V
     }
 
     private fun TestElement.toNode(oldNodeWrapper: TreeNodeWrapper? = null): TreeNodeWrapper {
-        var highlight = shouldHighlight(highlightInfo)
+        var highlight = if(highlightInfo.match(this)) HighlightType.MATCHED else HighlightType.UNMATCHED
         val children = mutableListOf<TreeNodeWrapper>()
         keywords.forEachIndexed { index, keyword ->
             val nodeWrapper = keyword.toNode(oldNodeWrapper.childAt(index))
-            highlight = highlight || nodeWrapper.node.getElementHolder<Element>().highlight
+            if(highlight == HighlightType.UNMATCHED && nodeWrapper.node.getElementHolder<Element>().highlight != HighlightType.UNMATCHED)
+                highlight = HighlightType.CONTAINED
             children.add(nodeWrapper)
         }
         return TreeNodeWrapper(node = oldNodeWrapper.copyNode(HighlightHolder(this, highlight)), children = children)
     }
 
     private fun KeywordElement.toNode(oldNodeWrapper: TreeNodeWrapper? = null): TreeNodeWrapper {
-        var highlight = shouldHighlight(highlightInfo)
+        var highlight = if(highlightInfo.match(this)) HighlightType.MATCHED else HighlightType.UNMATCHED
         val children = mutableListOf<TreeNodeWrapper>()
         keywords.forEachIndexed { index, keyword ->
             val nodeWrapper = keyword.toNode(oldNodeWrapper.childAt(index))
-            highlight = highlight || nodeWrapper.node.getElementHolder<Element>().highlight
+            if(highlight == HighlightType.UNMATCHED && nodeWrapper.node.getElementHolder<Element>().highlight != HighlightType.UNMATCHED)
+                highlight = HighlightType.CONTAINED
             children.add(nodeWrapper)
         }
         return TreeNodeWrapper(node = oldNodeWrapper.copyNode(HighlightHolder(this, highlight)), children = children)
@@ -403,10 +406,7 @@ class RobotOutputFileEditor(private val project: Project, private val srcFile: V
             }
             setFocusBorderAroundIcon(true)
             val elementHolder = value.userObject as HighlightHolder<Element>
-            border = if (elementHolder.highlight)
-                BorderFactory.createLineBorder(Color.RED)
-            else
-                BorderFactory.createEmptyBorder()
+            setHighlightBorder(elementHolder.highlight)
 
             when (val element = elementHolder.value) {
                 is SuiteElement -> {

@@ -4,6 +4,8 @@ import com.github.rey5137.robotrunnerplugin.MyBundle
 import com.github.rey5137.robotrunnerplugin.editors.ui.HighlightHolder
 import com.github.rey5137.robotrunnerplugin.editors.ui.HighlightInfo
 import com.github.rey5137.robotrunnerplugin.editors.ui.argument.VariableModel
+import com.github.rey5137.robotrunnerplugin.editors.ui.match
+import com.github.rey5137.robotrunnerplugin.editors.ui.toHighlightHolder
 import com.github.rey5137.robotrunnerplugin.editors.xml.*
 import javax.swing.table.AbstractTableModel
 
@@ -15,7 +17,7 @@ class AssignmentModel : AbstractTableModel() {
         items = assignments.map {
             val fullName = it.getFullName()
             Item(
-                assignmentHolder = HighlightHolder(value = it, highlight = highlightInfo?.match(fullName) ?: false),
+                assignmentHolder = it.toHighlightHolder(highlightInfo.match(fullName)),
                 assigmentValue = fullName,
                 variableModel = if (it.dataType == DataType.DICT || it.dataType == DataType.ARRAY)
                     VariableModel().apply {

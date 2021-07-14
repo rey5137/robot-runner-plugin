@@ -1,6 +1,7 @@
 package com.github.rey5137.robotrunnerplugin.editors.ui.argument
 
 import com.github.rey5137.robotrunnerplugin.MyBundle
+import com.github.rey5137.robotrunnerplugin.editors.ui.setHighlightBorder
 import com.github.rey5137.robotrunnerplugin.editors.xml.INPUT_EMPTY
 import com.intellij.ui.ColoredTableCellRenderer
 import com.intellij.ui.SimpleTextAttributes
@@ -20,10 +21,7 @@ class InputArgumentCellRender : ColoredTableCellRenderer() {
         column: Int
     ) {
         val inputHolder = (table.model as InputArgumentModel).getItem(row)
-        border = if (inputHolder.highlight)
-            BorderFactory.createLineBorder(Color.RED)
-        else
-            BorderFactory.createEmptyBorder()
+        setHighlightBorder(inputHolder.highlight)
 
         val input = inputHolder.value
         ipad = Insets(VariableCellRender.PADDING_VERTICAL, VariableCellRender.PADDING_HORIZONTAL, VariableCellRender.PADDING_VERTICAL, VariableCellRender.PADDING_HORIZONTAL)

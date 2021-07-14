@@ -1,6 +1,7 @@
 package com.github.rey5137.robotrunnerplugin.editors.ui.argument
 
 import com.github.rey5137.robotrunnerplugin.MyBundle
+import com.github.rey5137.robotrunnerplugin.editors.ui.setHighlightBorder
 import com.github.rey5137.robotrunnerplugin.editors.xml.DataType
 import com.github.rey5137.robotrunnerplugin.editors.xml.VARIABLE_EMPTY
 import com.github.rey5137.robotrunnerplugin.editors.xml.Variable
@@ -24,11 +25,8 @@ class VariableCellRender : ColoredTableCellRenderer() {
         row: Int,
         column: Int
     ) {
-        val (variable, level, isLeaf, isExpanded, _, isFilePath, isHighlight) = (table.model as VariableModel).getItem(row)
-        border = if (isHighlight)
-            BorderFactory.createLineBorder(Color.RED)
-        else
-            BorderFactory.createEmptyBorder()
+        val (variable, level, isLeaf, isExpanded, _, isFilePath, highlightType) = (table.model as VariableModel).getItem(row)
+        setHighlightBorder(highlightType)
 
         if(variable == VARIABLE_EMPTY) {
             ipad = Insets(PADDING_VERTICAL, PADDING_HORIZONTAL + PADDING_LEVEL * level + AllIcons.General.ArrowDown.iconWidth, PADDING_VERTICAL, PADDING_HORIZONTAL)

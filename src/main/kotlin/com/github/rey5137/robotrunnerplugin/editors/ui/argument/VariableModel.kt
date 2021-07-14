@@ -1,6 +1,8 @@
 package com.github.rey5137.robotrunnerplugin.editors.ui.argument
 
 import com.github.rey5137.robotrunnerplugin.editors.ui.HighlightInfo
+import com.github.rey5137.robotrunnerplugin.editors.ui.HighlightType
+import com.github.rey5137.robotrunnerplugin.editors.ui.match
 import com.github.rey5137.robotrunnerplugin.editors.xml.DataType
 import com.github.rey5137.robotrunnerplugin.editors.xml.VARIABLE_EMPTY
 import com.github.rey5137.robotrunnerplugin.editors.xml.Variable
@@ -40,8 +42,8 @@ class VariableModel : AbstractTableModel() {
             allItems.add(item)
             variables.forEach {
                 val childHighlight = addVariable(it, 1, highlightInfo)
-                if(childHighlight)
-                    item.isHighlight = true
+                if(childHighlight != HighlightType.UNMATCHED)
+                    item.highlightType = HighlightType.CONTAINED
             }
         }
         items.clear()
@@ -49,7 +51,7 @@ class VariableModel : AbstractTableModel() {
         fireTableDataChanged()
     }
 
-    private fun addVariable(variable: Variable<*>, level: Int, highlightInfo: HighlightInfo?): Boolean {
+    private fun addVariable(variable: Variable<*>, level: Int, highlightInfo: HighlightInfo?): HighlightType {
         if (variable.type == DataType.DICT || variable.type == DataType.ARRAY) {
             var variables = (variable.value as List<Variable<*>>)
             if (variable.type == DataType.DICT && !variable.childOrdered)
@@ -61,15 +63,15 @@ class VariableModel : AbstractTableModel() {
                 isLeaf = variables.isEmpty(),
                 isExpanded = true,
                 isFilePath = variable.isFilePath(),
-                isHighlight = highlightInfo?.match(variable.name) ?: false
+                highlightType = if(highlightInfo.match(variable.name)) HighlightType.MATCHED else HighlightType.UNMATCHED
             )
             allItems.add(item)
             variables.forEach {
                 val childHighlight = addVariable(it, level + 1, highlightInfo)
-                if(childHighlight)
-                    item.isHighlight = true
+                if(item.highlightType == HighlightType.UNMATCHED && childHighlight != HighlightType.UNMATCHED)
+                    item.highlightType = HighlightType.CONTAINED
             }
-            return item.isHighlight
+            return item.highlightType
         } else {
             val item = Item(
                 index = allItems.size,
@@ -78,10 +80,13 @@ class VariableModel : AbstractTableModel() {
                 isLeaf = true,
                 isExpanded = true,
                 isFilePath = variable.isFilePath(),
-                isHighlight = highlightInfo?.match("${variable.name} = ${variable.valueAsString()}") ?: false
+                highlightType = if(highlightInfo.match("${variable.name} = ${variable.valueAsString()}"))
+                    HighlightType.MATCHED
+                else
+                    HighlightType.UNMATCHED
             )
             allItems.add(item)
-            return item.isHighlight
+            return item.highlightType
         }
     }
 
@@ -143,6 +148,6 @@ class VariableModel : AbstractTableModel() {
         var isExpanded: Boolean,
         val index: Int,
         val isFilePath: Boolean = false,
-        var isHighlight: Boolean = false,
+        var highlightType: HighlightType = HighlightType.UNMATCHED,
     )
 }

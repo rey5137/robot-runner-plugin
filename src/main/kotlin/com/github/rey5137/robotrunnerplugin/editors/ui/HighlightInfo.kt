@@ -8,43 +8,44 @@ import com.github.rey5137.robotrunnerplugin.editors.xml.TestElement
 data class HighlightInfo(
     val value: String,
     val ignoreCase: Boolean
-) {
-    fun match(text: String?): Boolean {
-        if (text == null)
-            return false
-        return text.contains(value, ignoreCase = ignoreCase)
-    }
+)
+
+fun HighlightInfo?.match(text: String?) : Boolean {
+    val info = this ?: return false
+    if (text == null)
+        return false
+    return text.contains(info.value, ignoreCase = info.ignoreCase)
 }
 
-fun SuiteElement.shouldHighlight(highlightInfo: HighlightInfo?): Boolean {
-    val info = highlightInfo ?: return false
-    if (info.match(name))
+fun HighlightInfo?.match(element: SuiteElement) : Boolean {
+    val info = this ?: return false
+    if (info.match(element.name))
         return true
     return false
 }
 
-fun TestElement.shouldHighlight(highlightInfo: HighlightInfo?): Boolean {
-    val info = highlightInfo ?: return false
-    if (info.match(name))
+fun HighlightInfo?.match(element: TestElement) : Boolean {
+    val info = this ?: return false
+    if (info.match(element.name))
         return true
-    tags.forEach { if (info.match(it)) return true }
+    element.tags.forEach { if (info.match(it)) return true }
     return false
 }
 
-fun KeywordElement.shouldHighlight(highlightInfo: HighlightInfo?): Boolean {
-    val info = highlightInfo ?: return false
-    if (info.match(name))
+fun HighlightInfo?.match(element: KeywordElement) : Boolean {
+    val info = this ?: return false
+    if (info.match(element.name))
         return true
-    arguments.forEach { if (info.match(it)) return true }
-    assigns.forEach { if (info.match(it)) return true }
-    tags.forEach { if (info.match(it)) return true }
-    messages.forEach { if (info.match(it.value())) return true }
+    element.arguments.forEach { if (info.match(it)) return true }
+    element.assigns.forEach { if (info.match(it)) return true }
+    element.tags.forEach { if (info.match(it)) return true }
+    element.messages.forEach { if (info.match(it.value())) return true }
     return false
 }
 
-fun MessageElement.shouldHighlight(highlightInfo: HighlightInfo?): Boolean {
-    val info = highlightInfo ?: return false
-    if (info.match(this.value()))
+fun HighlightInfo?.match(element: MessageElement) : Boolean {
+    val info = this ?: return false
+    if (info.match(element.value()))
         return true
     return false
 }

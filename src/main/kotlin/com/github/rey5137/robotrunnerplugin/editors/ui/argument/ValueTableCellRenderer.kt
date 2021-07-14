@@ -1,6 +1,7 @@
 package com.github.rey5137.robotrunnerplugin.editors.ui.argument
 
 import com.github.rey5137.robotrunnerplugin.MyBundle
+import com.github.rey5137.robotrunnerplugin.editors.ui.setHighlightBorder
 import com.github.rey5137.robotrunnerplugin.editors.xml.ARGUMENT_EMPTY
 import com.github.rey5137.robotrunnerplugin.editors.xml.DataType
 import com.intellij.ui.ColoredTableCellRenderer
@@ -30,10 +31,7 @@ class ValueTableCellRenderer(private val argumentModel: ArgumentModel) :
         ) {
             val item = value as ArgumentModel.Item
             val argument = item.argumentHolder.value
-            border = if (item.isValueHighlight)
-                BorderFactory.createLineBorder(Color.RED)
-            else
-                BorderFactory.createEmptyBorder()
+            setHighlightBorder(item.valueHighlightType)
 
             ipad = Insets(PADDING_VERTICAL, PADDING_HORIZONTAL, PADDING_VERTICAL, PADDING_HORIZONTAL)
             when {

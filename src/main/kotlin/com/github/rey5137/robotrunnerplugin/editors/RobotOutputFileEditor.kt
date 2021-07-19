@@ -374,16 +374,19 @@ class RobotOutputFileEditor(private val project: Project, private val srcFile: V
         val builder = DialogBuilder()
         lateinit var textField: JBTextField
         lateinit var caseCheckbox: JBCheckBox
+        lateinit var regexCheckbox: JBCheckBox
         val panel = panel {
             row {
                 textField = textField({ "" }, {}, 30).component
             }
             row {
                 caseCheckbox = checkBox(MyBundle.message("robot.output.editor.label.case-sensitive")).component
+                regexCheckbox = checkBox(MyBundle.message("robot.output.editor.label.is-regex")).component
             }
         }
         textField.text = highlightInfo?.value ?: ""
         caseCheckbox.isSelected = highlightInfo?.ignoreCase?.not() ?: false
+        regexCheckbox.isSelected = highlightInfo?.isRegex ?: false
         builder.setTitle("Search Tree")
         builder.setCenterPanel(panel)
         builder.removeAllActions()
@@ -392,7 +395,8 @@ class RobotOutputFileEditor(private val project: Project, private val srcFile: V
         return if (builder.show() == DialogWrapper.OK_EXIT_CODE && textField.text.isNotEmpty())
             HighlightInfo(
                 value = textField.text,
-                ignoreCase = !caseCheckbox.isSelected
+                ignoreCase = !caseCheckbox.isSelected,
+                isRegex = regexCheckbox.isSelected
             )
         else
             null

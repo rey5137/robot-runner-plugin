@@ -2,6 +2,12 @@
 
 # robot-runner-plugin Changelog
 
+## 0.2.5
+### Fixed
+- Rerun failed case not refresh list of failed test cases
+### Added
+- Searching feature in Robot output file viewer
+
 ## 0.2.4
 ### Fixed
 - Bug not escape special characters in test name with Run Robot Test Case Action

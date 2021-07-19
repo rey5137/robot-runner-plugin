@@ -7,14 +7,20 @@ import com.github.rey5137.robotrunnerplugin.editors.xml.TestElement
 
 data class HighlightInfo(
     val value: String,
-    val ignoreCase: Boolean
-)
+    val ignoreCase: Boolean,
+    val isRegex: Boolean,
+) {
+    val regex = if(isRegex) value.toRegex() else null
+}
 
 fun HighlightInfo?.match(text: String?) : Boolean {
     val info = this ?: return false
     if (text == null)
         return false
-    return text.contains(info.value, ignoreCase = info.ignoreCase)
+    return if(!isRegex)
+        text.contains(info.value, ignoreCase = info.ignoreCase)
+    else
+        regex!!.matches(text)
 }
 
 fun HighlightInfo?.match(element: SuiteElement) : Boolean {

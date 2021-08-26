@@ -91,15 +91,18 @@ class RobotRunTaskState(
         processHandler: ProcessHandler,
         executor: Executor
     ): Array<AnAction> = arrayOf(
-        OpenOutputFileAction(project, processHandler, console)
+        OpenOutputFileAction(project, processHandler, console as RobotOutputConsoleView)
     )
 
     override fun execute(executor: Executor, runner: ProgramRunner<*>): ExecutionResult {
-        val result = super.execute(executor, runner) as DefaultExecutionResult
+        val processHandler = startProcess()
+        val console = RobotOutputConsoleView(createConsole(executor)!!)
+        console.attachToProcess(processHandler)
+        val result = DefaultExecutionResult(console, processHandler, *createActions(console, processHandler, executor))
         result.setRestartActions(
             RerunRobotFailedTestsAction(
-                result.processHandler,
-                result.executionConsole,
+                processHandler,
+                console,
                 environment,
                 configuration,
                 rerunFailedCaseConfig,

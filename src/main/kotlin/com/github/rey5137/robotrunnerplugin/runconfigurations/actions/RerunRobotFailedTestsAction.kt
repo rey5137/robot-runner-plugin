@@ -23,7 +23,7 @@ import java.util.*
 
 class RerunRobotFailedTestsAction(
     private val processHandler: ProcessHandler,
-    private val console: ExecutionConsole,
+    private val console: RobotOutputConsoleView,
     private val environment: ExecutionEnvironment,
     private val configuration: RobotRunConfiguration,
     private val rerunFailedCaseConfig: RerunFailedCaseConfig?,
@@ -35,7 +35,7 @@ class RerunRobotFailedTestsAction(
 
     override fun update(e: AnActionEvent) {
         if (processHandler.isProcessTerminated) {
-            val count = (console as ConsoleViewImpl).text.findNumberOfFailedCases() ?: 0
+            val count = (console.consoleView as ConsoleViewImpl).text.findNumberOfFailedCases() ?: 0
             e.presentation.isEnabled = count > 0
         } else
             e.presentation.isEnabled = false
@@ -43,7 +43,7 @@ class RerunRobotFailedTestsAction(
 
     override fun actionPerformed(e: AnActionEvent) {
         if (processHandler.isProcessTerminated) {
-            val text = (console as ConsoleViewImpl).text
+            val text = (console.consoleView as ConsoleViewImpl).text
             val outputFile = text.findOutputFilePath() ?: return
             val testcases = VfsUtil.findFileByIoFile(File(outputFile), true)?.extractFailedTestCases() ?: emptyList()
             if (testcases.isEmpty())

@@ -145,3 +145,72 @@ data class Assignment<T>(
 val ARGUMENT_EMPTY = Argument<Any?>(value = null, dataType = DataType.NONE, argumentType = ArgumentType.SINGLE, rawValue = "")
 val VARIABLE_EMPTY = Variable<Any?>(type = DataType.NONE, value = null)
 val INPUT_EMPTY = InputArgument(value = "", rawInput = "")
+
+
+fun Element.addSuite(suite: SuiteElement) {
+    when (this) {
+        is SuiteElement -> {
+            children.add(suite)
+            suite.parent = this
+        }
+        is RobotElement -> {
+            suites.add(suite)
+            suite.parent = this
+        }
+    }
+}
+
+fun Element.addTest(test: TestElement) {
+    when (this) {
+        is SuiteElement -> {
+            children.add(test)
+            test.parent = this
+        }
+    }
+}
+
+fun Element.addKeyword(keyword: KeywordElement) {
+    when (this) {
+        is SuiteElement -> {
+            children.add(keyword)
+            keyword.parent = this
+        }
+        is TestElement -> {
+            keywords.add(keyword)
+            keyword.parent = this
+        }
+        is KeywordElement -> {
+            keywords.add(keyword)
+            keyword.parent = this
+        }
+    }
+}
+
+fun Element.addStatus(status: StatusElement) {
+    when (this) {
+        is SuiteElement -> this.status = status
+        is TestElement -> this.status = status
+        is KeywordElement -> this.status = status
+    }
+}
+
+fun Element.addString(element: StringElement) {
+    when (this) {
+        is ArgumentsElement -> arguments.add(element.value.toString())
+        is TagsElement -> tags.add(element.value.toString())
+        is AssignsElement -> vars.add(element.value.toString())
+    }
+}
+
+fun Element.setTags(element: TagsElement) {
+    when (this) {
+        is TestElement -> this.tags = element.tags
+        is KeywordElement -> this.tags = element.tags
+    }
+}
+
+fun Element.addMessage(element: MessageElement) {
+    when (this) {
+        is KeywordElement -> this.messages.add(element)
+    }
+}

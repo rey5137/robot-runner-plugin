@@ -28,10 +28,16 @@ object MyIcons {
     val ElementFail = IconLoader.getIcon("/icons/elementFail.svg", javaClass)
 
     @JvmField
+    val ElementRunning = IconLoader.getIcon("/icons/elementRunning.svg", javaClass)
+
+    @JvmField
     val ElementPass2 = IconLoader.getIcon("/icons/elementPass2.svg", javaClass)
 
     @JvmField
     val ElementFail2 = IconLoader.getIcon("/icons/elementFail2.svg", javaClass)
+
+    @JvmField
+    val ElementRunning2 = IconLoader.getIcon("/icons/elementRunning2.svg", javaClass)
 
     @JvmField
     val LabelSuite = IconLoader.getIcon("/icons/labelSuite.svg", javaClass)
@@ -79,10 +85,16 @@ object MyIcons {
     val SuiteFail = LayeredIcon(ElementFail, LabelSuite)
 
     @JvmField
+    val SuiteRunning = LayeredIcon(ElementRunning, LabelSuite)
+
+    @JvmField
     val TestPass = LayeredIcon(ElementPass, LabelTest)
 
     @JvmField
     val TestFail = LayeredIcon(ElementFail, LabelTest)
+
+    @JvmField
+    val TestRunning = LayeredIcon(ElementRunning, LabelTest)
 
     @JvmField
     val SetupPass = LayeredIcon(ElementPass, LabelSetup)
@@ -91,10 +103,16 @@ object MyIcons {
     val SetupFail = LayeredIcon(ElementFail, LabelSetup)
 
     @JvmField
+    val SetupRunning = LayeredIcon(ElementRunning, LabelSetup)
+
+    @JvmField
     val TeardownPass = LayeredIcon(ElementPass2, LabelTeardown)
 
     @JvmField
     val TeardownFail = LayeredIcon(ElementFail2, LabelTeardown)
+
+    @JvmField
+    val TeardownRunning = LayeredIcon(ElementRunning2, LabelTeardown)
 
     @JvmField
     val KeywordPass = LayeredIcon(ElementPass2, LabelKeyword)
@@ -103,10 +121,16 @@ object MyIcons {
     val KeywordFail = LayeredIcon(ElementFail2, LabelKeyword)
 
     @JvmField
+    val KeywordRunning = LayeredIcon(ElementRunning2, LabelKeyword)
+
+    @JvmField
     val ForPass = LayeredIcon(ElementPass, LabelFor)
 
     @JvmField
     val ForFail = LayeredIcon(ElementFail, LabelFor)
+
+    @JvmField
+    val ForRunning = LayeredIcon(ElementRunning, LabelFor)
 
     @JvmField
     val ForitemPass = LayeredIcon(ElementPass, LabelForitem)
@@ -115,10 +139,16 @@ object MyIcons {
     val ForitemFail = LayeredIcon(ElementFail, LabelForitem)
 
     @JvmField
+    val ForitemRunning = LayeredIcon(ElementRunning, LabelForitem)
+
+    @JvmField
     val StatusPass = LayeredIcon(ElementPass, LabelPass).scale(1.5F)
 
     @JvmField
     val StatusFail = LayeredIcon(ElementFail, LabelFail).scale(1.5F)
+
+    @JvmField
+    val StatusRunning = LayeredIcon(ElementRunning, LabelFail).scale(1.5F)
 
     @JvmField
     val LevelInfo = LayeredIcon(ElementPass, LabelInfo)

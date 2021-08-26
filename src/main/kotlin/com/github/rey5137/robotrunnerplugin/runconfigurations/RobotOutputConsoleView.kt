@@ -1,27 +1,32 @@
 package com.github.rey5137.robotrunnerplugin.runconfigurations
 
+import com.github.rey5137.robotrunnerplugin.editors.RobotOutputView
 import com.intellij.execution.filters.Filter
 import com.intellij.execution.filters.HyperlinkInfo
 import com.intellij.execution.process.ProcessHandler
 import com.intellij.execution.ui.ConsoleView
 import com.intellij.execution.ui.ConsoleViewContentType
 import com.intellij.openapi.actionSystem.AnAction
+import com.intellij.openapi.project.Project
 import com.intellij.ui.components.JBTabbedPane
-import java.awt.Color
+import com.intellij.util.ui.JBUI
 import javax.swing.JComponent
-import javax.swing.JPanel
 
-class RobotOutputConsoleView(val consoleView: ConsoleView) : JBTabbedPane(), ConsoleView {
+class RobotOutputConsoleView(val project: Project, val consoleView: ConsoleView) : JBTabbedPane(), ConsoleView {
+
+    val robotOutputView = RobotOutputView(project)
 
     init {
         add("Console view", consoleView.component)
-        add("Output view", JPanel().apply {
-            background = Color.RED
-        })
+        add("Output view", robotOutputView)
+
+        consoleView.component.border = JBUI.Borders.empty(0, 0, 0, 0)
+        robotOutputView.border = JBUI.Borders.empty(0, 0, 0, 0)
     }
 
     override fun dispose() {
         consoleView.dispose()
+        robotOutputView.dispose()
     }
 
     override fun getComponent(): JComponent {

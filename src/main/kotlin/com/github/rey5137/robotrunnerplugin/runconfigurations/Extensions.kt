@@ -1,5 +1,12 @@
 package com.github.rey5137.robotrunnerplugin.runconfigurations
 
+import java.io.IOException
+
+import java.net.ServerSocket
+
+
+
+
 fun String.findOutputFilePath(): String? {
     val regex = "^.*Output:\\s+([^\\n]*).*$".toRegex(option = RegexOption.DOT_MATCHES_ALL)
     val result = regex.matchEntire(this)
@@ -45,4 +52,14 @@ fun String.escapeCharsInTestName(): String {
         }
     }
     return builder.toString()
+}
+
+fun findAvailablePort() : Int {
+    try {
+        ServerSocket(0).use { serverSocket ->
+            return serverSocket.localPort
+        }
+    } catch (e: IOException) {
+        return -1
+    }
 }

@@ -1,0 +1,28 @@
+package com.github.rey5137.robotrunnerplugin.editors.json
+
+const val METHOD_START_SUITE = "start_suite"
+const val METHOD_START_TEST = "start_test"
+const val METHOD_START_KEYWORD = "start_keyword"
+const val METHOD_LOG_MESSAGE = "log_message"
+const val METHOD_END_SUITE = "end_suite"
+const val METHOD_END_TEST = "end_test"
+const val METHOD_END_KEYWORD = "end_keyword"
+
+
+const val FIELD_NAME = "name"
+const val FIELD_ATTRS = "attrs"
+const val FIELD_ID = "id"
+const val FIELD_SOURCE = "source"
+const val FIELD_STARTTIME = "starttime"
+const val FIELD_ENDTIME = "endtime"
+const val FIELD_STATUS = "status"
+const val FIELD_MESSAGE = "message"
+const val FIELD_TAGS = "tags"
+const val FIELD_ARGS = "args"
+const val FIELD_ASSIGN = "assign"
+const val FIELD_KWNAME = "kwname"
+const val FIELD_LIBNAME = "libname"
+const val FIELD_DOC = "doc"
+const val FIELD_TYPE = "type"
+const val FIELD_LEVEL = "level"
+const val FIELD_TIMESTAMP = "timestamp"

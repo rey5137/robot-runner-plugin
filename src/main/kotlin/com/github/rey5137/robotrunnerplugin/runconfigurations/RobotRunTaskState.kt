@@ -1,5 +1,8 @@
 package com.github.rey5137.robotrunnerplugin.runconfigurations
 
+import co.gongzh.procbridge.IDelegate
+import co.gongzh.procbridge.Server
+import com.github.rey5137.robotrunnerplugin.editors.RobotOutputView
 import com.github.rey5137.robotrunnerplugin.runconfigurations.actions.OpenOutputFileAction
 import com.github.rey5137.robotrunnerplugin.runconfigurations.actions.RerunRobotFailedTestsAction
 import com.intellij.execution.DefaultExecutionResult
@@ -8,9 +11,7 @@ import com.intellij.execution.ExecutionResult
 import com.intellij.execution.Executor
 import com.intellij.execution.configurations.CommandLineState
 import com.intellij.execution.configurations.GeneralCommandLine
-import com.intellij.execution.process.ProcessHandler
-import com.intellij.execution.process.ProcessHandlerFactory
-import com.intellij.execution.process.ProcessTerminatedListener
+import com.intellij.execution.process.*
 import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.execution.runners.ProgramRunner
 import com.intellij.execution.ui.ConsoleView
@@ -19,7 +20,9 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.projectRoots.ProjectJdkTable
 import com.intellij.openapi.projectRoots.Sdk
 import com.intellij.openapi.roots.OrderRootType
+import com.intellij.openapi.util.Key
 import com.intellij.openapi.vfs.VirtualFile
+import org.json.JSONObject
 
 class RobotRunTaskState(
     private val project: Project,
@@ -28,7 +31,18 @@ class RobotRunTaskState(
     private val rerunFailedCaseConfig: RerunFailedCaseConfig? = null
 ) : CommandLineState(environment) {
 
+    lateinit var server : Server
+
+    var robotOutputView: RobotOutputView? = null
+
     override fun startProcess(): ProcessHandler {
+        val port = findAvailablePort()
+        server = Server(port) { method, payload ->
+            if(method != null && payload != null)
+                robotOutputView?.addEvent(method, payload as JSONObject)
+        }
+        server.start()
+
         val commands = mutableListOf<String>()
 
         val options = configuration.options
@@ -76,6 +90,9 @@ class RobotRunTaskState(
         options.runEmptySuite.ifEnable { commands.add("--runemptysuite") }
         options.extraArguments.ifNotEmpty { value -> commands.addAll(value.parseCommandLineArguments()) }
 
+        commands.add("--listener")
+        commands.add("/Users/reypham/Downloads/RobotListener.py:$port")
+
         commands.addAll(options.suitePaths)
 
         val commandLine = GeneralCommandLine(commands)
@@ -96,7 +113,8 @@ class RobotRunTaskState(
 
     override fun execute(executor: Executor, runner: ProgramRunner<*>): ExecutionResult {
         val processHandler = startProcess()
-        val console = RobotOutputConsoleView(createConsole(executor)!!)
+        val console = RobotOutputConsoleView(project, createConsole(executor)!!)
+        robotOutputView = console.robotOutputView
         console.attachToProcess(processHandler)
         val result = DefaultExecutionResult(console, processHandler, *createActions(console, processHandler, executor))
         result.setRestartActions(
@@ -108,6 +126,17 @@ class RobotRunTaskState(
                 rerunFailedCaseConfig,
             )
         )
+        processHandler.addProcessListener(object : ProcessListener {
+            override fun startNotified(event: ProcessEvent) {}
+
+            override fun processTerminated(event: ProcessEvent) {
+                server.stop()
+                robotOutputView = null
+            }
+
+            override fun onTextAvailable(event: ProcessEvent, outputType: Key<*>) {}
+
+        })
         return result
     }
 

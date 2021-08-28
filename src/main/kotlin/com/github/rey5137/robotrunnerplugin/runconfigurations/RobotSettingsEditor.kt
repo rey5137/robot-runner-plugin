@@ -38,6 +38,7 @@ class RobotSettingsEditor : SettingsEditor<RobotRunConfiguration>() {
     private lateinit var dryRunCheckBox: JBCheckBox
     private lateinit var runEmptySuiteCheckBox: JBCheckBox
     private lateinit var extraArgumentsTextField: JBTextField
+    private lateinit var showOutputViewCheckBox: JBCheckBox
 
     private val suitePathModel = DefaultListModel<String>()
     private val testNameModel = DefaultListModel<String>()
@@ -77,6 +78,7 @@ class RobotSettingsEditor : SettingsEditor<RobotRunConfiguration>() {
         dryRunCheckBox.isSelected = options.dryRun
         runEmptySuiteCheckBox.isSelected = options.runEmptySuite
         extraArgumentsTextField.text = options.extraArguments
+        showOutputViewCheckBox.isSelected = options.showOutputView
     }
 
     override fun applyEditorTo(configuration: RobotRunConfiguration) {
@@ -108,6 +110,7 @@ class RobotSettingsEditor : SettingsEditor<RobotRunConfiguration>() {
         options.dryRun = dryRunCheckBox.isSelected
         options.runEmptySuite = runEmptySuiteCheckBox.isSelected
         options.extraArguments = extraArgumentsTextField.text
+        options.showOutputView = showOutputViewCheckBox.isSelected
     }
 
     override fun createEditor(): JComponent = mainPanel
@@ -271,6 +274,9 @@ class RobotSettingsEditor : SettingsEditor<RobotRunConfiguration>() {
         row {
             label(MyBundle.message("robot.run.configuration.label.extra-arguments"))
             extraArgumentsTextField = textField({ "" }, {}).constraints(CCFlags.pushX).component
+        }
+        row {
+            showOutputViewCheckBox = checkBox(MyBundle.message("robot.run.configuration.label.show-output-view"), false).component
         }
     }
 

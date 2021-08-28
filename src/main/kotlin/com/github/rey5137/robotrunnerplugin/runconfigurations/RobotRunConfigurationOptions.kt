@@ -68,4 +68,7 @@ open class RobotRunConfigurationOptions : RunConfigurationOptions() {
     @get:OptionTag("extraArguments")
     var extraArguments by string("")
 
+    @get:OptionTag("showOutputView")
+    var showOutputView by property(false)
+
 }

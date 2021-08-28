@@ -6,12 +6,11 @@ import com.github.rey5137.robotrunnerplugin.runconfigurations.*
 import com.intellij.execution.Executor
 import com.intellij.execution.configurations.*
 import com.intellij.execution.executors.DefaultRunExecutor
-import com.intellij.execution.impl.ConsoleViewImpl
 import com.intellij.execution.process.ProcessHandler
 import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.execution.runners.ExecutionEnvironmentBuilder
 import com.intellij.execution.runners.ProgramRunner
-import com.intellij.execution.ui.ExecutionConsole
+import com.intellij.execution.ui.ConsoleView
 import com.intellij.icons.AllIcons
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
@@ -23,7 +22,7 @@ import java.util.*
 
 class RerunRobotFailedTestsAction(
     private val processHandler: ProcessHandler,
-    private val console: RobotOutputConsoleView,
+    private val console: ConsoleView,
     private val environment: ExecutionEnvironment,
     private val configuration: RobotRunConfiguration,
     private val rerunFailedCaseConfig: RerunFailedCaseConfig?,
@@ -35,7 +34,7 @@ class RerunRobotFailedTestsAction(
 
     override fun update(e: AnActionEvent) {
         if (processHandler.isProcessTerminated) {
-            val count = (console.consoleView as ConsoleViewImpl).text.findNumberOfFailedCases() ?: 0
+            val count = console.text().findNumberOfFailedCases() ?: 0
             e.presentation.isEnabled = count > 0
         } else
             e.presentation.isEnabled = false
@@ -43,7 +42,7 @@ class RerunRobotFailedTestsAction(
 
     override fun actionPerformed(e: AnActionEvent) {
         if (processHandler.isProcessTerminated) {
-            val text = (console.consoleView as ConsoleViewImpl).text
+            val text = console.text()
             val outputFile = text.findOutputFilePath() ?: return
             val testcases = VfsUtil.findFileByIoFile(File(outputFile), true)?.extractFailedTestCases() ?: emptyList()
             if (testcases.isEmpty())

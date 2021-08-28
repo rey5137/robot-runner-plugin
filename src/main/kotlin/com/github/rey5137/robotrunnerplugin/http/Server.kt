@@ -15,7 +15,7 @@ import kotlin.collections.Map.Entry
 /**
  * @author Gong Zhang
  */
-class Server(private val port: Int, private val delegate: IDelegate) {
+class Server(val port: Int, private val delegate: IDelegate) {
     private var executor: ExecutorService? = null
     private var serverSocket: ServerSocket? = null
 

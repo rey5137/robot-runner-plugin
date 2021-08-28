@@ -1,5 +1,7 @@
 package com.github.rey5137.robotrunnerplugin.runconfigurations
 
+import com.intellij.execution.impl.ConsoleViewImpl
+import com.intellij.execution.ui.ConsoleView
 import java.io.IOException
 
 import java.net.ServerSocket
@@ -63,3 +65,8 @@ fun findAvailablePort() : Int {
         return -1
     }
 }
+
+fun ConsoleView.text() = if(this is RobotOutputConsoleView)
+    (this.consoleView as ConsoleViewImpl).text
+else
+    (this as ConsoleViewImpl).text

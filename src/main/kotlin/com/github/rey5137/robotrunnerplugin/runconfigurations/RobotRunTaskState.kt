@@ -33,21 +33,23 @@ class RobotRunTaskState(
 ) : CommandLineState(environment) {
 
     lateinit var server : Server
-
-    var robotOutputView: RobotOutputView = RobotOutputView(project)
+    lateinit var robotOutputView: RobotOutputView
 
     override fun startProcess(): ProcessHandler {
-        val port = findAvailablePort()
-        server = Server(port) { method, payload ->
-            if(method != null && payload != null)
-                robotOutputView.addEvent(method, payload)
-            null
+        val options = configuration.options
+        if(options.showOutputView) {
+            robotOutputView = RobotOutputView(project)
+            val port = findAvailablePort()
+            server = Server(port) { method, payload ->
+                if (method != null && payload != null)
+                    robotOutputView.addEvent(method, payload)
+                null
+            }
+            server.start()
         }
-        server.start()
 
         val commands = mutableListOf<String>()
 
-        val options = configuration.options
         val sdk = options.sdkHomePath.toSdk() ?: throw ExecutionException("SDK is not configured")
         commands += sdk.homePath!!
 
@@ -92,8 +94,10 @@ class RobotRunTaskState(
         options.runEmptySuite.ifEnable { commands.add("--runemptysuite") }
         options.extraArguments.ifNotEmpty { value -> commands.addAll(value.parseCommandLineArguments()) }
 
-        commands.add("--listener")
-        commands.add("${getListenerFilePath()}:$port")
+        if(options.showOutputView) {
+            commands.add("--listener")
+            commands.add("${getListenerFilePath()}:${server.port}")
+        }
 
         commands.addAll(options.suitePaths)
 
@@ -129,12 +133,16 @@ class RobotRunTaskState(
         processHandler: ProcessHandler,
         executor: Executor
     ): Array<AnAction> = arrayOf(
-        OpenOutputFileAction(project, processHandler, console as RobotOutputConsoleView)
+        OpenOutputFileAction(project, processHandler, console)
     )
 
     override fun execute(executor: Executor, runner: ProgramRunner<*>): ExecutionResult {
+        val options = configuration.options
         val processHandler = startProcess()
-        val console = RobotOutputConsoleView(project, createConsole(executor)!!, robotOutputView)
+        val console = if(options.showOutputView)
+            RobotOutputConsoleView(project, createConsole(executor)!!, robotOutputView)
+        else
+            createConsole(executor)!!
         console.attachToProcess(processHandler)
         val result = DefaultExecutionResult(console, processHandler, *createActions(console, processHandler, executor))
         result.setRestartActions(
@@ -146,16 +154,17 @@ class RobotRunTaskState(
                 rerunFailedCaseConfig,
             )
         )
-        processHandler.addProcessListener(object : ProcessListener {
-            override fun startNotified(event: ProcessEvent) {}
+        if(options.showOutputView) {
+            processHandler.addProcessListener(object : ProcessListener {
+                override fun startNotified(event: ProcessEvent) {}
 
-            override fun processTerminated(event: ProcessEvent) {
-                server.stop()
-            }
+                override fun processTerminated(event: ProcessEvent) {
+                    server.stop()
+                }
 
-            override fun onTextAvailable(event: ProcessEvent, outputType: Key<*>) {}
-
-        })
+                override fun onTextAvailable(event: ProcessEvent, outputType: Key<*>) {}
+            })
+        }
         return result
     }
 

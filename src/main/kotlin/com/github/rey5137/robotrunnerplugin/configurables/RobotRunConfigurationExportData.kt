@@ -62,6 +62,8 @@ data class RobotRunConfigurationExportData(
     var runEmptySuite: Boolean = false,
     @SerializedName("extra_arguments")
     var extraArguments: String = "",
+    @SerializedName("show_output_view")
+    var showOutputView: Boolean = false,
 )
 
 fun buildRobotRunConfigurationExportData(
@@ -94,6 +96,7 @@ fun buildRobotRunConfigurationExportData(
         dryRun = options.dryRun,
         runEmptySuite = options.runEmptySuite,
         extraArguments = options.extraArguments ?: "",
+        showOutputView = options.showOutputView,
     )
 
 fun RobotRunConfigurationExportData.setRobotRunConfigurationOptions(options: RobotRunConfigurationOptions) {
@@ -118,4 +121,5 @@ fun RobotRunConfigurationExportData.setRobotRunConfigurationOptions(options: Rob
     options.dryRun = dryRun
     options.runEmptySuite = runEmptySuite
     options.extraArguments = extraArguments
+    options.showOutputView = showOutputView
 }

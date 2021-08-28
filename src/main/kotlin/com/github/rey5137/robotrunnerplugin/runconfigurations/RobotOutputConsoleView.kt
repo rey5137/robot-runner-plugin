@@ -1,5 +1,6 @@
 package com.github.rey5137.robotrunnerplugin.runconfigurations
 
+import com.github.rey5137.robotrunnerplugin.MyBundle
 import com.github.rey5137.robotrunnerplugin.editors.RobotOutputView
 import com.intellij.execution.filters.Filter
 import com.intellij.execution.filters.HyperlinkInfo
@@ -17,8 +18,8 @@ class RobotOutputConsoleView(val project: Project,
                              val robotOutputView: RobotOutputView) : JBTabbedPane(), ConsoleView {
 
     init {
-        add("Output view", robotOutputView)
-        add("Console view", consoleView.component)
+        add(MyBundle.message("robot.run.configuration.label.output-view"), robotOutputView)
+        add(MyBundle.message("robot.run.configuration.label.console-view"), consoleView.component)
 
         consoleView.component.border = JBUI.Borders.empty(0, 0, 0, 0)
         robotOutputView.border = JBUI.Borders.empty(0, 0, 0, 0)

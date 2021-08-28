@@ -9,5 +9,5 @@ data class SuiteElement(
     override var parent: Element? = null,
 ) : Element, HasCommonField {
 
-    override fun toString() = "SuiteElement"
+    override fun toString() = "SuiteElement[$name]"
 }

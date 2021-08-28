@@ -6,7 +6,7 @@ import org.json.JSONObject
 
 class JsonParser(val robotElement: RobotElement) {
 
-    private var currentElement: Element = robotElement
+    var currentElement: Element = robotElement
     private val stack: MutableList<Element> = ArrayList()
     private var messageIndex = 0L
     private var docIndex = 0L

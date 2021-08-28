@@ -9,5 +9,5 @@ data class TestElement(
     override var parent: Element? = null,
 ) : Element, HasCommonField, HasTagsField {
 
-    override fun toString() = "TestElement"
+    override fun toString() = "TestElement[$name]"
 }

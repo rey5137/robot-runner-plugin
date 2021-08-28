@@ -12,13 +12,13 @@ import com.intellij.ui.components.JBTabbedPane
 import com.intellij.util.ui.JBUI
 import javax.swing.JComponent
 
-class RobotOutputConsoleView(val project: Project, val consoleView: ConsoleView) : JBTabbedPane(), ConsoleView {
-
-    val robotOutputView = RobotOutputView(project)
+class RobotOutputConsoleView(val project: Project,
+                             val consoleView: ConsoleView,
+                             val robotOutputView: RobotOutputView) : JBTabbedPane(), ConsoleView {
 
     init {
-        add("Console view", consoleView.component)
         add("Output view", robotOutputView)
+        add("Console view", consoleView.component)
 
         consoleView.component.border = JBUI.Borders.empty(0, 0, 0, 0)
         robotOutputView.border = JBUI.Borders.empty(0, 0, 0, 0)

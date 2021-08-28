@@ -34,7 +34,7 @@ dependencies {
         exclude(group = "org.jetbrains.kotlin", module = "kotlin-stdlib")
         exclude(group = "org.jetbrains.kotlin", module = "kotlin-stdlib-common")
     }
-    implementation("co.gongzh.procbridge:procbridge:1.1")
+    implementation("org.json:json:20210307")
 }
 
 // Configure gradle-intellij-plugin plugin.

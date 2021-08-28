@@ -1,7 +1,7 @@
 package com.github.rey5137.robotrunnerplugin.editors
 
 import com.github.rey5137.robotrunnerplugin.MyBundle
-import com.github.rey5137.robotrunnerplugin.editors.json.JsonParser
+import com.github.rey5137.robotrunnerplugin.editors.json.*
 import com.github.rey5137.robotrunnerplugin.editors.ui.*
 import com.github.rey5137.robotrunnerplugin.editors.ui.filter.HideKeywordFilter
 import com.github.rey5137.robotrunnerplugin.editors.ui.filter.HidePassedSuiteFilter
@@ -56,8 +56,6 @@ class RobotOutputView(project: Project) : JPanel(BorderLayout()) {
     private val tree = MyTree(treeModel)
     private val detailsPanel = DetailsPanel(project)
 
-    private val executor = Executors.newSingleThreadExecutor()
-
     init {
         val splitter = JBSplitter(0.3F)
         val leftPanel = buildLeftPanel()
@@ -73,12 +71,15 @@ class RobotOutputView(project: Project) : JPanel(BorderLayout()) {
     }
 
     fun addEvent(method: String, payload: JSONObject) {
-        executor.submit {
-            jsonParser.addData(method, payload)
+        jsonParser.addData(method, payload)
+        if (method == METHOD_START_SUITE
+            || method == METHOD_START_TEST
+            || method == METHOD_END_SUITE
+            || method == METHOD_END_TEST
+        )
             UIUtil.invokeLaterIfNeeded {
                 refresh()
             }
-        }
     }
 
     fun dispose() {
@@ -258,7 +259,7 @@ class RobotOutputView(project: Project) : JPanel(BorderLayout()) {
                 else
                     TreeVisitor.Action.CONTINUE
             }
-            if(selectedPaths.isNotEmpty())
+            if (selectedPaths.isNotEmpty())
                 UIUtil.invokeLaterIfNeeded {
                     restoreSelectionNode(selectedPaths)
                 }
@@ -411,7 +412,7 @@ class RobotOutputView(project: Project) : JPanel(BorderLayout()) {
                     append(element.name, SimpleTextAttributes.REGULAR_BOLD_ATTRIBUTES)
                 }
                 is TestElement -> {
-                    icon =  when {
+                    icon = when {
                         element.status.isPassed -> MyIcons.TestPass
                         element.status.isRunning -> MyIcons.TestRunning
                         else -> MyIcons.TestFail

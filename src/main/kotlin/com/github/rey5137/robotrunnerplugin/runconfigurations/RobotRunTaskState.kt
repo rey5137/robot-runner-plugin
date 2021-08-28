@@ -1,8 +1,7 @@
 package com.github.rey5137.robotrunnerplugin.runconfigurations
 
-import co.gongzh.procbridge.IDelegate
-import co.gongzh.procbridge.Server
 import com.github.rey5137.robotrunnerplugin.editors.RobotOutputView
+import com.github.rey5137.robotrunnerplugin.http.Server
 import com.github.rey5137.robotrunnerplugin.runconfigurations.actions.OpenOutputFileAction
 import com.github.rey5137.robotrunnerplugin.runconfigurations.actions.RerunRobotFailedTestsAction
 import com.intellij.execution.DefaultExecutionResult
@@ -33,13 +32,14 @@ class RobotRunTaskState(
 
     lateinit var server : Server
 
-    var robotOutputView: RobotOutputView? = null
+    var robotOutputView: RobotOutputView = RobotOutputView(project)
 
     override fun startProcess(): ProcessHandler {
         val port = findAvailablePort()
         server = Server(port) { method, payload ->
             if(method != null && payload != null)
-                robotOutputView?.addEvent(method, payload as JSONObject)
+                robotOutputView.addEvent(method, payload)
+            null
         }
         server.start()
 
@@ -113,8 +113,7 @@ class RobotRunTaskState(
 
     override fun execute(executor: Executor, runner: ProgramRunner<*>): ExecutionResult {
         val processHandler = startProcess()
-        val console = RobotOutputConsoleView(project, createConsole(executor)!!)
-        robotOutputView = console.robotOutputView
+        val console = RobotOutputConsoleView(project, createConsole(executor)!!, robotOutputView)
         console.attachToProcess(processHandler)
         val result = DefaultExecutionResult(console, processHandler, *createActions(console, processHandler, executor))
         result.setRestartActions(
@@ -131,7 +130,6 @@ class RobotRunTaskState(
 
             override fun processTerminated(event: ProcessEvent) {
                 server.stop()
-                robotOutputView = null
             }
 
             override fun onTextAvailable(event: ProcessEvent, outputType: Key<*>) {}

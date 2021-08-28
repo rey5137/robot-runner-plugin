@@ -7,6 +7,7 @@ const val METHOD_LOG_MESSAGE = "log_message"
 const val METHOD_END_SUITE = "end_suite"
 const val METHOD_END_TEST = "end_test"
 const val METHOD_END_KEYWORD = "end_keyword"
+const val METHOD_CLOSE = "close"
 
 
 const val FIELD_NAME = "name"

@@ -31,13 +31,12 @@ import java.awt.Dimension
 import java.awt.Toolkit
 import java.awt.datatransfer.StringSelection
 import java.util.*
-import java.util.concurrent.ExecutorService
-import java.util.concurrent.Executors
 import javax.swing.JPanel
 import javax.swing.JTree
 import javax.swing.plaf.basic.BasicTreeUI
 import javax.swing.tree.*
 import kotlin.collections.ArrayList
+
 
 class RobotOutputView(project: Project) : JPanel(BorderLayout()) {
 
@@ -63,6 +62,11 @@ class RobotOutputView(project: Project) : JPanel(BorderLayout()) {
     private val tree = MyTree(treeModel)
     private val detailsPanel = DetailsPanel(project)
 
+    private var isFinished = false
+    private lateinit var filterActionButton: AnActionButton
+    private lateinit var refreshActionButton: AnActionButton
+    private lateinit var searchActionButton: AnActionButton
+
     init {
         val splitter = JBSplitter(0.3F)
         val leftPanel = buildLeftPanel()
@@ -81,35 +85,44 @@ class RobotOutputView(project: Project) : JPanel(BorderLayout()) {
 
     fun addEvent(method: String, payload: JSONObject) {
         jsonParser.addData(method, payload)
-        if (method == METHOD_START_SUITE
-            || method == METHOD_START_TEST
-            || method == METHOD_START_KEYWORD
-        ) {
-            val currentNodeWrapper = nodeWrapperStack.last()
-            val childNodeWrapper = TreeNodeWrapper(
-                node = DefaultMutableTreeNode(HighlightHolder(jsonParser.currentElement)),
-                children = mutableListOf()
-            )
-            currentNodeWrapper.children.add(childNodeWrapper)
-            nodeWrapperStack.add(childNodeWrapper)
-            UIUtil.invokeAndWaitIfNeeded(Runnable {
-                treeModel.insertNodeInto(
-                    childNodeWrapper.node,
-                    currentNodeWrapper.node,
-                    currentNodeWrapper.children.size - 1
+        when (method) {
+            METHOD_START_SUITE, METHOD_START_TEST, METHOD_START_KEYWORD -> {
+                val currentNodeWrapper = nodeWrapperStack.last()
+                val childNodeWrapper = TreeNodeWrapper(
+                    node = DefaultMutableTreeNode(HighlightHolder(jsonParser.currentElement)),
+                    children = mutableListOf()
                 )
-                if(currentNodeWrapper == robotTreeNodeWrapper)
-                    treeModel.reload(currentNodeWrapper.node)
-            })
-        }
-        else if (method == METHOD_END_SUITE
-            || method == METHOD_END_TEST
-            || method == METHOD_END_KEYWORD
-        ) {
-            val nodeWrapper = nodeWrapperStack.removeAt(nodeWrapperStack.size - 1)
-            UIUtil.invokeAndWaitIfNeeded(Runnable {
-                treeModel.nodeChanged(nodeWrapper.node)
-            })
+                currentNodeWrapper.children.add(childNodeWrapper)
+                nodeWrapperStack.add(childNodeWrapper)
+                UIUtil.invokeAndWaitIfNeeded(Runnable {
+                    treeModel.insertNodeInto(
+                        childNodeWrapper.node,
+                        currentNodeWrapper.node,
+                        currentNodeWrapper.children.size - 1
+                    )
+                    if (currentNodeWrapper == robotTreeNodeWrapper)
+                        treeModel.reload(currentNodeWrapper.node)
+                    if (method == METHOD_START_SUITE || method == METHOD_START_TEST)
+                        tree.expandPath(TreePath(currentNodeWrapper.node.path))
+                })
+            }
+            METHOD_END_SUITE, METHOD_END_TEST, METHOD_END_KEYWORD -> {
+                val nodeWrapper = nodeWrapperStack.removeAt(nodeWrapperStack.size - 1)
+                UIUtil.invokeAndWaitIfNeeded(Runnable {
+                    treeModel.nodeChanged(nodeWrapper.node)
+                    val selectedNode = tree.lastSelectedPathComponent as DefaultMutableTreeNode
+                    if (nodeWrapper.node == selectedNode)
+                        detailsPanel.showDetails(selectedNode.getElement(), highlightInfo)
+                })
+            }
+            METHOD_CLOSE -> {
+                isFinished = true
+                UIUtil.invokeAndWaitIfNeeded(Runnable {
+                    filterActionButton.isEnabled = true
+                    refreshActionButton.isEnabled = true
+                    searchActionButton.isEnabled = true
+                })
+            }
         }
     }
 
@@ -145,38 +158,74 @@ class RobotOutputView(project: Project) : JPanel(BorderLayout()) {
             }
         }
 
+        filterActionButton = object : DumbAwareActionButton(
+            MyBundle.message("robot.output.editor.label.filter-element"),
+            AllIcons.General.Filter
+        ) {
+            override fun actionPerformed(e: AnActionEvent) {
+                JBPopupFactory.getInstance().createActionGroupPopup(null, DefaultActionGroup().apply {
+                    elementFilters.map { filter ->
+                        add(object : ToggleAction(filter.title) {
+                            override fun isSelected(e: AnActionEvent): Boolean = filter.isEnabled
+
+                            override fun setSelected(e: AnActionEvent, state: Boolean) {
+                                filter.isEnabled = state
+                                populateTree(true)
+                            }
+                        })
+                    }
+                }, e.dataContext, JBPopupFactory.ActionSelectionAid.SPEEDSEARCH, false)
+                    .show(preferredPopupPoint!!)
+            }
+        }
+        refreshActionButton = object : AnActionButton(
+            MyBundle.message("robot.output.editor.label.refresh"),
+            AllIcons.Actions.Refresh
+        ) {
+            override fun actionPerformed(e: AnActionEvent) {
+                refresh()
+            }
+        }
+        searchActionButton = object : DumbAwareActionButton(
+            MyBundle.message("robot.output.editor.label.deep-search"),
+            AllIcons.Actions.Search
+        ) {
+            override fun actionPerformed(e: AnActionEvent) {
+                JBPopupFactory.getInstance().createActionGroupPopup(null, DefaultActionGroup().apply {
+                    addAll(
+                        object : AnAction(MyBundle.message("robot.output.editor.label.deep-search")) {
+                            override fun actionPerformed(e: AnActionEvent) {
+                                val info = showSearchInput()
+                                if (info != null) {
+                                    highlightInfo = info
+                                    refreshNodes(robotTreeNodeWrapper!!.node.getElement())
+                                    detailsPanel.updateHighlightInfo(highlightInfo)
+                                }
+                            }
+                        },
+                        object : AnAction(MyBundle.message("robot.output.editor.label.clear-deep-search")) {
+                            override fun actionPerformed(e: AnActionEvent) {
+                                highlightInfo = null
+                                refreshNodes(robotTreeNodeWrapper!!.node.getElement())
+                                detailsPanel.updateHighlightInfo(highlightInfo)
+                            }
+                        }
+                    )
+                }, e.dataContext, JBPopupFactory.ActionSelectionAid.SPEEDSEARCH, false)
+                    .show(preferredPopupPoint!!)
+            }
+        }
+        filterActionButton.isEnabled = false
+        refreshActionButton.isEnabled = false
+        searchActionButton.isEnabled = false
         val toolbarDecorator = ToolbarDecorator.createDecorator(tree)
             .setToolbarPosition(ActionToolbarPosition.TOP)
             .setPanelBorder(JBUI.Borders.empty())
             .setScrollPaneBorder(JBUI.Borders.empty())
             .setMinimumSize(JBDimension(200, 200))
             .setForcedDnD()
-            .addExtraAction(object : DumbAwareActionButton(
-                MyBundle.message("robot.output.editor.label.filter-element"),
-                AllIcons.General.Filter
-            ) {
-                override fun actionPerformed(e: AnActionEvent) {
-                    JBPopupFactory.getInstance().createActionGroupPopup(null, DefaultActionGroup().apply {
-                        elementFilters.map { filter ->
-                            add(object : ToggleAction(filter.title) {
-                                override fun isSelected(e: AnActionEvent): Boolean = filter.isEnabled
-
-                                override fun setSelected(e: AnActionEvent, state: Boolean) {
-                                    filter.isEnabled = state
-                                    populateTree(true)
-                                }
-                            })
-                        }
-                    }, e.dataContext, JBPopupFactory.ActionSelectionAid.SPEEDSEARCH, false)
-                        .show(preferredPopupPoint!!)
-                }
-            })
-            .addExtraAction(object :
-                AnActionButton(MyBundle.message("robot.output.editor.label.refresh"), AllIcons.Actions.Refresh) {
-                override fun actionPerformed(e: AnActionEvent) {
-                    refresh()
-                }
-            })
+            .addExtraAction(filterActionButton)
+            .addExtraAction(refreshActionButton)
             .addExtraAction(object : AnActionButton(
                 MyBundle.message("robot.output.editor.label.collapse-all"),
                 AllIcons.Actions.Collapseall
@@ -209,35 +258,7 @@ class RobotOutputView(project: Project) : JPanel(BorderLayout()) {
                     Toolkit.getDefaultToolkit().systemClipboard.setContents(stringSelection, null)
                 }
             })
-            .addExtraAction(object : DumbAwareActionButton(
-                MyBundle.message("robot.output.editor.label.deep-search"),
-                AllIcons.Actions.Search
-            ) {
-                override fun actionPerformed(e: AnActionEvent) {
-                    JBPopupFactory.getInstance().createActionGroupPopup(null, DefaultActionGroup().apply {
-                        addAll(
-                            object : AnAction(MyBundle.message("robot.output.editor.label.deep-search")) {
-                                override fun actionPerformed(e: AnActionEvent) {
-                                    val info = showSearchInput()
-                                    if (info != null) {
-                                        highlightInfo = info
-                                        refreshNodes(robotTreeNodeWrapper!!.node.getElement())
-                                        detailsPanel.updateHighlightInfo(highlightInfo)
-                                    }
-                                }
-                            },
-                            object : AnAction(MyBundle.message("robot.output.editor.label.clear-deep-search")) {
-                                override fun actionPerformed(e: AnActionEvent) {
-                                    highlightInfo = null
-                                    refreshNodes(robotTreeNodeWrapper!!.node.getElement())
-                                    detailsPanel.updateHighlightInfo(highlightInfo)
-                                }
-                            }
-                        )
-                    }, e.dataContext, JBPopupFactory.ActionSelectionAid.SPEEDSEARCH, false)
-                        .show(preferredPopupPoint!!)
-                }
-            })
+            .addExtraAction(searchActionButton)
         val panel = JPanel(BorderLayout())
         panel.background = JBColor.background()
         panel.add(toolbarDecorator.createPanel(), BorderLayout.CENTER)
@@ -267,15 +288,14 @@ class RobotOutputView(project: Project) : JPanel(BorderLayout()) {
         }
     }
 
-    private fun populateTree(keepExpanded: Boolean, rebuildTree: Boolean = true) {
+    private fun populateTree(keepExpanded: Boolean) {
         var expandedPaths = emptyList<TreePath>()
         if (keepExpanded)
             expandedPaths = TreeUtil.collectExpandedPaths(tree)
 
         val selectedPaths = tree.selectionPaths ?: emptyArray()
 
-        if (rebuildTree)
-            robotTreeNodeWrapper?.rebuildNode()
+        robotTreeNodeWrapper?.rebuildNode()
         treeModel.reload()
 
         if (keepExpanded) {

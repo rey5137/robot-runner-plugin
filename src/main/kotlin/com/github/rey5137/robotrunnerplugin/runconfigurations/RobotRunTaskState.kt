@@ -20,8 +20,10 @@ import com.intellij.openapi.projectRoots.ProjectJdkTable
 import com.intellij.openapi.projectRoots.Sdk
 import com.intellij.openapi.roots.OrderRootType
 import com.intellij.openapi.util.Key
+import com.intellij.openapi.util.io.FileUtilRt
 import com.intellij.openapi.vfs.VirtualFile
-import org.json.JSONObject
+import java.io.File
+import java.io.FileOutputStream
 
 class RobotRunTaskState(
     private val project: Project,
@@ -91,7 +93,7 @@ class RobotRunTaskState(
         options.extraArguments.ifNotEmpty { value -> commands.addAll(value.parseCommandLineArguments()) }
 
         commands.add("--listener")
-        commands.add("/Users/reypham/Downloads/RobotListener.py:$port")
+        commands.add("${getListenerFilePath()}:$port")
 
         commands.addAll(options.suitePaths)
 
@@ -101,6 +103,25 @@ class RobotRunTaskState(
         val processHandler = ProcessHandlerFactory.getInstance().createColoredProcessHandler(commandLine)
         ProcessTerminatedListener.attach(processHandler)
         return processHandler
+    }
+
+    private fun getListenerFilePath(): String {
+        val folder = File(FileUtilRt.getTempDirectory(), "RobotRunnerPlugin")
+        if(!folder.exists())
+            folder.mkdirs()
+        val file = File(folder, "RobotRunnerPluginListener.py")
+        if(!file.exists()) {
+            val inputStream = javaClass.getResourceAsStream("/scripts/RobotRunnerPluginListener.py")
+            val fileOutputStream = FileOutputStream(file)
+            val buffer = ByteArray(32768)
+            var length: Int
+            while (inputStream.read(buffer).also { length = it } > 0) {
+                fileOutputStream.write(buffer, 0, length)
+            }
+            fileOutputStream.close()
+            inputStream.close()
+        }
+        return file.absolutePath
     }
 
     override fun createActions(

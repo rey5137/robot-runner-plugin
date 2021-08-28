@@ -67,6 +67,9 @@ object MyIcons {
     val LabelFail = IconLoader.getIcon("/icons/labelFail.svg", javaClass)
 
     @JvmField
+    val LabelRunning = IconLoader.getIcon("/icons/labelRunning.svg", javaClass)
+
+    @JvmField
     val LabelInfo = IconLoader.getIcon("/icons/labelInfo.svg", javaClass)
 
     @JvmField
@@ -148,7 +151,7 @@ object MyIcons {
     val StatusFail = LayeredIcon(ElementFail, LabelFail).scale(1.5F)
 
     @JvmField
-    val StatusRunning = LayeredIcon(ElementRunning, LabelFail).scale(1.5F)
+    val StatusRunning = LayeredIcon(ElementRunning, LabelRunning).scale(1.5F)
 
     @JvmField
     val LevelInfo = LayeredIcon(ElementPass, LabelInfo)

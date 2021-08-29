@@ -276,7 +276,7 @@ class RobotSettingsEditor : SettingsEditor<RobotRunConfiguration>() {
             extraArgumentsTextField = textField({ "" }, {}).constraints(CCFlags.pushX).component
         }
         row {
-            showOutputViewCheckBox = checkBox(MyBundle.message("robot.run.configuration.label.show-output-view"), false).component
+            showOutputViewCheckBox = checkBox(MyBundle.message("robot.run.configuration.label.show-output-view"), false, MyBundle.message("robot.run.configuration.desc.show-output-view")).component
         }
     }
 

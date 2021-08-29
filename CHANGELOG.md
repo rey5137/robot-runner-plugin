@@ -2,6 +2,10 @@
 
 # robot-runner-plugin Changelog
 
+## 0.3.0
+### Added
+- Output view in Run configuration tab
+
 ## 0.2.5
 ### Fixed
 - Rerun failed case not refresh list of failed test cases

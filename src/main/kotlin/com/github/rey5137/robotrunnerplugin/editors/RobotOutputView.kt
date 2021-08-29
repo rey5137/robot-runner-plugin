@@ -13,6 +13,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.DialogBuilder
 import com.intellij.openapi.ui.DialogWrapper
 import com.intellij.openapi.ui.popup.JBPopupFactory
+import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.ui.*
 import com.intellij.ui.components.JBCheckBox
 import com.intellij.ui.components.JBTextField
@@ -38,17 +39,11 @@ import javax.swing.tree.*
 import kotlin.collections.ArrayList
 
 
-class RobotOutputView(project: Project) : JPanel(BorderLayout()) {
+class RobotOutputView(project: Project, private val srcFile: VirtualFile? = null) : JPanel(BorderLayout()) {
 
-    private val jsonParser = JsonParser(RobotElement())
-
-    private var robotTreeNodeWrapper: TreeNodeWrapper = TreeNodeWrapper(
-        node = DefaultMutableTreeNode(HighlightHolder(jsonParser.robotElement)),
-        children = mutableListOf(),
-    )
-    private val nodeWrapperStack = ArrayList<TreeNodeWrapper>().apply {
-        add(robotTreeNodeWrapper)
-    }
+    private var robotTreeNodeWrapper: TreeNodeWrapper? = null
+    private var jsonParser: JsonParser? = null
+    private var nodeWrapperStack: MutableList<TreeNodeWrapper>? = null
 
     private val elementFilters = mutableListOf(
         HideKeywordFilter(false),
@@ -62,7 +57,6 @@ class RobotOutputView(project: Project) : JPanel(BorderLayout()) {
     private val tree = MyTree(treeModel)
     private val detailsPanel = DetailsPanel(project)
 
-    private var isFinished = false
     private lateinit var filterActionButton: AnActionButton
     private lateinit var refreshActionButton: AnActionButton
     private lateinit var searchActionButton: AnActionButton
@@ -80,50 +74,63 @@ class RobotOutputView(project: Project) : JPanel(BorderLayout()) {
 
         this.add(splitter, BorderLayout.CENTER)
 
-        treeModel.setRoot(robotTreeNodeWrapper.node)
+        if(srcFile == null) {
+            jsonParser = JsonParser(RobotElement())
+            robotTreeNodeWrapper = TreeNodeWrapper(
+                node = DefaultMutableTreeNode(HighlightHolder(jsonParser!!.robotElement)),
+                children = mutableListOf(),
+            )
+            nodeWrapperStack = ArrayList()
+            nodeWrapperStack!!.add(robotTreeNodeWrapper!!)
+            treeModel.setRoot(robotTreeNodeWrapper!!.node)
+        }
+        else
+            refresh()
     }
 
     fun addEvent(method: String, payload: JSONObject) {
-        jsonParser.addData(method, payload)
-        when (method) {
-            METHOD_START_SUITE, METHOD_START_TEST, METHOD_START_KEYWORD -> {
-                val currentNodeWrapper = nodeWrapperStack.last()
-                val childNodeWrapper = TreeNodeWrapper(
-                    node = DefaultMutableTreeNode(HighlightHolder(jsonParser.currentElement)),
-                    children = mutableListOf()
-                )
-                currentNodeWrapper.children.add(childNodeWrapper)
-                nodeWrapperStack.add(childNodeWrapper)
-                UIUtil.invokeAndWaitIfNeeded(Runnable {
-                    treeModel.insertNodeInto(
-                        childNodeWrapper.node,
-                        currentNodeWrapper.node,
-                        currentNodeWrapper.children.size - 1
+        jsonParser?.let { parser ->
+            parser.addData(method, payload)
+            when (method) {
+                METHOD_START_SUITE, METHOD_START_TEST, METHOD_START_KEYWORD -> {
+                    val currentNodeWrapper = nodeWrapperStack!!.last()
+                    val childNodeWrapper = TreeNodeWrapper(
+                        node = DefaultMutableTreeNode(HighlightHolder(parser.currentElement)),
+                        children = mutableListOf()
                     )
-                    if (currentNodeWrapper == robotTreeNodeWrapper)
-                        treeModel.reload(currentNodeWrapper.node)
-                    if (method == METHOD_START_SUITE || method == METHOD_START_TEST)
-                        tree.expandPath(TreePath(currentNodeWrapper.node.path))
-                })
-            }
-            METHOD_END_SUITE, METHOD_END_TEST, METHOD_END_KEYWORD -> {
-                val nodeWrapper = nodeWrapperStack.removeAt(nodeWrapperStack.size - 1)
-                UIUtil.invokeAndWaitIfNeeded(Runnable {
-                    treeModel.nodeChanged(nodeWrapper.node)
-                    val selectedNode = tree.lastSelectedPathComponent as DefaultMutableTreeNode
-                    if (nodeWrapper.node == selectedNode)
-                        detailsPanel.showDetails(selectedNode.getElement(), highlightInfo)
-                })
-            }
-            METHOD_CLOSE -> {
-                isFinished = true
-                UIUtil.invokeAndWaitIfNeeded(Runnable {
-                    filterActionButton.isEnabled = true
-                    refreshActionButton.isEnabled = true
-                    searchActionButton.isEnabled = true
-                })
+                    currentNodeWrapper.children.add(childNodeWrapper)
+                    nodeWrapperStack!!.add(childNodeWrapper)
+                    UIUtil.invokeAndWaitIfNeeded(Runnable {
+                        treeModel.insertNodeInto(
+                            childNodeWrapper.node,
+                            currentNodeWrapper.node,
+                            currentNodeWrapper.children.size - 1
+                        )
+                        if (currentNodeWrapper == robotTreeNodeWrapper)
+                            treeModel.reload(currentNodeWrapper.node)
+                        if (method == METHOD_START_SUITE || method == METHOD_START_TEST)
+                            tree.expandPath(TreePath(currentNodeWrapper.node.path))
+                    })
+                }
+                METHOD_END_SUITE, METHOD_END_TEST, METHOD_END_KEYWORD -> {
+                    val nodeWrapper = nodeWrapperStack!!.removeAt(nodeWrapperStack!!.size - 1)
+                    UIUtil.invokeAndWaitIfNeeded(Runnable {
+                        treeModel.nodeChanged(nodeWrapper.node)
+                        val selectedNode = tree.lastSelectedPathComponent as DefaultMutableTreeNode
+                        if (nodeWrapper.node == selectedNode)
+                            detailsPanel.showDetails(selectedNode.getElement(), highlightInfo)
+                    })
+                }
+                METHOD_CLOSE -> {
+                    UIUtil.invokeAndWaitIfNeeded(Runnable {
+                        filterActionButton.isEnabled = true
+                        refreshActionButton.isEnabled = true
+                        searchActionButton.isEnabled = true
+                    })
+                }
             }
         }
+
     }
 
     fun dispose() {
@@ -215,9 +222,9 @@ class RobotOutputView(project: Project) : JPanel(BorderLayout()) {
                     .show(preferredPopupPoint!!)
             }
         }
-        filterActionButton.isEnabled = false
-        refreshActionButton.isEnabled = false
-        searchActionButton.isEnabled = false
+        filterActionButton.isEnabled = srcFile != null
+        refreshActionButton.isEnabled = srcFile != null
+        searchActionButton.isEnabled = srcFile != null
         val toolbarDecorator = ToolbarDecorator.createDecorator(tree)
             .setToolbarPosition(ActionToolbarPosition.TOP)
             .setPanelBorder(JBUI.Borders.empty())
@@ -267,7 +274,12 @@ class RobotOutputView(project: Project) : JPanel(BorderLayout()) {
     }
 
     private fun refresh() {
-        refreshNodes(jsonParser.robotElement)
+        if(srcFile == null)
+            refreshNodes(jsonParser!!.robotElement)
+        else {
+            cleanUp()
+            refreshNodes(srcFile.parseXml())
+        }
     }
 
     private fun refreshNodes(robotElement: RobotElement) {

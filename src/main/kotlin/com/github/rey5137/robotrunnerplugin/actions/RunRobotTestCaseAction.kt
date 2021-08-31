@@ -1,6 +1,7 @@
 package com.github.rey5137.robotrunnerplugin.actions
 
 import com.github.rey5137.robotrunnerplugin.runconfigurations.RobotRunConfiguration
+import com.github.rey5137.robotrunnerplugin.runconfigurations.escapeCharsInTestName
 import com.intellij.execution.ProgramRunnerUtil
 import com.intellij.execution.RunManagerEx
 import com.intellij.execution.RunnerAndConfigurationSettings
@@ -23,14 +24,14 @@ class RunRobotTestCaseAction(private val runConfigurationSetting: RunnerAndConfi
         val dataContext = e.dataContext
         val provider = PlatformDataKeys.COPY_PROVIDER.getData(dataContext) ?: return
         provider.performCopy(dataContext)
-        val string = CopyPasteManager.getInstance().getContents<String>(DataFlavor.stringFlavor)
+        val string = CopyPasteManager.getInstance().getContents<String>(DataFlavor.stringFlavor) ?: return
 
         val file = e.file ?: return
 
         val runManager = RunManagerEx.getInstanceEx(e.project!!)
         val runConfiguration = runConfigurationSetting.configuration.clone() as RobotRunConfiguration
         runConfiguration.options.suitePaths = mutableListOf(file.path)
-        runConfiguration.options.testNames = mutableListOf("*$string*")
+        runConfiguration.options.testNames = mutableListOf("*${string.escapeCharsInTestName()}*")
         runConfiguration.name = "[${runConfigurationSetting.configuration.name}] ${file.nameWithoutExtension} - \"$string\""
         val newRunConfigurationSetting = runManager.createConfiguration(runConfiguration, runConfiguration.factory!!)
         runManager.setTemporaryConfiguration(newRunConfigurationSetting)

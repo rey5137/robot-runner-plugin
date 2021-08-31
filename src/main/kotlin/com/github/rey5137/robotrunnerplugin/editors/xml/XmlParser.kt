@@ -75,19 +75,22 @@ fun VirtualFile.parseXml(): RobotElement {
                     currentElement = stack.last()
                     when (element) {
                         is StringElement -> {
-                            if (currentElement is MessageElement) {
-                                val text = element.value.toString().trim()
-                                currentElement.title = text.extractMessageTitle()
-                                robotElement.messageMap[currentElement.valueIndex] = text
-                                stack.removeAt(stack.size - 1)
-                                currentElement = stack.last()
-                            } else if (currentElement is StatusElement) {
-                                val text = element.value.toString().trim()
-                                currentElement.message = text
-                                stack.removeAt(stack.size - 1)
-                                currentElement = stack.last()
-                            } else
-                                currentElement.addString(element)
+                            when (currentElement) {
+                                is MessageElement -> {
+                                    val text = element.value.toString().trim()
+                                    currentElement.title = text.extractMessageTitle()
+                                    robotElement.messageMap[currentElement.valueIndex] = text
+                                    stack.removeAt(stack.size - 1)
+                                    currentElement = stack.last()
+                                }
+                                is StatusElement -> {
+                                    val text = element.value.toString().trim()
+                                    currentElement.message = text
+                                    stack.removeAt(stack.size - 1)
+                                    currentElement = stack.last()
+                                }
+                                else -> currentElement.addString(element)
+                            }
                         }
                         is ArgumentsElement -> (currentElement as KeywordElement).arguments = element.arguments
                         is AssignsElement -> (currentElement as KeywordElement).assigns = element.vars
@@ -99,6 +102,49 @@ fun VirtualFile.parseXml(): RobotElement {
         }
     }
     return robotElement
+}
+
+fun VirtualFile.extractFailedTestCases(): List<String> {
+    val xmlInputFactory = XMLInputFactory.newInstance()
+    val reader = xmlInputFactory.createXMLEventReader(this.inputStream)
+    val result: MutableList<String> = ArrayList()
+    var currentTestName = ""
+    var skipCount = 0
+    while (reader.hasNext()) {
+        val nextEvent = reader.nextEvent()
+        if (nextEvent.isStartElement) {
+            if (skipCount > 0)
+                skipCount++
+            else {
+                val startElement = nextEvent.asStartElement()
+                when (startElement.name.localPart) {
+                    TAG_ROBOT, TAG_SUITE -> {
+                    }
+                    TAG_TEST -> {
+                        currentTestName = startElement.getAttributeByName(QName(TAG_NAME))?.value ?: ""
+                    }
+                    TAG_STATUS -> {
+                        if (currentTestName.isNotEmpty()) {
+                            val status = startElement.getAttributeByName(QName(TAG_STATUS))?.value ?: ""
+                            val isPassed = "PASS".equals(status, ignoreCase = true)
+                            if (!isPassed)
+                                result.add(currentTestName)
+                            currentTestName = ""
+                        }
+                    }
+                    else -> {
+                        skipCount++
+                        continue
+                    }
+                }
+            }
+        }
+        else if (nextEvent.isEndElement) {
+            if (skipCount > 0)
+                skipCount--
+        }
+    }
+    return result
 }
 
 private fun StartElement.toRobotElement() = RobotElement(
@@ -150,74 +196,6 @@ private fun StartElement.toMessageElement(index: Long, robotElement: RobotElemen
     valueIndex = index,
     robotElement = robotElement
 )
-
-private fun Element.addSuite(suite: SuiteElement) {
-    when (this) {
-        is SuiteElement -> {
-            children.add(suite)
-            suite.parent = this
-        }
-        is RobotElement -> {
-            suites.add(suite)
-            suite.parent = this
-        }
-    }
-}
-
-private fun Element.addTest(test: TestElement) {
-    when (this) {
-        is SuiteElement -> {
-            children.add(test)
-            test.parent = this
-        }
-    }
-}
-
-private fun Element.addKeyword(keyword: KeywordElement) {
-    when (this) {
-        is SuiteElement -> {
-            children.add(keyword)
-            keyword.parent = this
-        }
-        is TestElement -> {
-            keywords.add(keyword)
-            keyword.parent = this
-        }
-        is KeywordElement -> {
-            keywords.add(keyword)
-            keyword.parent = this
-        }
-    }
-}
-
-private fun Element.addStatus(status: StatusElement) {
-    when (this) {
-        is SuiteElement -> this.status = status
-        is TestElement -> this.status = status
-        is KeywordElement -> this.status = status
-    }
-}
-
-private fun Element.addString(element: StringElement) {
-    when (this) {
-        is ArgumentsElement -> arguments.add(element.value.toString())
-        is TagsElement -> tags.add(element.value.toString())
-        is AssignsElement -> vars.add(element.value.toString())
-    }
-}
-
-private fun Element.setTags(element: TagsElement) {
-    when (this) {
-        is TestElement -> this.tags = element.tags
-        is KeywordElement -> this.tags = element.tags
-    }
-}
-
-private fun Element.addMessage(element: MessageElement) {
-    when (this) {
-        is KeywordElement -> this.messages.add(element)
-    }
-}
 
 private fun String.extractMessageTitle(): String {
     val end = Math.min(31, length - 1)

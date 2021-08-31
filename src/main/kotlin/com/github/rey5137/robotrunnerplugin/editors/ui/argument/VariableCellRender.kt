@@ -1,6 +1,7 @@
 package com.github.rey5137.robotrunnerplugin.editors.ui.argument
 
 import com.github.rey5137.robotrunnerplugin.MyBundle
+import com.github.rey5137.robotrunnerplugin.editors.ui.setHighlightBorder
 import com.github.rey5137.robotrunnerplugin.editors.xml.DataType
 import com.github.rey5137.robotrunnerplugin.editors.xml.VARIABLE_EMPTY
 import com.github.rey5137.robotrunnerplugin.editors.xml.Variable
@@ -9,7 +10,9 @@ import com.intellij.ui.ColoredTableCellRenderer
 import com.intellij.ui.SimpleTextAttributes
 import com.intellij.ui.scale.JBUIScale
 import icons.MyIcons
+import java.awt.Color
 import java.awt.Insets
+import javax.swing.BorderFactory
 import javax.swing.JTable
 
 class VariableCellRender : ColoredTableCellRenderer() {
@@ -22,7 +25,9 @@ class VariableCellRender : ColoredTableCellRenderer() {
         row: Int,
         column: Int
     ) {
-        val (variable, level, isLeaf, isExpanded, _, isFilePath) = (table.model as VariableModel).getItem(row)
+        val (variable, level, isLeaf, isExpanded, _, isFilePath, highlightType) = (table.model as VariableModel).getItem(row)
+        setHighlightBorder(highlightType)
+
         if(variable == VARIABLE_EMPTY) {
             ipad = Insets(PADDING_VERTICAL, PADDING_HORIZONTAL + PADDING_LEVEL * level + AllIcons.General.ArrowDown.iconWidth, PADDING_VERTICAL, PADDING_HORIZONTAL)
             append(MyBundle.message("robot.output.editor.desc.empty-data"), SimpleTextAttributes.GRAY_SMALL_ATTRIBUTES)
@@ -41,13 +46,21 @@ class VariableCellRender : ColoredTableCellRenderer() {
                     if (selected) MyIcons.ArrowRightWhite else MyIcons.ArrowRight
             }
             append(variable.name, SimpleTextAttributes.REGULAR_BOLD_ATTRIBUTES)
-            val hasChild = (variable.value as List<Variable<*>>).isNotEmpty()
-            if(!hasChild) {
-                append(" = ", SimpleTextAttributes.GRAYED_ATTRIBUTES)
-                if(variable.type == DataType.DICT)
-                    append(MyBundle.message("robot.output.editor.desc.empty-dict"), SimpleTextAttributes.GRAY_SMALL_ATTRIBUTES)
-                else
-                    append(MyBundle.message("robot.output.editor.desc.empty-array"), SimpleTextAttributes.GRAY_SMALL_ATTRIBUTES)
+            if(variable.value != null) {
+                val hasChild = (variable.value as List<Variable<*>>).isNotEmpty()
+                if (!hasChild) {
+                    append(" = ", SimpleTextAttributes.GRAYED_ATTRIBUTES)
+                    if (variable.type == DataType.DICT)
+                        append(
+                            MyBundle.message("robot.output.editor.desc.empty-dict"),
+                            SimpleTextAttributes.GRAY_SMALL_ATTRIBUTES
+                        )
+                    else
+                        append(
+                            MyBundle.message("robot.output.editor.desc.empty-array"),
+                            SimpleTextAttributes.GRAY_SMALL_ATTRIBUTES
+                        )
+                }
             }
         }
         else {

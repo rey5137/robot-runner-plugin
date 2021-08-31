@@ -1,5 +1,8 @@
 package com.github.rey5137.robotrunnerplugin.editors.ui.argument
 
+import com.github.rey5137.robotrunnerplugin.editors.ui.HighlightInfo
+import com.github.rey5137.robotrunnerplugin.editors.ui.HighlightType
+import com.github.rey5137.robotrunnerplugin.editors.ui.match
 import com.github.rey5137.robotrunnerplugin.editors.xml.DataType
 import com.github.rey5137.robotrunnerplugin.editors.xml.VARIABLE_EMPTY
 import com.github.rey5137.robotrunnerplugin.editors.xml.Variable
@@ -12,7 +15,7 @@ class VariableModel : AbstractTableModel() {
 
     private val allItems = ArrayList<Item>()
 
-    fun setVariables(variables: List<Variable<*>>) {
+    fun setVariables(rootName: String, rootDataType: DataType, variables: List<Variable<*>>, highlightInfo: HighlightInfo?) {
         allItems.clear()
         if (variables.isEmpty())
             allItems.add(
@@ -24,40 +27,67 @@ class VariableModel : AbstractTableModel() {
                     isExpanded = true
                 )
             )
-        else
-            variables.forEach { addVariable(it, 0) }
+        else {
+            val item = Item(
+                index = allItems.size,
+                variable = Variable(
+                    name = rootName,
+                    value = null,
+                    type = rootDataType
+                ),
+                level = 0,
+                isLeaf = false,
+                isExpanded = true,
+            )
+            allItems.add(item)
+            variables.forEach {
+                val childHighlight = addVariable(it, 1, highlightInfo)
+                if(childHighlight != HighlightType.UNMATCHED)
+                    item.highlightType = HighlightType.CONTAINED
+            }
+        }
         items.clear()
         items.addAll(allItems)
         fireTableDataChanged()
     }
 
-    private fun addVariable(variable: Variable<*>, level: Int) {
+    private fun addVariable(variable: Variable<*>, level: Int, highlightInfo: HighlightInfo?): HighlightType {
         if (variable.type == DataType.DICT || variable.type == DataType.ARRAY) {
             var variables = (variable.value as List<Variable<*>>)
             if (variable.type == DataType.DICT && !variable.childOrdered)
                 variables = variables.sortedBy { it.name }
-            allItems.add(
-                Item(
-                    index = allItems.size,
-                    variable = variable,
-                    level = level,
-                    isLeaf = variables.isEmpty(),
-                    isExpanded = true,
-                    isFilePath = variable.isFilePath()
-                )
+            val item = Item(
+                index = allItems.size,
+                variable = variable,
+                level = level,
+                isLeaf = variables.isEmpty(),
+                isExpanded = true,
+                isFilePath = variable.isFilePath(),
+                highlightType = if(highlightInfo.match(variable.name)) HighlightType.MATCHED else HighlightType.UNMATCHED
             )
-            variables.forEach { addVariable(it, level + 1) }
-        } else
-            allItems.add(
-                Item(
-                    index = allItems.size,
-                    variable = variable,
-                    level = level,
-                    isLeaf = true,
-                    isExpanded = true,
-                    isFilePath = variable.isFilePath()
-                )
+            allItems.add(item)
+            variables.forEach {
+                val childHighlight = addVariable(it, level + 1, highlightInfo)
+                if(item.highlightType == HighlightType.UNMATCHED && childHighlight != HighlightType.UNMATCHED)
+                    item.highlightType = HighlightType.CONTAINED
+            }
+            return item.highlightType
+        } else {
+            val item = Item(
+                index = allItems.size,
+                variable = variable,
+                level = level,
+                isLeaf = true,
+                isExpanded = true,
+                isFilePath = variable.isFilePath(),
+                highlightType = if(highlightInfo.match("${variable.name} = ${variable.valueAsString()}"))
+                    HighlightType.MATCHED
+                else
+                    HighlightType.UNMATCHED
             )
+            allItems.add(item)
+            return item.highlightType
+        }
     }
 
     fun collapseAt(row: Int) {
@@ -66,6 +96,8 @@ class VariableModel : AbstractTableModel() {
         items[row].isExpanded = false
         val level = items[row].level
         while (row < items.size - 1 && items[row + 1].level > level) {
+            if(!items[row + 1].isLeaf)
+                items[row + 1].isExpanded = false
             items.removeAt(row + 1)
         }
     }
@@ -91,6 +123,14 @@ class VariableModel : AbstractTableModel() {
         }
     }
 
+    private fun Variable<*>.valueAsString(): String {
+        return when(type) {
+            DataType.NONE -> "None"
+            DataType.BOOL -> if(value as Boolean) "True" else "False"
+            else -> value.toString()
+        }
+    }
+
     fun getItem(row: Int) = items[row]
 
     override fun getRowCount(): Int = items.size
@@ -107,6 +147,7 @@ class VariableModel : AbstractTableModel() {
         val isLeaf: Boolean,
         var isExpanded: Boolean,
         val index: Int,
-        val isFilePath: Boolean = false
+        val isFilePath: Boolean = false,
+        var highlightType: HighlightType = HighlightType.UNMATCHED,
     )
 }

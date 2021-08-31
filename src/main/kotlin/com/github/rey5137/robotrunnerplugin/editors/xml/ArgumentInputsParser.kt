@@ -20,11 +20,15 @@ private fun List<Argument<*>>.parseRobotArgumentInputs(inputs: List<String>): Li
 
     inputs.forEach { input ->
         val (name, value) = input.parseInput()
-        if (name != null && argumentMap.containsKey(name)) {
+        if (name != null && argumentMap.containsKey(name))
             argumentMap[name]!!.addInput(value = value, rawInput = input)
-        } else if (name != null && dictHolder.containsVariable(name)) {
+        else if (name != null && dictHolder.containsVariable(name))
             dictHolder!!.addInput(name = name, value = value, rawInput = input)
-        } else {
+        else if(name == null && dictHolder != null && value.isDictInput())
+            dictHolder!!.addInput(value = value, rawInput = input)
+        else if(name == null && arrayHolder != null && value.isArrayInput())
+            arrayHolder!!.addInput(value = value, rawInput = input)
+        else {
             val holder = argumentMap.findFirstEmptyInput()
             when {
                 holder != null -> {
@@ -71,6 +75,16 @@ private fun String.parseInput(): Pair<String?, String> {
         null to this
     else
         result.groupValues[1] to result.groupValues[2]
+}
+
+private fun String.isDictInput(): Boolean {
+    val regex = "^&\\{.*}$".toRegex(option = RegexOption.DOT_MATCHES_ALL)
+    return regex.matches(this)
+}
+
+private fun String.isArrayInput(): Boolean {
+    val regex = "^@\\{.*}$".toRegex(option = RegexOption.DOT_MATCHES_ALL)
+    return regex.matches(this)
 }
 
 private fun LinkedHashMap<String, Holder>.findFirstEmptyInput(): Holder? = values.firstOrNull { it.inputs.isEmpty() }

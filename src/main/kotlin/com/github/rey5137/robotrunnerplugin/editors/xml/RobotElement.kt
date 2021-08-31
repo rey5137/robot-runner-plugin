@@ -20,5 +20,6 @@ data class RobotElement(
 
     val docMap: ConcurrentMap<Long, String> by lazy { db.hashMap("doc", Serializer.LONG, Serializer.STRING).createOrOpen() }
 
+    override fun toString() = "RobotElement"
 }
 

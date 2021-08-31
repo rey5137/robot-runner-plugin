@@ -80,7 +80,7 @@ class ValueTableCellEditor(project: Project, private val parentTable: JBTable, p
         row: Int,
         column: Int
     ): Component {
-        val argument = argumentModel.getArgument(row)
+        val argument = argumentModel.getArgumentHolder(row).value
         val editor = table.getDefaultEditor(Any::class.java)
         return when (argument.dataType) {
             DataType.NONE -> editor.getTableCellEditorComponent(table, "None", isSelected, row, column)

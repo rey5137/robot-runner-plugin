@@ -50,6 +50,11 @@ Run Configuration to run Robot Framework test suites
 
 - Click the open file icon to view file.
 
+### Show output view in run configuration tab
+
+- Choose option "Show output view" in Run Configuration setting.
+
+
 <!-- Plugin description end -->
 
 ## Installation

@@ -1,18 +1,19 @@
 package com.github.rey5137.robotrunnerplugin.editors.ui.argument
 
 import com.github.rey5137.robotrunnerplugin.MyBundle
+import com.github.rey5137.robotrunnerplugin.editors.ui.setHighlightBorder
 import com.github.rey5137.robotrunnerplugin.editors.xml.ARGUMENT_EMPTY
-import com.github.rey5137.robotrunnerplugin.editors.xml.Argument
 import com.github.rey5137.robotrunnerplugin.editors.xml.DataType
-import com.intellij.icons.AllIcons
 import com.intellij.ui.ColoredTableCellRenderer
 import com.intellij.ui.SimpleTextAttributes
 import com.intellij.ui.scale.JBUIScale
 import com.intellij.ui.table.JBTable
 import com.intellij.util.ui.UIUtil
 import icons.MyIcons
+import java.awt.Color
 import java.awt.Component
 import java.awt.Insets
+import javax.swing.BorderFactory
 import javax.swing.JTable
 import javax.swing.table.TableCellRenderer
 
@@ -29,23 +30,26 @@ class ValueTableCellRenderer(private val argumentModel: ArgumentModel) :
             column: Int
         ) {
             val item = value as ArgumentModel.Item
+            val argument = item.argumentHolder.value
+            setHighlightBorder(item.valueHighlightType)
+
             ipad = Insets(PADDING_VERTICAL, PADDING_HORIZONTAL, PADDING_VERTICAL, PADDING_HORIZONTAL)
             when {
-                item.argument == ARGUMENT_EMPTY -> append("")
+                argument == ARGUMENT_EMPTY -> append("")
                 item.isFilePath -> {
                     setFocusBorderAroundIcon(true)
                     iconTextGap = 0
                     icon = if (selected) MyIcons.OpenFileWhite else MyIcons.OpenFile
-                    append(item.argument.value.toString(), SimpleTextAttributes.REGULAR_ATTRIBUTES)
+                    append(argument.value.toString(), SimpleTextAttributes.REGULAR_ATTRIBUTES)
                 }
-                else -> when (item.argument.dataType) {
+                else -> when (argument.dataType) {
                     DataType.NONE -> append("None", SimpleTextAttributes.GRAYED_ATTRIBUTES)
                     DataType.BOOL -> append(
-                        if (item.argument.value as Boolean) "True" else "False",
+                        if (argument.value as Boolean) "True" else "False",
                         SimpleTextAttributes.REGULAR_ATTRIBUTES
                     )
                     else -> {
-                        val data = item.argument.value.toString()
+                        val data = argument.value.toString()
                         if (data.isEmpty())
                             append(
                                 MyBundle.message("robot.output.editor.desc.empty-string"),
@@ -84,7 +88,7 @@ class ValueTableCellRenderer(private val argumentModel: ArgumentModel) :
         else {
             getCellRendererComponent(variableModel, isSelected, hasFocus)
         }
-        table.setRowHeight(row, component.preferredSize.height)
+        table.setRowHeight(row, argumentModel.addColumnHeight(row, column, component.preferredSize.height))
         return component
     }
 

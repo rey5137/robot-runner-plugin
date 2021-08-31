@@ -1,5 +1,6 @@
 package com.github.rey5137.robotrunnerplugin.editors.ui.argument
 
+import com.github.rey5137.robotrunnerplugin.editors.ui.HighlightHolder
 import com.github.rey5137.robotrunnerplugin.editors.xml.InputArgument
 import com.intellij.ui.table.JBTable
 import com.intellij.util.ui.AbstractTableCellEditor
@@ -48,19 +49,19 @@ class InputTableCellEditor(private val argumentModel: ArgumentModel): AbstractTa
         row: Int,
         column: Int
     ): Component {
-        val inputs = argumentModel.getInputArguments(row)
+        val inputHolders = argumentModel.getInputArgumentHolders(row)
         val editor = table.getDefaultEditor(Any::class.java)
-        return if(inputs.size == 1) {
-            val input = inputs[0]
+        return if(inputHolders.size == 1) {
+            val input = inputHolders[0].value
             if(input.name == null)
                 editor.getTableCellEditorComponent(table, input.value, isSelected, row, column)
             else
                 editor.getTableCellEditorComponent(table, "${input.name}: ${input.value}", isSelected, row, column)
         } else
-            getCellRendererComponent(inputs)
+            getCellRendererComponent(inputHolders)
     }
 
-    private fun getCellRendererComponent(inputs: List<InputArgument>): Component {
+    private fun getCellRendererComponent(inputs: List<HighlightHolder<InputArgument>>): Component {
         inputArgumentModel.add(inputs)
         return table
     }

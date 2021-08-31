@@ -2,6 +2,31 @@
 
 # robot-runner-plugin Changelog
 
+## 0.3.0
+### Added
+- Output view in Run configuration tab
+
+## 0.2.5
+### Fixed
+- Rerun failed case not refresh list of failed test cases
+### Added
+- Searching feature in Robot output file viewer
+
+## 0.2.4
+### Fixed
+- Bug not escape special characters in test name with Run Robot Test Case Action
+
+## 0.2.3
+### Added
+- Action copy test case name in Robot output file viewer
+- Action rerun failed case in run robot panel
+
+## 0.2.2
+### Added
+- Import/Export robot run settings
+- Option to suffix output file with config name
+- Action open output.xml in run robot panel
+
 ## 0.2.1
 ### Added
 - Add Open file action for file path in Value column of Argument/Assignment table

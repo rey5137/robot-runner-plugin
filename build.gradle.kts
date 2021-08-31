@@ -34,6 +34,7 @@ dependencies {
         exclude(group = "org.jetbrains.kotlin", module = "kotlin-stdlib")
         exclude(group = "org.jetbrains.kotlin", module = "kotlin-stdlib-common")
     }
+    implementation("org.json:json:20210307")
 }
 
 // Configure gradle-intellij-plugin plugin.

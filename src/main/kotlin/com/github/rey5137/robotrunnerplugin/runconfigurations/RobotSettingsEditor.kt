@@ -32,11 +32,13 @@ class RobotSettingsEditor : SettingsEditor<RobotRunConfiguration>() {
     private lateinit var reportTitleTextField: JBTextField
     private lateinit var timestampOutputsCheckBox: JBCheckBox
     private lateinit var splitLogsCheckBox: JBCheckBox
+    private lateinit var suffixWithConfigNameCheckBox: JBCheckBox
     private lateinit var logLevelBox: ComboBox<String>
     private lateinit var defaultLogLevelBox: ComboBox<String>
     private lateinit var dryRunCheckBox: JBCheckBox
     private lateinit var runEmptySuiteCheckBox: JBCheckBox
     private lateinit var extraArgumentsTextField: JBTextField
+    private lateinit var showOutputViewCheckBox: JBCheckBox
 
     private val suitePathModel = DefaultListModel<String>()
     private val testNameModel = DefaultListModel<String>()
@@ -68,6 +70,7 @@ class RobotSettingsEditor : SettingsEditor<RobotRunConfiguration>() {
         reportTitleTextField.text = options.reportTitle ?: ""
         timestampOutputsCheckBox.isSelected = options.timestampOutputs
         splitLogsCheckBox.isSelected = options.splitLog
+        suffixWithConfigNameCheckBox.isSelected = options.suffixWithConfigName
         ((variablesModel.rowCount -1) downTo 0).forEach { variablesModel.removeRow(it) }
         options.variables.forEach { (key, value) -> variablesModel.addRow(arrayOf(key, value)) }
         logLevelBox.selectedItem = options.logLevel
@@ -75,6 +78,7 @@ class RobotSettingsEditor : SettingsEditor<RobotRunConfiguration>() {
         dryRunCheckBox.isSelected = options.dryRun
         runEmptySuiteCheckBox.isSelected = options.runEmptySuite
         extraArgumentsTextField.text = options.extraArguments
+        showOutputViewCheckBox.isSelected = options.showOutputView
     }
 
     override fun applyEditorTo(configuration: RobotRunConfiguration) {
@@ -93,6 +97,7 @@ class RobotSettingsEditor : SettingsEditor<RobotRunConfiguration>() {
         options.reportTitle = reportTitleTextField.text
         options.timestampOutputs = timestampOutputsCheckBox.isSelected
         options.splitLog = splitLogsCheckBox.isSelected
+        options.suffixWithConfigName = suffixWithConfigNameCheckBox.isSelected
         options.variables.clear()
         (0 until variablesModel.rowCount).forEach {
             val key = variablesModel.getValueAt(it, 0) as String?
@@ -105,6 +110,7 @@ class RobotSettingsEditor : SettingsEditor<RobotRunConfiguration>() {
         options.dryRun = dryRunCheckBox.isSelected
         options.runEmptySuite = runEmptySuiteCheckBox.isSelected
         options.extraArguments = extraArgumentsTextField.text
+        options.showOutputView = showOutputViewCheckBox.isSelected
     }
 
     override fun createEditor(): JComponent = mainPanel
@@ -225,6 +231,7 @@ class RobotSettingsEditor : SettingsEditor<RobotRunConfiguration>() {
             cell(isVerticalFlow = true) {
                 timestampOutputsCheckBox = checkBox(MyBundle.message("robot.run.configuration.label.output-timestamp")).component
                 splitLogsCheckBox = checkBox(MyBundle.message("robot.run.configuration.label.log-split")).component
+                suffixWithConfigNameCheckBox = checkBox(MyBundle.message("robot.run.configuration.label.output-suffix-config-name")).component
             }
         }
     }
@@ -268,6 +275,9 @@ class RobotSettingsEditor : SettingsEditor<RobotRunConfiguration>() {
             label(MyBundle.message("robot.run.configuration.label.extra-arguments"))
             extraArgumentsTextField = textField({ "" }, {}).constraints(CCFlags.pushX).component
         }
+        row {
+            showOutputViewCheckBox = checkBox(MyBundle.message("robot.run.configuration.label.show-output-view"), false, MyBundle.message("robot.run.configuration.desc.show-output-view")).component
+        }
     }
 
     private fun suitePanel(): JPanel {
@@ -296,10 +306,11 @@ class RobotSettingsEditor : SettingsEditor<RobotRunConfiguration>() {
         val decorator = ToolbarDecorator.createDecorator(list)
         decorator.setPreferredSize(Dimension(20000, 50))
         decorator.setAddAction {
-            val (name, wrapWord) = showMultilineInput(addMessage, title)
+            val (name, wrapWord, escapeSpecialChars) = showMultilineInput(addMessage, title)
             if(name.isNotBlank())
                 model.addAll(name.split("\n")
                     .filter { it.isNotBlank() }
+                    .map { if(escapeSpecialChars) it.escapeCharsInTestName() else it }
                     .map { if(wrapWord) "*$it*" else it }
                 )
         }
@@ -314,10 +325,11 @@ class RobotSettingsEditor : SettingsEditor<RobotRunConfiguration>() {
         return decorator.createPanel()
     }
 
-    private fun showMultilineInput(message: String, title: String): Pair<String, Boolean> {
+    private fun showMultilineInput(message: String, title: String): MultilineInput {
         val builder = DialogBuilder()
         val textArea = JBTextArea(5, 30)
-        lateinit var checkbox: JBCheckBox
+        lateinit var wrapCheckbox: JBCheckBox
+        lateinit var escapeCheckbox: JBCheckBox
         val panel = panel {
             row { label(message) }
             row {
@@ -326,7 +338,10 @@ class RobotSettingsEditor : SettingsEditor<RobotRunConfiguration>() {
                 }()
             }
             row {
-                checkbox = checkBox(MyBundle.message("robot.run.configuration.label.wrap-value")).component
+                wrapCheckbox = checkBox(MyBundle.message("robot.run.configuration.label.wrap-value")).component
+            }
+            row {
+                escapeCheckbox = checkBox(MyBundle.message("robot.run.configuration.label.escape-special-chars")).component
             }
         }
         builder.setTitle(title)
@@ -335,9 +350,17 @@ class RobotSettingsEditor : SettingsEditor<RobotRunConfiguration>() {
         builder.addOkAction()
         builder.addCancelAction()
         return if(builder.show() == DialogWrapper.OK_EXIT_CODE)
-            textArea.text to checkbox.isSelected
+            MultilineInput(
+                text = textArea.text,
+                wrapWord = wrapCheckbox.isSelected,
+                escapeSpecialChars = escapeCheckbox.isSelected
+            )
         else
-            "" to false
+            MultilineInput(
+                text = "",
+                wrapWord = false,
+                escapeSpecialChars = false
+            )
     }
 
     private fun variablesPanel(model: DefaultTableModel): JPanel {
@@ -357,4 +380,10 @@ class RobotSettingsEditor : SettingsEditor<RobotRunConfiguration>() {
     private fun <T> DefaultListModel<T>.addAll(values: List<T>) {
         values.forEach { this.addElement(it) }
     }
+
+    data class MultilineInput(
+        val text: String,
+        val wrapWord: Boolean,
+        val escapeSpecialChars: Boolean
+    )
 }

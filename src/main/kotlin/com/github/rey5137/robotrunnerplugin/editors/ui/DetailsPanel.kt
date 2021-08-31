@@ -26,11 +26,18 @@ class DetailsPanel(project: Project) : JPanel(MigLayout(LC().gridGap("10px", "5p
     private val messagePanel = MessagePanel(project)
     private val miscPanel = MiscPanel(project)
 
+    private var element: Element? = null
+
     init {
         relayout(false)
     }
 
-    fun showDetails(element: Element) {
+    fun updateHighlightInfo(highlightInfo: HighlightInfo?) {
+        element?.let { showDetails(it, highlightInfo) }
+    }
+
+    fun showDetails(element: Element, highlightInfo: HighlightInfo?) {
+        this.element = element
         var failReason: String? = null
         if(element is KeywordElement) {
             failReason = element.messages.firstOrNull { it.level == LOG_LEVEL_FAIL }?.value()
@@ -40,7 +47,11 @@ class DetailsPanel(project: Project) : JPanel(MigLayout(LC().gridGap("10px", "5p
         if (element is HasCommonField) {
             nameField.text = element.name
             nameField.select(0, 0)
-            statusLabel.icon = if (element.status.isPassed) MyIcons.StatusPass else MyIcons.StatusFail
+            statusLabel.icon = when {
+                element.status.isPassed -> MyIcons.StatusPass
+                element.status.isRunning -> MyIcons.StatusRunning
+                else -> MyIcons.StatusFail
+            }
         }
 
         if(element is HasTagsField)
@@ -52,11 +63,11 @@ class DetailsPanel(project: Project) : JPanel(MigLayout(LC().gridGap("10px", "5p
         if(element is KeywordElement) {
             tabPane.add(MyBundle.message("robot.output.editor.label.argument-tab"), argumentPanel)
             argumentPanel.border = null
-            argumentPanel.populateData(element)
+            argumentPanel.populateData(element, highlightInfo)
 
             tabPane.add(MyBundle.message("robot.output.editor.label.message-tab"), messagePanel)
             messagePanel.border = null
-            messagePanel.populateData(element)
+            messagePanel.populateData(element, highlightInfo)
 
             val failMessage = element.messages.firstOrNull { it.level == LOG_LEVEL_FAIL }
             if (failMessage != null) {

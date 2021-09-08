@@ -10,5 +10,4 @@ class HidePassedSuiteFilter(override var isEnabled: Boolean) : ElementFilter {
 
     override val title: String
         get() = MyBundle.message("robot.output.editor.label.hide-passed-suite")
-
 }

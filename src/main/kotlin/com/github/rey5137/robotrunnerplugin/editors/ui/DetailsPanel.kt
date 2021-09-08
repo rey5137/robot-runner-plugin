@@ -12,7 +12,6 @@ import net.miginfocom.layout.LC
 import net.miginfocom.swing.MigLayout
 import javax.swing.JPanel
 
-
 class DetailsPanel(project: Project) : JPanel(MigLayout(LC().gridGap("10px", "5px").insets("0px").hideMode(2))) {
 
     private val nameField = JBTextField()
@@ -39,7 +38,7 @@ class DetailsPanel(project: Project) : JPanel(MigLayout(LC().gridGap("10px", "5p
     fun showDetails(element: Element, highlightInfo: HighlightInfo?) {
         this.element = element
         var failReason: String? = null
-        if(element is KeywordElement) {
+        if (element is KeywordElement) {
             failReason = element.messages.firstOrNull { it.level == LOG_LEVEL_FAIL }?.value()
         }
         relayout(failReason != null)
@@ -54,13 +53,13 @@ class DetailsPanel(project: Project) : JPanel(MigLayout(LC().gridGap("10px", "5p
             }
         }
 
-        if(element is HasTagsField)
+        if (element is HasTagsField)
             tagsField.text = element.tags.joinToString(separator = ", ")
         else
             tagsField.text = ""
 
         tabPane.removeAll()
-        if(element is KeywordElement) {
+        if (element is KeywordElement) {
             tabPane.add(MyBundle.message("robot.output.editor.label.argument-tab"), argumentPanel)
             argumentPanel.border = null
             argumentPanel.populateData(element, highlightInfo)
@@ -89,7 +88,7 @@ class DetailsPanel(project: Project) : JPanel(MigLayout(LC().gridGap("10px", "5p
         nameField.isEditable = false
         row++
 
-        if(hasReason) {
+        if (hasReason) {
             add(reasonLabel, CC().cell(0, row).minWidth("48px"))
             add(reasonField, CC().cell(0, row).growX().pushX(1F))
             reasonLabel.text = MyBundle.message("robot.output.editor.label.fail-reason")
@@ -104,5 +103,4 @@ class DetailsPanel(project: Project) : JPanel(MigLayout(LC().gridGap("10px", "5p
         row++
         add(tabPane, CC().cell(0, row).grow().push(1F, 1F).gapBottom("10px").gapRight("10px"))
     }
-
 }

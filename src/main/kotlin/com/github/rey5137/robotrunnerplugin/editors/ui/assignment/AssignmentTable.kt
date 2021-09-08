@@ -23,14 +23,13 @@ class AssignmentTable(project: Project, private val assignmentModel: AssignmentM
         addMouseListener(object : MouseAdapter() {
             override fun mousePressed(e: MouseEvent) {
                 e.isIconClicked { row, model, variableRow ->
-                    if(model != null) {
+                    if (model != null) {
                         val item = model.getItem(variableRow)
                         if (!item.isLeaf || item.isFilePath)
                             clearSelection()
-                    }
-                    else {
+                    } else {
                         val item = assignmentModel.getItem(row)
-                        if(item.isFilePath)
+                        if (item.isFilePath)
                             clearSelection()
                     }
                 }
@@ -38,7 +37,7 @@ class AssignmentTable(project: Project, private val assignmentModel: AssignmentM
 
             override fun mouseClicked(e: MouseEvent) {
                 e.isIconClicked { row, model, variableRow ->
-                    if(model != null) {
+                    if (model != null) {
                         val item = model.getItem(variableRow)
                         if (!item.isLeaf) {
                             if (item.isExpanded)
@@ -48,10 +47,9 @@ class AssignmentTable(project: Project, private val assignmentModel: AssignmentM
                             assignmentModel.fireTableRowsUpdated(row, row)
                         } else if (item.isFilePath)
                             project.openFile(item.variable.value.toString())
-                    }
-                    else {
+                    } else {
                         val item = assignmentModel.getItem(row)
-                        if(item.isFilePath)
+                        if (item.isFilePath)
                             project.openFile(item.assignmentHolder.value.toString())
                     }
                 }
@@ -61,9 +59,9 @@ class AssignmentTable(project: Project, private val assignmentModel: AssignmentM
                 val p = Point(point)
                 val row = rowAtPoint(p)
                 val column = columnAtPoint(p)
-                if(column == AssignmentModel.INDEX_VALUE) {
+                if (column == AssignmentModel.INDEX_VALUE) {
                     val variableModel = assignmentModel.getVariableModel(row)
-                    if(variableModel != null) {
+                    if (variableModel != null) {
                         val rect = getCellRect(row, column, false)
                         p.translate(-rect.x, -rect.y)
                         val variableRow = p.y * variableModel.rowCount / rect.height
@@ -73,16 +71,15 @@ class AssignmentTable(project: Project, private val assignmentModel: AssignmentM
                     } else {
                         val rect = getCellRect(row, column, false)
                         p.translate(-rect.x, -rect.y)
-                        if(ValueTableCellRenderer.isIconClicked(p.x))
+                        if (ValueTableCellRenderer.isIconClicked(p.x))
                             func(row, null, 0)
                     }
                 }
             }
-
         })
     }
 
     override fun scrollRectToVisible(aRect: Rectangle?) {
-        //disable auto scroll
+        // disable auto scroll
     }
 }

@@ -5,9 +5,7 @@ import com.github.rey5137.robotrunnerplugin.editors.ui.setHighlightBorder
 import com.github.rey5137.robotrunnerplugin.editors.xml.INPUT_EMPTY
 import com.intellij.ui.ColoredTableCellRenderer
 import com.intellij.ui.SimpleTextAttributes
-import java.awt.Color
 import java.awt.Insets
-import javax.swing.BorderFactory
 import javax.swing.JTable
 
 class InputArgumentCellRender : ColoredTableCellRenderer() {
@@ -35,5 +33,4 @@ class InputArgumentCellRender : ColoredTableCellRenderer() {
             }
         }
     }
-
 }

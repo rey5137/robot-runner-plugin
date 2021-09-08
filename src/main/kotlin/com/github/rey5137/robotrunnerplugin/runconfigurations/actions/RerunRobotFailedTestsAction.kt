@@ -27,10 +27,11 @@ class RerunRobotFailedTestsAction(
     private val configuration: RobotRunConfiguration,
     private val rerunFailedCaseConfig: RerunFailedCaseConfig?,
 ) : AnAction(
-    MyBundle.message("robot.run.configuration.label.rerun-failed-cases"),
-    "",
-    AllIcons.RunConfigurations.RerunFailedTests
-), AnAction.TransparentUpdate {
+        MyBundle.message("robot.run.configuration.label.rerun-failed-cases"),
+        "",
+        AllIcons.RunConfigurations.RerunFailedTests
+    ),
+    AnAction.TransparentUpdate {
 
     override fun update(e: AnActionEvent) {
         if (processHandler.isProcessTerminated) {
@@ -81,7 +82,8 @@ class RerunRobotFailedTestsAction(
             configuration.factory,
             "${configuration.name} - Rerun ${config.rerunTime}",
         ),
-        ModuleRunProfile, WrappingRunConfiguration<RunConfigurationBase<*>> {
+        ModuleRunProfile,
+        WrappingRunConfiguration<RunConfigurationBase<*>> {
 
         override fun getState(executor: Executor, environment: ExecutionEnvironment): RunProfileState {
             return RobotRunTaskState(

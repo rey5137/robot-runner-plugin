@@ -35,13 +35,13 @@ class RobotRunConfiguration(
         RobotSettingsEditor()
 
     override fun checkConfiguration() {
-        if(options.sdkHomePath == null)
+        if (options.sdkHomePath == null)
             throw RuntimeConfigurationException(MyBundle.message("robot.run.configuration.message.interpreter-missing"))
     }
 
     override fun getRefactoringElementListener(element: PsiElement): RefactoringElementListener? {
         val index = options.suitePaths.indexOf(element.getPath() ?: "")
-        if(index < 0)
+        if (index < 0)
             return null
 
         return object : RefactoringElementAdapter() {
@@ -58,5 +58,4 @@ class RobotRunConfiguration(
     }
 
     private fun PsiElement.getPath() = this.containingFile?.virtualFile?.path
-
 }

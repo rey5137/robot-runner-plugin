@@ -5,7 +5,6 @@ import javax.swing.JTable
 import javax.swing.table.TableColumn
 import kotlin.math.max
 
-
 fun JTable.adjustColumn(column: Int): Int? {
     val tableColumn: TableColumn = columnModel.getColumn(column)
     if (!tableColumn.resizable) return null

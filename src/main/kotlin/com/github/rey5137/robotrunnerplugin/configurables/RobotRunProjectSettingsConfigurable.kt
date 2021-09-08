@@ -22,10 +22,10 @@ class RobotRunProjectSettingsConfigurable(private val project: Project) : Config
         settingsComponent?.let { component ->
             val oldSettingMap = RobotRunProjectSettingsState.getInstance(project).settingMap
             val newSettingMap = component.getSettings()
-            if(newSettingMap.size != oldSettingMap.size)
+            if (newSettingMap.size != oldSettingMap.size)
                 return true
             newSettingMap.forEach { (key, value) ->
-                if(value != oldSettingMap[key])
+                if (value != oldSettingMap[key])
                     return true
             }
         }
@@ -51,5 +51,4 @@ class RobotRunProjectSettingsConfigurable(private val project: Project) : Config
     override fun disposeUIResources() {
         settingsComponent = null
     }
-
 }

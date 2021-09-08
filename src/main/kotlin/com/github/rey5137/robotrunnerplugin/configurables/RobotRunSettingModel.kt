@@ -5,7 +5,7 @@ import com.intellij.execution.RunnerAndConfigurationSettings
 import com.intellij.util.ui.EditableModel
 import javax.swing.table.AbstractTableModel
 
-class RobotRunSettingModel: AbstractTableModel(), EditableModel {
+class RobotRunSettingModel : AbstractTableModel(), EditableModel {
 
     private val items = mutableListOf<Pair<String, RobotRunSetting>>()
     private val configurationMap = hashMapOf<String, RunnerAndConfigurationSettings>()
@@ -47,21 +47,21 @@ class RobotRunSettingModel: AbstractTableModel(), EditableModel {
 
     override fun getColumnCount(): Int = 3
 
-    override fun getColumnName(column: Int): String = when(column) {
+    override fun getColumnName(column: Int): String = when (column) {
         INDEX_NAME -> MyBundle.message("robot.run.settings.column.name")
         INDEX_TEST_SUITE -> MyBundle.message("robot.run.settings.column.test-suite")
         INDEX_TEST_CASE -> MyBundle.message("robot.run.settings.column.test-case")
         else -> ""
     }
 
-    override fun getColumnClass(columnIndex: Int): Class<*> = when(columnIndex) {
+    override fun getColumnClass(columnIndex: Int): Class<*> = when (columnIndex) {
         INDEX_NAME -> RunnerAndConfigurationSettings::class.java
         INDEX_TEST_SUITE -> Boolean::class.java
         INDEX_TEST_CASE -> Boolean::class.java
         else -> Any::class.java
     }
 
-    override fun getValueAt(rowIndex: Int, columnIndex: Int): Any? = when(columnIndex) {
+    override fun getValueAt(rowIndex: Int, columnIndex: Int): Any? = when (columnIndex) {
         INDEX_NAME -> configurationMap[items[rowIndex].first]
         INDEX_TEST_SUITE -> items[rowIndex].second.testSuiteEnable
         INDEX_TEST_CASE -> items[rowIndex].second.testCaseEnable
@@ -69,7 +69,7 @@ class RobotRunSettingModel: AbstractTableModel(), EditableModel {
     }
 
     override fun setValueAt(value: Any, rowIndex: Int, columnIndex: Int) {
-        when(columnIndex) {
+        when (columnIndex) {
             INDEX_TEST_SUITE -> {
                 items[rowIndex] = items[rowIndex].copy(second = items[rowIndex].second.copy(testSuiteEnable = value as Boolean))
                 fireTableRowsUpdated(rowIndex, rowIndex + 1)

@@ -2,7 +2,7 @@ package com.github.rey5137.robotrunnerplugin.editors.xml
 
 fun List<Argument<*>>.parseArgumentInputs(inputs: List<String>): List<List<InputArgument>> {
     val hasPythonArgument = firstOrNull { it.argumentType == ArgumentType.PYTHON } != null
-    return if(hasPythonArgument) parsePythonArgumentInputs(inputs) else parseRobotArgumentInputs(inputs)
+    return if (hasPythonArgument) parsePythonArgumentInputs(inputs) else parseRobotArgumentInputs(inputs)
 }
 
 private fun List<Argument<*>>.parseRobotArgumentInputs(inputs: List<String>): List<List<InputArgument>> {
@@ -24,9 +24,9 @@ private fun List<Argument<*>>.parseRobotArgumentInputs(inputs: List<String>): Li
             argumentMap[name]!!.addInput(value = value, rawInput = input)
         else if (name != null && dictHolder.containsVariable(name))
             dictHolder!!.addInput(name = name, value = value, rawInput = input)
-        else if(name == null && dictHolder != null && value.isDictInput())
+        else if (name == null && dictHolder != null && value.isDictInput())
             dictHolder!!.addInput(value = value, rawInput = input)
-        else if(name == null && arrayHolder != null && value.isArrayInput())
+        else if (name == null && arrayHolder != null && value.isArrayInput())
             arrayHolder!!.addInput(value = value, rawInput = input)
         else {
             val holder = argumentMap.findFirstEmptyInput()
@@ -56,7 +56,7 @@ private fun List<Argument<*>>.parseRobotArgumentInputs(inputs: List<String>): Li
 private fun List<Argument<*>>.parsePythonArgumentInputs(inputs: List<String>): List<List<InputArgument>> {
     return mapIndexed { index, argument ->
         val input = inputs[index]
-        if(argument.name.isEmpty())
+        if (argument.name.isEmpty())
             listOf(InputArgument(value = input, rawInput = input))
         else {
             val (name, value) = inputs[index].parseInput()
@@ -107,4 +107,3 @@ private data class Holder(
         inputs.add(InputArgument(name = name, value = value, rawInput = rawInput))
     }
 }
-

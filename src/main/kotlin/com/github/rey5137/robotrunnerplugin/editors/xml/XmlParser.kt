@@ -1,9 +1,11 @@
 package com.github.rey5137.robotrunnerplugin.editors.xml
 
 import com.intellij.openapi.vfs.VirtualFile
+import java.util.*
 import javax.xml.namespace.QName
 import javax.xml.stream.XMLInputFactory
 import javax.xml.stream.events.StartElement
+import kotlin.collections.ArrayList
 
 fun VirtualFile.parseXml(): RobotElement {
     val xmlInputFactory = XMLInputFactory.newInstance()
@@ -97,7 +99,6 @@ fun VirtualFile.parseXml(): RobotElement {
                         is TagsElement -> currentElement.setTags(element)
                     }
                 }
-
             }
         }
     }
@@ -138,8 +139,7 @@ fun VirtualFile.extractFailedTestCases(): List<String> {
                     }
                 }
             }
-        }
-        else if (nextEvent.isEndElement) {
+        } else if (nextEvent.isEndElement) {
             if (skipCount > 0)
                 skipCount--
         }
@@ -179,7 +179,7 @@ private fun StartElement.toKeywordElement(keywordNameMap: MutableMap<String, Int
         nameIndex = nameIndex,
         libraryIndex = libIndex,
         docIndex = docIndex,
-        type = getAttributeByName(QName(TAG_TYPE))?.value?.toUpperCase() ?: "",
+        type = getAttributeByName(QName(TAG_TYPE))?.value?.uppercase() ?: "",
         robotElement = robotElement,
     )
 }
@@ -192,7 +192,7 @@ private fun StartElement.toStatusElement() = StatusElement(
 
 private fun StartElement.toMessageElement(index: Long, robotElement: RobotElement) = MessageElement(
     timestamp = getAttributeByName(QName(TAG_TIMESTAMP))?.value ?: "",
-    level = getAttributeByName(QName(TAG_LEVEL))?.value?.toUpperCase() ?: "",
+    level = getAttributeByName(QName(TAG_LEVEL))?.value?.uppercase() ?: "",
     valueIndex = index,
     robotElement = robotElement
 )

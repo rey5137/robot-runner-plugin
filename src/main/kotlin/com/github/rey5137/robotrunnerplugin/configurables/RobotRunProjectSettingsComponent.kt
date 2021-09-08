@@ -33,7 +33,6 @@ import java.io.*
 import javax.swing.*
 import javax.swing.table.TableColumn
 
-
 class RobotRunProjectSettingsComponent(private val project: Project) {
 
     val mainPanel by lazy { buildMainPanel() }
@@ -94,16 +93,20 @@ class RobotRunProjectSettingsComponent(private val project: Project) {
                 ApplicationManager.getApplication().invokeLater(
                     {
                         if (EditConfigurationsDialog(project, factory).showAndGet()) {
-                            ApplicationManager.getApplication().invokeLater({
-                                RunManager.getInstance(project).selectedConfiguration?.let {
-                                    addConfiguration(
-                                        RobotRunSetting(),
-                                        it
-                                    )
-                                }
-                            }, project.disposed)
+                            ApplicationManager.getApplication().invokeLater(
+                                {
+                                    RunManager.getInstance(project).selectedConfiguration?.let {
+                                        addConfiguration(
+                                            RobotRunSetting(),
+                                            it
+                                        )
+                                    }
+                                },
+                                project.disposed
+                            )
                         }
-                    }, project.disposed
+                    },
+                    project.disposed
                 )
             }
             .addExtraAction(object : DumbAwareActionButton(
@@ -111,31 +114,31 @@ class RobotRunProjectSettingsComponent(private val project: Project) {
                 MyBundle.message("robot.run.settings.desc.export-settings"),
                 Export
             ) {
-                override fun actionPerformed(e: AnActionEvent) {
-                    val descriptor = FileSaverDescriptor(
-                        MyBundle.message("robot.run.settings.label.export-settings"),
-                        MyBundle.message("robot.run.settings.desc.export-settings"),
-                        "json"
-                    )
-                    val dialog = FileChooserFactory.getInstance().createSaveFileDialog(descriptor, null)
-                    val fileWrapper = dialog.save(null, "robot_run_configurations.json")
-                    if (fileWrapper != null)
-                        exportSettings(fileWrapper.file)
-                }
-            })
+                    override fun actionPerformed(e: AnActionEvent) {
+                        val descriptor = FileSaverDescriptor(
+                            MyBundle.message("robot.run.settings.label.export-settings"),
+                            MyBundle.message("robot.run.settings.desc.export-settings"),
+                            "json"
+                        )
+                        val dialog = FileChooserFactory.getInstance().createSaveFileDialog(descriptor, null)
+                        val fileWrapper = dialog.save("robot_run_configurations.json")
+                        if (fileWrapper != null)
+                            exportSettings(fileWrapper.file)
+                    }
+                })
             .addExtraAction(object : DumbAwareActionButton(
                 MyBundle.message("robot.run.settings.label.import-settings"),
                 MyBundle.message("robot.run.settings.desc.import-settings"),
                 Import
             ) {
-                override fun actionPerformed(e: AnActionEvent) {
-                    val descriptor = FileChooserDescriptorFactory.createSingleFileDescriptor("json")
-                    val dialog = FileChooserFactory.getInstance().createFileChooser(descriptor, null, null)
-                    val files = dialog.choose(null)
-                    if (files.isNotEmpty())
-                        importSettings(File(files[0].path))
-                }
-            })
+                    override fun actionPerformed(e: AnActionEvent) {
+                        val descriptor = FileChooserDescriptorFactory.createSingleFileDescriptor("json")
+                        val dialog = FileChooserFactory.getInstance().createFileChooser(descriptor, null, null)
+                        val files = dialog.choose(null)
+                        if (files.isNotEmpty())
+                            importSettings(File(files[0].path))
+                    }
+                })
         val panel = decorator.createPanel()
         return FormBuilder.createFormBuilder()
             .addComponent(JBLabel(MyBundle.message("robot.run.settings.label")), 1)
@@ -243,5 +246,4 @@ class RobotRunProjectSettingsComponent(private val project: Project) {
     fun getPreferredFocusedComponent(): JComponent {
         return mainPanel
     }
-
 }

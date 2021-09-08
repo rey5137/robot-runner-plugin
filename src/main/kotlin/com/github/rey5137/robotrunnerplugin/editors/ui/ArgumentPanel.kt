@@ -1,7 +1,7 @@
 package com.github.rey5137.robotrunnerplugin.editors.ui
 
-import com.github.rey5137.robotrunnerplugin.editors.ui.argument.ArgumentTable
 import com.github.rey5137.robotrunnerplugin.editors.ui.argument.ArgumentModel
+import com.github.rey5137.robotrunnerplugin.editors.ui.argument.ArgumentTable
 import com.github.rey5137.robotrunnerplugin.editors.ui.assignment.AssignmentModel
 import com.github.rey5137.robotrunnerplugin.editors.ui.assignment.AssignmentTable
 import com.github.rey5137.robotrunnerplugin.editors.xml.*
@@ -54,7 +54,7 @@ class ArgumentPanel(project: Project) : JPanel(BorderLayout()) {
         val assigmentLine = assignmentModel.countLine()
         argumentSplitter.proportion = max(
             0.2F,
-            min(0.9F,argumentLine * 1F / max(1, (argumentLine + assigmentLine)))
+            min(0.9F, argumentLine * 1F / max(1, (argumentLine + assigmentLine)))
         )
     }
 
@@ -129,7 +129,5 @@ class ArgumentPanel(project: Project) : JPanel(BorderLayout()) {
                 setAssignments(assigns.parseAssignments(null), highlightInfo)
             }
         }
-
     }
-
 }

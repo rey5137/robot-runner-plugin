@@ -11,7 +11,8 @@ import java.awt.event.MouseEvent
 import java.util.*
 import javax.swing.JTable
 
-class ValueTableCellEditor(project: Project, private val parentTable: JBTable, private val argumentModel: ArgumentModel) : AbstractTableCellEditor(),
+class ValueTableCellEditor(project: Project, private val parentTable: JBTable, private val argumentModel: ArgumentModel) :
+    AbstractTableCellEditor(),
     VariableCellEditor.EditEventProvider {
 
     private val table = JBTable().apply {
@@ -25,7 +26,7 @@ class ValueTableCellEditor(project: Project, private val parentTable: JBTable, p
             override fun mouseClicked(e: MouseEvent) {
                 e.isIconClicked { model, row ->
                     val item = model.getItem(row)
-                    if(item.isFilePath)
+                    if (item.isFilePath)
                         project.openFile(item.variable.value.toString())
                     else {
                         if (model.getItem(row).isExpanded)
@@ -95,5 +96,4 @@ class ValueTableCellEditor(project: Project, private val parentTable: JBTable, p
             else -> editor.getTableCellEditorComponent(table, argument.value.toString(), isSelected, row, column)
         }
     }
-
 }

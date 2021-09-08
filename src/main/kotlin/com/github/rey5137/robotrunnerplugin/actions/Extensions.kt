@@ -5,10 +5,10 @@ import com.intellij.openapi.actionSystem.CommonDataKeys
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.newvfs.ArchiveFileSystem
 
-val AnActionEvent.file : VirtualFile?
+val AnActionEvent.file: VirtualFile?
     get() = this.getData(CommonDataKeys.VIRTUAL_FILE)?.let { findLocalFile(it) }
 
-val AnActionEvent.files : List<VirtualFile>
+val AnActionEvent.files: List<VirtualFile>
     get() = this.getData(CommonDataKeys.VIRTUAL_FILE_ARRAY)?.toList()?.mapNotNull { findLocalFile(it) } ?: emptyList()
 
 fun findLocalFile(file: VirtualFile?): VirtualFile? {

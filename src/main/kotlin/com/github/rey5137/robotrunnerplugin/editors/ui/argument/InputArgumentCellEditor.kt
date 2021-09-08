@@ -11,8 +11,8 @@ class InputArgumentCellEditor(private val inputTableCellEditor: InputTableCellEd
     private val stringCellEditor = StringCellEditor()
 
     override fun isCellEditable(e: EventObject?): Boolean {
-        if(e is MouseEvent) {
-            if(inputTableCellEditor.editEvent != null) {
+        if (e is MouseEvent) {
+            if (inputTableCellEditor.editEvent != null) {
                 inputTableCellEditor.editEvent = null
                 return false
             }
@@ -32,10 +32,9 @@ class InputArgumentCellEditor(private val inputTableCellEditor: InputTableCellEd
     ): Component {
         val inputHolder = (table.model as InputArgumentModel).getItem(row)
         val input = inputHolder.value
-        return if(input.name == null)
+        return if (input.name == null)
             stringCellEditor.getTableCellEditorComponent(table, input.value, isSelected, row, column)
         else
             stringCellEditor.getTableCellEditorComponent(table, "${input.name}: ${input.value}", isSelected, row, column)
     }
-
 }

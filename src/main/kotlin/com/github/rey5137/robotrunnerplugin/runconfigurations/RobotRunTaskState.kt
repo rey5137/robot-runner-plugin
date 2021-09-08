@@ -58,7 +58,7 @@ class RobotRunTaskState(
             .firstOrNull() ?: throw ExecutionException("Cannot find Robot's run.py file")
         commands += robotRunFile.path
 
-        if(rerunFailedCaseConfig == null)
+        if (rerunFailedCaseConfig == null)
             options.testNames.forEach { commands.addPair("-t", it) }
         else
             rerunFailedCaseConfig.testcases.forEach { commands.addPair("-t", it.escapeCharsInTestName()) }
@@ -67,7 +67,7 @@ class RobotRunTaskState(
         options.includeTags.forEach { commands.addPair("-i", it) }
         options.excludeTags.forEach { commands.addPair("-e", it) }
         options.outputDirPath.ifNotEmpty { commands.addPair("-d", it) }
-        if(rerunFailedCaseConfig == null) {
+        if (rerunFailedCaseConfig == null) {
             if (options.suffixWithConfigName) {
                 commands.addPair("-o", (options.outputFilePath ?: "output").suffixFileName(configuration.name))
                 commands.addPair("-l", (options.logFilePath ?: "log").suffixFileName(configuration.name))
@@ -77,8 +77,7 @@ class RobotRunTaskState(
                 options.logFilePath.ifNotEmpty { commands.addPair("-l", it) }
                 options.reportFilePath.ifNotEmpty { commands.addPair("-r", it) }
             }
-        }
-        else {
+        } else {
             val suffix = "rerun_${rerunFailedCaseConfig.rerunTime}"
             commands.addPair("-o", rerunFailedCaseConfig.outputFile.suffixFileName(suffix))
             commands.addPair("-l", rerunFailedCaseConfig.logFile.suffixFileName(suffix))
@@ -89,7 +88,7 @@ class RobotRunTaskState(
         options.timestampOutputs.ifEnable { commands.add("-T") }
         options.splitLog.ifEnable { commands.add("--splitlog") }
         options.variables.forEach { (key, value) -> commands.addPair("-v", "$key:$value") }
-        options.logLevel.ifNotEmpty { commands.addPair("-L", "${it}:${options.defaultLogLevel}") }
+        options.logLevel.ifNotEmpty { commands.addPair("-L", "$it:${options.defaultLogLevel}") }
         options.dryRun.ifEnable { commands.add("--dryrun") }
         options.runEmptySuite.ifEnable { commands.add("--runemptysuite") }
         options.extraArguments.ifNotEmpty { value -> commands.addAll(value.parseCommandLineArguments()) }
@@ -229,5 +228,4 @@ class RobotRunTaskState(
         }
         return args.toList()
     }
-
 }

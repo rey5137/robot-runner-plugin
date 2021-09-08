@@ -4,7 +4,6 @@ import com.github.rey5137.robotrunnerplugin.MyBundle
 import com.github.rey5137.robotrunnerplugin.editors.xml.Element
 import com.github.rey5137.robotrunnerplugin.editors.xml.HasCommonField
 import com.github.rey5137.robotrunnerplugin.editors.xml.KeywordElement
-import com.github.rey5137.robotrunnerplugin.editors.xml.LOG_LEVEL_FAIL
 import com.intellij.openapi.editor.ex.EditorEx
 import com.intellij.openapi.fileTypes.FileTypes
 import com.intellij.openapi.project.Project
@@ -54,7 +53,7 @@ class MiscPanel(project: Project) : JPanel(BorderLayout()) {
         }
         if (element is KeywordElement) {
             val document = element.doc
-            if(document.isNotEmpty())
+            if (document.isNotEmpty())
                 builder.append(MyBundle.message("robot.output.editor.label.document"))
                     .append(": ")
                     .append(document)
@@ -63,5 +62,4 @@ class MiscPanel(project: Project) : JPanel(BorderLayout()) {
         miscDetail.text = builder.toString()
         miscDetail.setCaretPosition(0)
     }
-
 }

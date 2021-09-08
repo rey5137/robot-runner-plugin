@@ -14,7 +14,7 @@ class RunRobotTestSuiteAction(private val runConfigurationSetting: RunnerAndConf
     constructor () : this(runConfigurationSetting = null)
 
     override fun actionPerformed(e: AnActionEvent) {
-        if(runConfigurationSetting == null)
+        if (runConfigurationSetting == null)
             return
 
         val files = e.files

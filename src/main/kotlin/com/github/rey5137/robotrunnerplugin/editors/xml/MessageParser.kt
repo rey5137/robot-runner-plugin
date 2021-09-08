@@ -376,8 +376,7 @@ private fun Pointer.parseOrderedDictValue(): List<Variable<*>> {
                     type = children[1].type,
                 )
             }
-    }
-    else
+    } else
         emptyList()
     skipChar(ARRAY_END_2)
     return variables
@@ -471,9 +470,9 @@ private data class Pointer(
 
     override fun toString() =
         "end=[$end] current=[$current] next=[${peek()}] ${
-            value.substring(
-                current + 1,
-                Math.min(value.length, current + 21)
-            )
+        value.substring(
+            current + 1,
+            Math.min(value.length, current + 21)
+        )
         }"
 }

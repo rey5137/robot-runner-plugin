@@ -12,8 +12,8 @@ class VariableCellEditor(private val editEventProvider: EditEventProvider) : Abs
     private val stringCellEditor = StringCellEditor()
 
     override fun isCellEditable(e: EventObject?): Boolean {
-        if(e is MouseEvent) {
-            if(editEventProvider.editEvent != null) {
+        if (e is MouseEvent) {
+            if (editEventProvider.editEvent != null) {
                 editEventProvider.editEvent = null
                 return false
             }
@@ -34,11 +34,11 @@ class VariableCellEditor(private val editEventProvider: EditEventProvider) : Abs
         val (variable) = (table.model as VariableModel).getItem(row)
         val builder = StringBuilder()
         builder.append(variable.name)
-        if(variable.type != DataType.DICT && variable.type != DataType.ARRAY) {
+        if (variable.type != DataType.DICT && variable.type != DataType.ARRAY) {
             builder.append(" = ")
-            when(variable.type) {
+            when (variable.type) {
                 DataType.NONE -> builder.append("None")
-                DataType.BOOL -> builder.append(if(variable.value as Boolean) "True" else "False")
+                DataType.BOOL -> builder.append(if (variable.value as Boolean) "True" else "False")
                 else -> builder.append(variable.value.toString())
             }
         }
@@ -48,5 +48,4 @@ class VariableCellEditor(private val editEventProvider: EditEventProvider) : Abs
     interface EditEventProvider {
         var editEvent: MouseEvent?
     }
-
 }

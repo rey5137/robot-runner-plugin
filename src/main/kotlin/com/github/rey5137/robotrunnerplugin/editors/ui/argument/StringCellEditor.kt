@@ -18,7 +18,6 @@ class StringCellEditor : DefaultCellEditor(JBTextField()) {
             }
 
             override fun focusLost(e: FocusEvent?) {}
-
         })
     }
 }

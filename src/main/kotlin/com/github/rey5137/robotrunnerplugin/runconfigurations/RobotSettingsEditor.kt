@@ -71,7 +71,7 @@ class RobotSettingsEditor : SettingsEditor<RobotRunConfiguration>() {
         timestampOutputsCheckBox.isSelected = options.timestampOutputs
         splitLogsCheckBox.isSelected = options.splitLog
         suffixWithConfigNameCheckBox.isSelected = options.suffixWithConfigName
-        ((variablesModel.rowCount -1) downTo 0).forEach { variablesModel.removeRow(it) }
+        ((variablesModel.rowCount - 1) downTo 0).forEach { variablesModel.removeRow(it) }
         options.variables.forEach { (key, value) -> variablesModel.addRow(arrayOf(key, value)) }
         logLevelBox.selectedItem = options.logLevel
         defaultLogLevelBox.selectedItem = options.defaultLogLevel
@@ -102,7 +102,7 @@ class RobotSettingsEditor : SettingsEditor<RobotRunConfiguration>() {
         (0 until variablesModel.rowCount).forEach {
             val key = variablesModel.getValueAt(it, 0) as String?
             val value = variablesModel.getValueAt(it, 1) as String?
-            if(!key.isNullOrEmpty() && !value.isNullOrEmpty())
+            if (!key.isNullOrEmpty() && !value.isNullOrEmpty())
                 options.variables[key] = value
         }
         options.logLevel = logLevelBox.selectedItem as String
@@ -307,16 +307,17 @@ class RobotSettingsEditor : SettingsEditor<RobotRunConfiguration>() {
         decorator.setPreferredSize(Dimension(20000, 50))
         decorator.setAddAction {
             val (name, wrapWord, escapeSpecialChars) = showMultilineInput(addMessage, title)
-            if(name.isNotBlank())
-                model.addAll(name.split("\n")
-                    .filter { it.isNotBlank() }
-                    .map { if(escapeSpecialChars) it.escapeCharsInTestName() else it }
-                    .map { if(wrapWord) "*$it*" else it }
+            if (name.isNotBlank())
+                model.addAll(
+                    name.split("\n")
+                        .filter { it.isNotBlank() }
+                        .map { if (escapeSpecialChars) it.escapeCharsInTestName() else it }
+                        .map { if (wrapWord) "*$it*" else it }
                 )
         }
         decorator.setEditAction {
             val name = Messages.showInputDialog(null, editMessage, title, null, list.selectedValue, null) ?: ""
-            if(name.isNotBlank())
+            if (name.isNotBlank())
                 model.setElementAt(name, list.selectedIndex)
         }
         decorator.setToolbarPosition(ActionToolbarPosition.RIGHT)
@@ -349,7 +350,7 @@ class RobotSettingsEditor : SettingsEditor<RobotRunConfiguration>() {
         builder.removeAllActions()
         builder.addOkAction()
         builder.addCancelAction()
-        return if(builder.show() == DialogWrapper.OK_EXIT_CODE)
+        return if (builder.show() == DialogWrapper.OK_EXIT_CODE)
             MultilineInput(
                 text = textArea.text,
                 wrapWord = wrapCheckbox.isSelected,

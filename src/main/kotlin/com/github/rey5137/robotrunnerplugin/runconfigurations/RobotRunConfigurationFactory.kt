@@ -12,5 +12,4 @@ class RobotRunConfigurationFactory(type: RobotRunConfigurationType) : Configurat
     override fun getName() = "Robot Run Configuration Factory"
 
     override fun getId() = "RobotRunConfigurationFactory"
-
 }

@@ -14,8 +14,7 @@ fun Project.openFile(filePath: String) {
         try {
             val virtualFile = VfsUtil.findFileByIoFile(File(filePath), true)
             NativeFileType.openAssociatedApplication(virtualFile!!)
-        }
-        catch (ex: Exception) {
+        } catch (ex: Exception) {
             ex.printStackTrace()
         }
     }

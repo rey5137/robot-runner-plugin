@@ -3,24 +3,24 @@ package com.github.rey5137.robotrunnerplugin.editors.xml
 const val PATTERN_ASSIGNMENT = "[$@]\\{(.*)\\}"
 
 fun List<String>.parseAssignments(variable: Variable<*>?): List<Assignment<*>> {
-    if(this.isEmpty())
+    if (this.isEmpty())
         return emptyList()
-    if(variable == null)
+    if (variable == null)
         return this.map { it.toNoValueAssignment() }
-    if(size == 1)
+    if (size == 1)
         return listOf(first().toAssignment(variable))
-    if(variable.type != DataType.ARRAY)
+    if (variable.type != DataType.ARRAY)
         throw IllegalArgumentException()
 
     val names = this.toMutableList()
     val variables = (variable.value as List<Variable<*>>).toMutableList()
     val result = arrayListOf<Assignment<*>>()
 
-    while(names.isNotEmpty()) {
+    while (names.isNotEmpty()) {
         val name = names.first()
-        if(name.getAssignmentType() == AssignmentType.ARRAY)
+        if (name.getAssignmentType() == AssignmentType.ARRAY)
             break
-        if(variables.isEmpty()) {
+        if (variables.isEmpty()) {
             result.addAll(names.map { it.toNoValueAssignment() })
             return result
         }
@@ -29,27 +29,29 @@ fun List<String>.parseAssignments(variable: Variable<*>?): List<Assignment<*>> {
         variables.removeAt(0)
     }
 
-    if(names.isNotEmpty()){
+    if (names.isNotEmpty()) {
         val rightResult = arrayListOf<Assignment<*>>()
-        while(names.isNotEmpty()) {
+        while (names.isNotEmpty()) {
             val name = names.last()
-            if(name.getAssignmentType() == AssignmentType.ARRAY)
+            if (name.getAssignmentType() == AssignmentType.ARRAY)
                 break
             rightResult.add(name.toAssignment(variables.last()))
             names.removeAt(names.size - 1)
             variables.removeAt(variables.size - 1)
         }
 
-        if(names.size != 1)
+        if (names.size != 1)
             throw IllegalArgumentException()
 
         val name = names.first()
-        result.add(Assignment(
-            name = name.getAssignmentName(),
-            value = variables.mapIndexed { index, v -> v.copy(name = "[$index]") },
-            dataType = DataType.ARRAY,
-            assignmentType = AssignmentType.ARRAY,
-        ))
+        result.add(
+            Assignment(
+                name = name.getAssignmentName(),
+                value = variables.mapIndexed { index, v -> v.copy(name = "[$index]") },
+                dataType = DataType.ARRAY,
+                assignmentType = AssignmentType.ARRAY,
+            )
+        )
         result.addAll(rightResult.asReversed())
     }
 
@@ -80,7 +82,7 @@ private fun String.getAssignmentName(): String {
     return result?.groupValues?.get(1) ?: ""
 }
 
-private fun String.getAssignmentType(): AssignmentType  = when(this[0]) {
+private fun String.getAssignmentType(): AssignmentType = when (this[0]) {
     ARG_SINGLE -> AssignmentType.SINGLE
     ARG_ARRAY -> AssignmentType.ARRAY
     else -> throw IllegalArgumentException("Unexpected character: ${this[0]}")

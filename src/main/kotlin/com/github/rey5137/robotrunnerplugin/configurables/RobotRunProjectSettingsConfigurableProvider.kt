@@ -9,5 +9,4 @@ class RobotRunProjectSettingsConfigurableProvider(private val project: Project) 
     override fun createConfigurable(): Configurable = RobotRunProjectSettingsConfigurable(project)
 
     override fun canCreateConfigurable(): Boolean = true
-
 }

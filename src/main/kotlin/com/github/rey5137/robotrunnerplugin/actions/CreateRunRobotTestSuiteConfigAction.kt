@@ -14,7 +14,8 @@ class CreateRunRobotTestSuiteConfigAction :
     AnAction(
         MyBundle.message("robot.run.action.label.new-config"),
         MyBundle.message("robot.run.action.desc.new-config"),
-        null) {
+        null
+    ) {
 
     override fun actionPerformed(e: AnActionEvent) {
         val project = e.project ?: return

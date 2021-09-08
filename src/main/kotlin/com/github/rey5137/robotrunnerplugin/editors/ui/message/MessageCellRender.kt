@@ -6,8 +6,6 @@ import com.github.rey5137.robotrunnerplugin.editors.xml.*
 import com.intellij.ui.ColoredListCellRenderer
 import com.intellij.ui.SimpleTextAttributes
 import icons.MyIcons
-import java.awt.Color
-import javax.swing.BorderFactory
 import javax.swing.JList
 
 class MessageCellRender : ColoredListCellRenderer<HighlightHolder<MessageElement>>() {
@@ -22,7 +20,7 @@ class MessageCellRender : ColoredListCellRenderer<HighlightHolder<MessageElement
         setHighlightBorder(value.highlight)
 
         val messageElement = value.value
-        icon = when(messageElement.level) {
+        icon = when (messageElement.level) {
             LOG_LEVEL_INFO -> MyIcons.LevelInfo
             LOG_LEVEL_DEBUG -> MyIcons.LevelDebug
             LOG_LEVEL_TRACE -> MyIcons.LevelTrace
@@ -33,5 +31,4 @@ class MessageCellRender : ColoredListCellRenderer<HighlightHolder<MessageElement
         isIconOnTheRight = false
         append("${messageElement.title} ...", SimpleTextAttributes.REGULAR_ATTRIBUTES)
     }
-
 }

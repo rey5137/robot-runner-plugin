@@ -11,7 +11,7 @@ import kotlin.collections.Map.Entry
 
 internal object Protocol {
 
-    private val FLAG = byteArrayOf('p'.toByte(), 'b'.toByte())
+    private val FLAG = byteArrayOf('p'.code.toByte(), 'b'.code.toByte())
 
     private fun read(stream: InputStream): Entry<StatusCode, JSONObject> {
         // 1. FLAG

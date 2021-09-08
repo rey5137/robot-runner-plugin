@@ -6,7 +6,6 @@ import com.intellij.notification.NotificationType
 import com.intellij.openapi.project.Project
 import org.jetbrains.annotations.Nullable
 
-
 object MyNotifier {
 
     private val NOTIFICATION_GROUP =
@@ -16,5 +15,4 @@ object MyNotifier {
         NOTIFICATION_GROUP.createNotification(content, type)
             .notify(project)
     }
-
 }

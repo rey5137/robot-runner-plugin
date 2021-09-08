@@ -7,7 +7,7 @@ data class HighlightHolder<T>(
 
 fun <T> T.toHighlightHolder(isHighlight: Boolean) = HighlightHolder<T>(
     value = this,
-    highlight = if(isHighlight) HighlightType.MATCHED else HighlightType.UNMATCHED
+    highlight = if (isHighlight) HighlightType.MATCHED else HighlightType.UNMATCHED
 )
 
 enum class HighlightType {

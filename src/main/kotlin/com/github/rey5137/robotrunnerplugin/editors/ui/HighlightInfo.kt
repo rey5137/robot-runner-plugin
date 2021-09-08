@@ -10,27 +10,27 @@ data class HighlightInfo(
     val ignoreCase: Boolean,
     val isRegex: Boolean,
 ) {
-    val regex = if(isRegex) value.toRegex() else null
+    val regex = if (isRegex) value.toRegex() else null
 }
 
-fun HighlightInfo?.match(text: String?) : Boolean {
+fun HighlightInfo?.match(text: String?): Boolean {
     val info = this ?: return false
     if (text == null)
         return false
-    return if(!isRegex)
+    return if (!isRegex)
         text.contains(info.value, ignoreCase = info.ignoreCase)
     else
         regex!!.matches(text)
 }
 
-fun HighlightInfo?.match(element: SuiteElement) : Boolean {
+fun HighlightInfo?.match(element: SuiteElement): Boolean {
     val info = this ?: return false
     if (info.match(element.name))
         return true
     return false
 }
 
-fun HighlightInfo?.match(element: TestElement) : Boolean {
+fun HighlightInfo?.match(element: TestElement): Boolean {
     val info = this ?: return false
     if (info.match(element.name))
         return true
@@ -38,7 +38,7 @@ fun HighlightInfo?.match(element: TestElement) : Boolean {
     return false
 }
 
-fun HighlightInfo?.match(element: KeywordElement) : Boolean {
+fun HighlightInfo?.match(element: KeywordElement): Boolean {
     val info = this ?: return false
     if (info.match(element.name))
         return true
@@ -49,7 +49,7 @@ fun HighlightInfo?.match(element: KeywordElement) : Boolean {
     return false
 }
 
-fun HighlightInfo?.match(element: MessageElement) : Boolean {
+fun HighlightInfo?.match(element: MessageElement): Boolean {
     val info = this ?: return false
     if (info.match(element.value()))
         return true

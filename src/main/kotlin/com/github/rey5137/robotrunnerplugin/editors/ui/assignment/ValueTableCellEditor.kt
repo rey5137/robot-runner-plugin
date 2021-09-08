@@ -12,7 +12,7 @@ import java.awt.event.MouseEvent
 import java.util.*
 import javax.swing.JTable
 
-class ValueTableCellEditor(project: Project, private val parentTable: JBTable, private val assignmentModel: AssignmentModel): AbstractTableCellEditor(), VariableCellEditor.EditEventProvider {
+class ValueTableCellEditor(project: Project, private val parentTable: JBTable, private val assignmentModel: AssignmentModel) : AbstractTableCellEditor(), VariableCellEditor.EditEventProvider {
 
     private val table = JBTable().apply {
         setDefaultRenderer(Any::class.java, VariableCellRender())
@@ -25,7 +25,7 @@ class ValueTableCellEditor(project: Project, private val parentTable: JBTable, p
             override fun mouseClicked(e: MouseEvent) {
                 e.isArrowClicked { model, row ->
                     val item = model.getItem(row)
-                    if(item.isFilePath)
+                    if (item.isFilePath)
                         project.openFile(item.variable.value.toString())
                     else {
                         if (model.getItem(row).isExpanded)
@@ -51,9 +51,9 @@ class ValueTableCellEditor(project: Project, private val parentTable: JBTable, p
     override var editEvent: MouseEvent? = null
 
     override fun isCellEditable(e: EventObject?): Boolean {
-        if(e is MouseEvent) {
+        if (e is MouseEvent) {
             val enable = e.clickCount > 1
-            if(enable) {
+            if (enable) {
                 editEvent = e
             }
             return enable
@@ -83,14 +83,13 @@ class ValueTableCellEditor(project: Project, private val parentTable: JBTable, p
         val assignmentHolder = assignmentModel.getAssignmentHolder(row)
         val assignment = assignmentHolder.value
         val editor = table.getDefaultEditor(Any::class.java)
-        val component = when(assignment.dataType) {
+        val component = when (assignment.dataType) {
             DataType.NONE -> editor.getTableCellEditorComponent(table, "None", isSelected, row, column)
-            DataType.BOOL -> editor.getTableCellEditorComponent(table, if(assignment.value as Boolean) "True" else "False", isSelected, row, column)
+            DataType.BOOL -> editor.getTableCellEditorComponent(table, if (assignment.value as Boolean) "True" else "False", isSelected, row, column)
             DataType.DICT, DataType.ARRAY -> this.table.apply { model = assignmentModel.getVariableModel(row) }
             else -> editor.getTableCellEditorComponent(table, assignment.value.toString(), isSelected, row, column)
         }
         table.setRowHeight(row, component.preferredSize.height)
         return component
     }
-
 }

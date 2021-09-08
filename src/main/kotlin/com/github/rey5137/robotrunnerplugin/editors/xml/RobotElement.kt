@@ -22,4 +22,3 @@ data class RobotElement(
 
     override fun toString() = "RobotElement"
 }
-

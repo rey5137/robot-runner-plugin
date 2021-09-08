@@ -14,7 +14,7 @@ class CustomFilter(
 ) : ElementFilter {
 
     override fun accept(element: Element): Boolean {
-        if(!element.hasMatchedParent())
+        if (!element.hasMatchedParent())
             return true
 
         if (element is HasCommonField) {
@@ -23,18 +23,18 @@ class CustomFilter(
             if (statusPassed != null && statusPassed != element.status.isPassed)
                 return false
         }
-        if(element is KeywordElement) {
-            if(!libraryMatcher.isMatched(element.library))
+        if (element is KeywordElement) {
+            if (!libraryMatcher.isMatched(element.library))
                 return false
         }
 
         return true
     }
 
-    private fun Element.hasMatchedParent() : Boolean {
-        if(!parentNameMatcher.isEnabled)
+    private fun Element.hasMatchedParent(): Boolean {
+        if (!parentNameMatcher.isEnabled)
             return false
-        if(this !is HasCommonField)
+        if (this !is HasCommonField)
             return false
         val parent = this.parent
         return parent != null && parent is HasCommonField && parentNameMatcher.isMatched(parent.name)

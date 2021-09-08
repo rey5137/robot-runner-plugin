@@ -28,14 +28,14 @@ class ArgumentModel : AbstractTableModel() {
                 inputs = inputArguments[index].map { it.toHighlightHolder(highlightInfo.match(it.rawInput)) },
                 argumentValue = argumentFullName,
                 inputsValue = inputArguments[index].joinToString(separator = "    ") { it.rawInput },
-                variableModel = if(argument.dataType == DataType.DICT || argument.dataType == DataType.ARRAY)
+                variableModel = if (argument.dataType == DataType.DICT || argument.dataType == DataType.ARRAY)
                     VariableModel().apply { setVariables(argument.name.ifEmpty { "Argument" }, argument.dataType, argument.value as List<Variable<*>>, highlightInfo) }
                 else
                     null,
                 isFilePath = argument.isFilePath(),
-                valueHighlightType = if(argument.dataType == DataType.DICT || argument.dataType == DataType.ARRAY)
+                valueHighlightType = if (argument.dataType == DataType.DICT || argument.dataType == DataType.ARRAY)
                     HighlightType.UNMATCHED
-                else if(highlightInfo.match(argument.rawValue))
+                else if (highlightInfo.match(argument.rawValue))
                     HighlightType.MATCHED
                 else
                     HighlightType.UNMATCHED
@@ -79,7 +79,6 @@ class ArgumentModel : AbstractTableModel() {
             ArgumentType.ARRAY -> "$ARG_ARRAY$ARG_NAME_START$name$ARG_NAME_END"
             ArgumentType.PYTHON -> name
         }
-
     }
 
     override fun getColumnName(column: Int): String = when (column) {
@@ -110,5 +109,4 @@ class ArgumentModel : AbstractTableModel() {
         val rowHeight: Int
             get() = max(max(argumentColumn, inputColumn), valueColumn)
     }
-
 }

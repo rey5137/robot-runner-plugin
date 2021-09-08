@@ -138,7 +138,7 @@ class RobotOutputView(project: Project, private val srcFile: VirtualFile? = null
     }
 
     private fun buildLeftPanel(): JPanel {
-        tree.ui = MyTreeUI()
+        tree.setUI(MyTreeUI())
         tree.isRootVisible = false
         tree.showsRootHandles = true
         tree.cellRenderer = MyTreeCellRenderer()
@@ -244,9 +244,9 @@ class RobotOutputView(project: Project, private val srcFile: VirtualFile? = null
             .addExtraAction(object :
                 AnActionButton(MyBundle.message("robot.output.editor.label.expand-all"), AllIcons.Actions.Expandall) {
                 override fun actionPerformed(e: AnActionEvent) {
-                    tree.ui = null
+                    tree.setUI(null)
                     TreeUtil.expandAll(tree) {
-                        tree.ui = MyTreeUI()
+                        tree.setUI(MyTreeUI())
                     }
                 }
             })
@@ -311,9 +311,9 @@ class RobotOutputView(project: Project, private val srcFile: VirtualFile? = null
         treeModel.reload()
 
         if (keepExpanded) {
-            tree.ui = null
+            tree.setUI(null)
             TreeUtil.restoreExpandedPaths(tree, expandedPaths)
-            tree.ui = MyTreeUI()
+            tree.setUI(MyTreeUI())
             restoreSelectionNode(selectedPaths)
         } else {
             TreeUtil.promiseExpand(tree) { path ->

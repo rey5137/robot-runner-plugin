@@ -16,7 +16,7 @@ import com.intellij.util.xmlb.annotations.OptionTag
     name = "RobotRunProjectSettingsState",
     storages = [Storage("robot-runner-plugin__project_settings.xml")]
 )
-class RobotRunProjectSettingsState: PersistentStateComponent<RobotRunProjectSettingsState>, RunManagerListener {
+class RobotRunProjectSettingsState : PersistentStateComponent<RobotRunProjectSettingsState>, RunManagerListener {
 
     @OptionTag(converter = RobotRunSettingsMapConverter::class)
     var settingMap: LinkedHashMap<String, RobotRunSetting> = LinkedHashMap()
@@ -28,7 +28,7 @@ class RobotRunProjectSettingsState: PersistentStateComponent<RobotRunProjectSett
     }
 
     override fun runConfigurationChanged(runConfigurationSetting: RunnerAndConfigurationSettings, existingId: String?) {
-        if(existingId != null)
+        if (existingId != null)
             settingMap.remove(existingId)?.let { settingMap[runConfigurationSetting.uniqueID] = it }
     }
 
@@ -36,7 +36,6 @@ class RobotRunProjectSettingsState: PersistentStateComponent<RobotRunProjectSett
 
         fun getInstance(project: Project): RobotRunProjectSettingsState =
             project.getService(RobotRunProjectSettingsState::class.java)
-
     }
 
     class RobotRunSettingsMapConverter : Converter<LinkedHashMap<String, RobotRunSetting>>() {
@@ -51,8 +50,5 @@ class RobotRunProjectSettingsState: PersistentStateComponent<RobotRunProjectSett
             val type = object : TypeToken<LinkedHashMap<String, RobotRunSetting>>() {}.type
             return gson.fromJson(value, type)
         }
-
     }
-
-
 }

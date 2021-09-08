@@ -2,7 +2,6 @@ package com.github.rey5137.robotrunnerplugin.listeners
 
 import com.github.rey5137.robotrunnerplugin.configurables.RobotRunProjectSettingsState
 import com.github.rey5137.robotrunnerplugin.services.MyProjectService
-import com.intellij.execution.RunManagerEx
 import com.intellij.execution.RunManagerListener
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project

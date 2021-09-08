@@ -18,7 +18,7 @@ class RunRobotTestCaseAction(private val runConfigurationSetting: RunnerAndConfi
     constructor () : this(runConfigurationSetting = null)
 
     override fun actionPerformed(e: AnActionEvent) {
-        if(runConfigurationSetting == null)
+        if (runConfigurationSetting == null)
             return
 
         val dataContext = e.dataContext

@@ -6,7 +6,6 @@ import com.github.rey5137.robotrunnerplugin.editors.ui.match
 import com.github.rey5137.robotrunnerplugin.editors.xml.DataType
 import com.github.rey5137.robotrunnerplugin.editors.xml.VARIABLE_EMPTY
 import com.github.rey5137.robotrunnerplugin.editors.xml.Variable
-import java.io.File
 import javax.swing.table.AbstractTableModel
 
 class VariableModel : AbstractTableModel() {
@@ -42,7 +41,7 @@ class VariableModel : AbstractTableModel() {
             allItems.add(item)
             variables.forEach {
                 val childHighlight = addVariable(it, 1, highlightInfo)
-                if(childHighlight != HighlightType.UNMATCHED)
+                if (childHighlight != HighlightType.UNMATCHED)
                     item.highlightType = HighlightType.CONTAINED
             }
         }
@@ -63,12 +62,12 @@ class VariableModel : AbstractTableModel() {
                 isLeaf = variables.isEmpty(),
                 isExpanded = true,
                 isFilePath = variable.isFilePath(),
-                highlightType = if(highlightInfo.match(variable.name)) HighlightType.MATCHED else HighlightType.UNMATCHED
+                highlightType = if (highlightInfo.match(variable.name)) HighlightType.MATCHED else HighlightType.UNMATCHED
             )
             allItems.add(item)
             variables.forEach {
                 val childHighlight = addVariable(it, level + 1, highlightInfo)
-                if(item.highlightType == HighlightType.UNMATCHED && childHighlight != HighlightType.UNMATCHED)
+                if (item.highlightType == HighlightType.UNMATCHED && childHighlight != HighlightType.UNMATCHED)
                     item.highlightType = HighlightType.CONTAINED
             }
             return item.highlightType
@@ -80,7 +79,7 @@ class VariableModel : AbstractTableModel() {
                 isLeaf = true,
                 isExpanded = true,
                 isFilePath = variable.isFilePath(),
-                highlightType = if(highlightInfo.match("${variable.name} = ${variable.valueAsString()}"))
+                highlightType = if (highlightInfo.match("${variable.name} = ${variable.valueAsString()}"))
                     HighlightType.MATCHED
                 else
                     HighlightType.UNMATCHED
@@ -96,7 +95,7 @@ class VariableModel : AbstractTableModel() {
         items[row].isExpanded = false
         val level = items[row].level
         while (row < items.size - 1 && items[row + 1].level > level) {
-            if(!items[row + 1].isLeaf)
+            if (!items[row + 1].isLeaf)
                 items[row + 1].isExpanded = false
             items.removeAt(row + 1)
         }
@@ -124,9 +123,9 @@ class VariableModel : AbstractTableModel() {
     }
 
     private fun Variable<*>.valueAsString(): String {
-        return when(type) {
+        return when (type) {
             DataType.NONE -> "None"
-            DataType.BOOL -> if(value as Boolean) "True" else "False"
+            DataType.BOOL -> if (value as Boolean) "True" else "False"
             else -> value.toString()
         }
     }

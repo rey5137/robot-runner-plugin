@@ -29,14 +29,13 @@ class RunRobotTestCaseActionGroup : ActionGroup() {
 
     override fun update(e: AnActionEvent) {
         val project = e.project
-        if (project == null
-            || !project.isOpen
-            || EditorGutter.KEY.getData(e.dataContext) != null
-            || java.lang.Boolean.TRUE == e.dataContext.getData(CommonDataKeys.EDITOR_VIRTUAL_SPACE)
-        ){
+        if (project == null ||
+            !project.isOpen ||
+            EditorGutter.KEY.getData(e.dataContext) != null ||
+            java.lang.Boolean.TRUE == e.dataContext.getData(CommonDataKeys.EDITOR_VIRTUAL_SPACE)
+        ) {
             e.presentation.isEnabledAndVisible = false
-        }
-        else {
+        } else {
             val provider = getAvailableCutProvider(e)
             e.presentation.isEnabled = provider != null && provider.isCutEnabled(e.dataContext)
             e.presentation.isVisible = provider != null && provider.isCutVisible(e.dataContext)
@@ -50,5 +49,4 @@ class RunRobotTestCaseActionGroup : ActionGroup() {
             null
         } else provider
     }
-
 }

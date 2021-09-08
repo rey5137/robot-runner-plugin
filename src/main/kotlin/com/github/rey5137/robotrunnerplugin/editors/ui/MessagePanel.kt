@@ -66,48 +66,52 @@ class MessagePanel(project: Project) : JPanel(BorderLayout()) {
             .setToolbarPosition(ActionToolbarPosition.TOP)
             .addExtraAction(object : DumbAwareActionButton(MyBundle.message("robot.output.editor.label.filter-message"), AllIcons.General.Filter) {
                 override fun actionPerformed(e: AnActionEvent) {
-                    JBPopupFactory.getInstance().createActionGroupPopup(null, DefaultActionGroup().apply {
-                        add(object : ToggleAction(MyBundle.message("robot.output.editor.desc.show-level-message", LOG_LEVEL_INFO)) {
-                            override fun isSelected(e: AnActionEvent): Boolean = showInfoMessage
+                    JBPopupFactory.getInstance().createActionGroupPopup(
+                        null,
+                        DefaultActionGroup().apply {
+                            add(object : ToggleAction(MyBundle.message("robot.output.editor.desc.show-level-message", LOG_LEVEL_INFO)) {
+                                override fun isSelected(e: AnActionEvent): Boolean = showInfoMessage
 
-                            override fun setSelected(e: AnActionEvent, state: Boolean) {
-                                showInfoMessage = state
-                                populateMessage(element, highlightInfo)
-                            }
-                        })
-                        add(object : ToggleAction(MyBundle.message("robot.output.editor.desc.show-level-message", LOG_LEVEL_DEBUG)) {
-                            override fun isSelected(e: AnActionEvent): Boolean = showDebugMessage
+                                override fun setSelected(e: AnActionEvent, state: Boolean) {
+                                    showInfoMessage = state
+                                    populateMessage(element, highlightInfo)
+                                }
+                            })
+                            add(object : ToggleAction(MyBundle.message("robot.output.editor.desc.show-level-message", LOG_LEVEL_DEBUG)) {
+                                override fun isSelected(e: AnActionEvent): Boolean = showDebugMessage
 
-                            override fun setSelected(e: AnActionEvent, state: Boolean) {
-                                showDebugMessage = state
-                                populateMessage(element, highlightInfo)
-                            }
-                        })
-                        add(object : ToggleAction(MyBundle.message("robot.output.editor.desc.show-level-message", LOG_LEVEL_TRACE)) {
-                            override fun isSelected(e: AnActionEvent): Boolean = showTraceMessage
+                                override fun setSelected(e: AnActionEvent, state: Boolean) {
+                                    showDebugMessage = state
+                                    populateMessage(element, highlightInfo)
+                                }
+                            })
+                            add(object : ToggleAction(MyBundle.message("robot.output.editor.desc.show-level-message", LOG_LEVEL_TRACE)) {
+                                override fun isSelected(e: AnActionEvent): Boolean = showTraceMessage
 
-                            override fun setSelected(e: AnActionEvent, state: Boolean) {
-                                showTraceMessage = state
-                                populateMessage(element, highlightInfo)
-                            }
-                        })
-                        add(object : ToggleAction(MyBundle.message("robot.output.editor.desc.show-level-message", LOG_LEVEL_FAIL)) {
-                            override fun isSelected(e: AnActionEvent): Boolean = showFailMessage
+                                override fun setSelected(e: AnActionEvent, state: Boolean) {
+                                    showTraceMessage = state
+                                    populateMessage(element, highlightInfo)
+                                }
+                            })
+                            add(object : ToggleAction(MyBundle.message("robot.output.editor.desc.show-level-message", LOG_LEVEL_FAIL)) {
+                                override fun isSelected(e: AnActionEvent): Boolean = showFailMessage
 
-                            override fun setSelected(e: AnActionEvent, state: Boolean) {
-                                showFailMessage = state
-                                populateMessage(element, highlightInfo)
-                            }
-                        })
-                        add(object : ToggleAction(MyBundle.message("robot.output.editor.desc.show-level-message", LOG_LEVEL_ERROR)) {
-                            override fun isSelected(e: AnActionEvent): Boolean = showErrorMessage
+                                override fun setSelected(e: AnActionEvent, state: Boolean) {
+                                    showFailMessage = state
+                                    populateMessage(element, highlightInfo)
+                                }
+                            })
+                            add(object : ToggleAction(MyBundle.message("robot.output.editor.desc.show-level-message", LOG_LEVEL_ERROR)) {
+                                override fun isSelected(e: AnActionEvent): Boolean = showErrorMessage
 
-                            override fun setSelected(e: AnActionEvent, state: Boolean) {
-                                showErrorMessage = state
-                                populateMessage(element, highlightInfo)
-                            }
-                        })
-                    }, e.dataContext, JBPopupFactory.ActionSelectionAid.SPEEDSEARCH, false)
+                                override fun setSelected(e: AnActionEvent, state: Boolean) {
+                                    showErrorMessage = state
+                                    populateMessage(element, highlightInfo)
+                                }
+                            })
+                        },
+                        e.dataContext, JBPopupFactory.ActionSelectionAid.SPEEDSEARCH, false
+                    )
                         .show(preferredPopupPoint!!)
                 }
             })
@@ -130,18 +134,18 @@ class MessagePanel(project: Project) : JPanel(BorderLayout()) {
         var selectedIndex = -1
         element.messages
             .filter {
-                (it.level == LOG_LEVEL_INFO && showInfoMessage)
-                        || (it.level == LOG_LEVEL_DEBUG && showDebugMessage)
-                        || (it.level == LOG_LEVEL_TRACE && showTraceMessage)
-                        || (it.level == LOG_LEVEL_FAIL && showFailMessage)
-                        || (it.level == LOG_LEVEL_ERROR && showErrorMessage)
+                (it.level == LOG_LEVEL_INFO && showInfoMessage) ||
+                    (it.level == LOG_LEVEL_DEBUG && showDebugMessage) ||
+                    (it.level == LOG_LEVEL_TRACE && showTraceMessage) ||
+                    (it.level == LOG_LEVEL_FAIL && showFailMessage) ||
+                    (it.level == LOG_LEVEL_ERROR && showErrorMessage)
             }
             .forEach {
                 messageModel.addElement(it.toHighlightHolder(highlightInfo.match(it)))
-                if(it == selectedMessageElement)
+                if (it == selectedMessageElement)
                     selectedIndex = messageModel.size() - 1
             }
-        if(selectedIndex >= 0)
+        if (selectedIndex >= 0)
             messageList.selectedIndex = selectedIndex
     }
 
@@ -151,5 +155,4 @@ class MessagePanel(project: Project) : JPanel(BorderLayout()) {
         messageDetail.setCaretPosition(0)
         messageDetail.revalidate()
     }
-
 }

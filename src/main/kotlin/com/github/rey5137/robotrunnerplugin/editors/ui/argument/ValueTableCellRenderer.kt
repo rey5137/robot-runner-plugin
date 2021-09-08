@@ -10,10 +10,8 @@ import com.intellij.ui.scale.JBUIScale
 import com.intellij.ui.table.JBTable
 import com.intellij.util.ui.UIUtil
 import icons.MyIcons
-import java.awt.Color
 import java.awt.Component
 import java.awt.Insets
-import javax.swing.BorderFactory
 import javax.swing.JTable
 import javax.swing.table.TableCellRenderer
 
@@ -22,7 +20,7 @@ class ValueTableCellRenderer(private val argumentModel: ArgumentModel) :
 
     private val stringCellRenderer = object : ColoredTableCellRenderer() {
         override fun customizeCellRenderer(
-            table: JTable?,
+            table: JTable,
             value: Any?,
             selected: Boolean,
             hasFocus: Boolean,
@@ -116,7 +114,5 @@ class ValueTableCellRenderer(private val argumentModel: ArgumentModel) :
         fun isIconClicked(x: Int): Boolean {
             return x >= PADDING_HORIZONTAL && x < PADDING_HORIZONTAL + MyIcons.OpenFile.iconWidth
         }
-
     }
-
 }

@@ -27,5 +27,4 @@ class RunRobotTestSuiteActionGroup : ActionGroup() {
     override fun update(e: AnActionEvent) {
         e.presentation.isEnabledAndVisible = e.project != null && e.files.isNotEmpty()
     }
-
 }

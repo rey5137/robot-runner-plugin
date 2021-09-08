@@ -9,9 +9,7 @@ import com.intellij.ui.ColoredTableCellRenderer
 import com.intellij.ui.SimpleTextAttributes
 import com.intellij.ui.table.JBTable
 import com.intellij.util.ui.UIUtil
-import java.awt.Color
 import java.awt.Component
-import javax.swing.BorderFactory
 import javax.swing.JTable
 import javax.swing.table.TableCellRenderer
 
@@ -19,7 +17,7 @@ class InputTableCellRenderer(private val argumentModel: ArgumentModel) : TableCe
 
     private val stringCellRenderer = object : ColoredTableCellRenderer() {
         override fun customizeCellRenderer(
-            table: JTable?,
+            table: JTable,
             value: Any?,
             selected: Boolean,
             hasFocus: Boolean,
@@ -30,7 +28,7 @@ class InputTableCellRenderer(private val argumentModel: ArgumentModel) : TableCe
             setHighlightBorder(inputHolder.highlight)
 
             val input = inputHolder.value
-            if(input.name == null)
+            if (input.name == null)
                 append(input.value, SimpleTextAttributes.REGULAR_ATTRIBUTES)
             else {
                 append(input.name, SimpleTextAttributes.REGULAR_BOLD_ATTRIBUTES)
@@ -55,7 +53,7 @@ class InputTableCellRenderer(private val argumentModel: ArgumentModel) : TableCe
     ): Component {
         val inputHolders = argumentModel.getInputArgumentHolders(row)
 
-        val component = if(inputHolders.size == 1)
+        val component = if (inputHolders.size == 1)
             stringCellRenderer.getTableCellRendererComponent(table, inputHolders[0], isSelected, hasFocus, row, column)
         else
             getCellRendererComponent(inputHolders, isSelected, hasFocus)
@@ -64,15 +62,14 @@ class InputTableCellRenderer(private val argumentModel: ArgumentModel) : TableCe
     }
 
     private fun getCellRendererComponent(inputs: List<HighlightHolder<InputArgument>>, isSelected: Boolean, hasFocus: Boolean): Component {
-        if(inputs.isEmpty())
+        if (inputs.isEmpty())
             inputArgumentModel.add(listOf(HighlightHolder(INPUT_EMPTY, HighlightType.UNMATCHED)))
         else
             inputArgumentModel.add(inputs)
-        if(isSelected) {
-            if(inputArgumentModel.rowCount > 0)
+        if (isSelected) {
+            if (inputArgumentModel.rowCount > 0)
                 table.setRowSelectionInterval(0, inputArgumentModel.rowCount - 1)
-        }
-        else {
+        } else {
             table.clearSelection()
         }
         table.border = if (hasFocus) UIUtil.getTableFocusCellHighlightBorder() else null

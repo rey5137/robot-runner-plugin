@@ -9,7 +9,7 @@ import java.awt.event.MouseEvent
 import java.util.*
 import javax.swing.JTable
 
-class InputTableCellEditor(private val argumentModel: ArgumentModel): AbstractTableCellEditor() {
+class InputTableCellEditor(private val argumentModel: ArgumentModel) : AbstractTableCellEditor() {
 
     private val inputArgumentModel = InputArgumentModel()
     var editEvent: MouseEvent? = null
@@ -20,9 +20,9 @@ class InputTableCellEditor(private val argumentModel: ArgumentModel): AbstractTa
     }
 
     override fun isCellEditable(e: EventObject?): Boolean {
-        if(e is MouseEvent) {
+        if (e is MouseEvent) {
             val enable = e.clickCount > 1
-            if(enable) {
+            if (enable) {
                 editEvent = e
             }
             return enable
@@ -51,9 +51,9 @@ class InputTableCellEditor(private val argumentModel: ArgumentModel): AbstractTa
     ): Component {
         val inputHolders = argumentModel.getInputArgumentHolders(row)
         val editor = table.getDefaultEditor(Any::class.java)
-        return if(inputHolders.size == 1) {
+        return if (inputHolders.size == 1) {
             val input = inputHolders[0].value
-            if(input.name == null)
+            if (input.name == null)
                 editor.getTableCellEditorComponent(table, input.value, isSelected, row, column)
             else
                 editor.getTableCellEditorComponent(table, "${input.name}: ${input.value}", isSelected, row, column)
@@ -65,5 +65,4 @@ class InputTableCellEditor(private val argumentModel: ArgumentModel): AbstractTa
         inputArgumentModel.add(inputs)
         return table
     }
-
 }

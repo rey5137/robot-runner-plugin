@@ -16,12 +16,11 @@ class InputArgumentModel : AbstractTableModel() {
 
     fun getItem(row: Int) = items[row]
 
-    override fun getRowCount(): Int  = items.size
+    override fun getRowCount(): Int = items.size
 
     override fun getColumnCount(): Int = 1
 
     override fun getValueAt(rowIndex: Int, columnIndex: Int): Any = items[rowIndex].value.rawInput
 
     override fun isCellEditable(rowIndex: Int, columnIndex: Int) = true
-
 }

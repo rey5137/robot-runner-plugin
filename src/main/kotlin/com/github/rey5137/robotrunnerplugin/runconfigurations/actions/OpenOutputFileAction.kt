@@ -17,7 +17,7 @@ class OpenOutputFileAction(
     private val processHandler: ProcessHandler,
     private val console: ConsoleView
 ) :
-    DumbAwareAction(MyBundle.message("robot.run.configuration.label.open-output"), null, AllIcons.Actions.Menu_open),
+    DumbAwareAction(MyBundle.message("robot.run.configuration.label.open-output"), null, AllIcons.Actions.ShowCode),
     AnAction.TransparentUpdate {
     override fun update(e: AnActionEvent) {
         e.presentation.isEnabled = processHandler.isProcessTerminated

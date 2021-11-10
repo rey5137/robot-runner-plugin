@@ -30,7 +30,7 @@ class RerunRobotFailedTestsAction(
     MyBundle.message("robot.run.configuration.label.rerun-failed-cases"),
     "",
     AllIcons.RunConfigurations.RerunFailedTests
-), AnAction.TransparentUpdate {
+) {
 
     override fun update(e: AnActionEvent) {
         if (processHandler.isProcessTerminated) {

@@ -25,6 +25,8 @@ import com.intellij.openapi.vfs.VirtualFile
 import java.io.File
 import java.io.FileOutputStream
 
+const val LISTENER_FILE = "RobotRunnerPluginListener000003002.py"
+
 class RobotRunTaskState(
     private val project: Project,
     private val configuration: RobotRunConfiguration,
@@ -113,9 +115,9 @@ class RobotRunTaskState(
         val folder = File(FileUtilRt.getTempDirectory(), "RobotRunnerPlugin")
         if(!folder.exists())
             folder.mkdirs()
-        val file = File(folder, "RobotRunnerPluginListener.py")
+        val file = File(folder, LISTENER_FILE)
         if(!file.exists()) {
-            val inputStream = javaClass.getResourceAsStream("/scripts/RobotRunnerPluginListener.py")
+            val inputStream = javaClass.getResourceAsStream("/scripts/$LISTENER_FILE")
             val fileOutputStream = FileOutputStream(file)
             val buffer = ByteArray(32768)
             var length: Int

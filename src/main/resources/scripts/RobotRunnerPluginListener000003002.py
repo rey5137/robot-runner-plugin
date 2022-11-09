@@ -4,7 +4,7 @@ from typing import Any
 from enum import Enum
 
 
-class RobotRunnerPluginListener:
+class RobotRunnerPluginListener000003002:
 
     ROBOT_LISTENER_API_VERSION = 2
 
@@ -166,7 +166,7 @@ def read_socket(s: socket.socket) -> (int, dict):
         raise ProtocolError(ErrorMessages.INCOMPLETE_DATA,
                             'expect ' + str(json_len) + ' bytes but found ' + str(len(text_bytes)))
     try:
-        obj = json.loads(str(text_bytes, encoding='utf-8'), encoding='utf-8')
+        obj = json.loads(str(text_bytes, encoding='utf-8'))
     except Exception as err:
         raise ProtocolError(ErrorMessages.INVALID_BODY, "{}".format(err))
 

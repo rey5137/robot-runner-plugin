@@ -116,7 +116,7 @@ class RobotOutputView(project: Project, private val srcFile: VirtualFile? = null
                     val nodeWrapper = nodeWrapperStack!!.removeAt(nodeWrapperStack!!.size - 1)
                     UIUtil.invokeAndWaitIfNeeded(Runnable {
                         treeModel.nodeChanged(nodeWrapper.node)
-                        val selectedNode = tree.lastSelectedPathComponent as DefaultMutableTreeNode
+                        val selectedNode = tree.lastSelectedPathComponent as DefaultMutableTreeNode?
                         if (nodeWrapper.node == selectedNode)
                             detailsPanel.showDetails(selectedNode.getElement(), highlightInfo)
                     })

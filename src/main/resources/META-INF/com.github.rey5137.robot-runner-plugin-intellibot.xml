@@ -1,0 +1,10 @@
+<idea-plugin>
+
+    <extensions defaultExtensionNs="com.intellij">
+        <codeInsight.lineMarkerProvider
+                language="Robot"
+                implementationClass="com.github.rey5137.robotrunnerplugin.provider.IntellibotTestcaseLineMarkerProvider"/>
+
+    </extensions>
+
+</idea-plugin>

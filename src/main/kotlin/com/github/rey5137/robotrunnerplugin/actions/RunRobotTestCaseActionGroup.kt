@@ -6,23 +6,30 @@ import com.intellij.execution.RunManager
 import com.intellij.ide.CutProvider
 import com.intellij.openapi.actionSystem.*
 import com.intellij.openapi.editor.EditorGutter
+import com.intellij.openapi.ide.CopyPasteManager
 import com.intellij.openapi.project.DumbService
+import java.awt.datatransfer.DataFlavor
 
 class RunRobotTestCaseActionGroup : ActionGroup() {
 
     override fun getChildren(e: AnActionEvent?): Array<AnAction> {
         val project = e?.project ?: return emptyArray()
-        val configurationMap =
-            RunManager.getInstance(project).getConfigurationSettingsList(RobotRunConfigurationType::class.java)
-                .map { it.uniqueID to it }
-                .toMap()
+        val configurationMap = RunManager.getInstance(project)
+            .getConfigurationSettingsList(RobotRunConfigurationType::class.java)
+            .associateBy { it.uniqueID }
+        val value = CopyPasteManager.getInstance().getContents<String>(DataFlavor.stringFlavor) ?: ""
         return RobotRunProjectSettingsState.getInstance(project).settingMap.entries.filter { it.value.testCaseEnable }
             .mapNotNull { configurationMap[it.key] }
-            .map { RunRobotTestCaseAction(it) as AnAction }
+            .map {
+                RunRobotTestCaseAction(
+                    runConfigurationSetting = it,
+                    values = if (value.isEmpty()) emptyList() else listOf(value)
+                ) as AnAction
+            }
             .toMutableList()
             .apply {
                 add(Separator(null))
-                add(CreateRunRobotTestCaseConfigAction())
+                add(CreateRunRobotTestCaseConfigAction(values = if (value.isEmpty()) emptyList() else listOf(value)))
             }
             .toTypedArray()
     }
@@ -33,10 +40,9 @@ class RunRobotTestCaseActionGroup : ActionGroup() {
             || !project.isOpen
             || EditorGutter.KEY.getData(e.dataContext) != null
             || java.lang.Boolean.TRUE == e.dataContext.getData(CommonDataKeys.EDITOR_VIRTUAL_SPACE)
-        ){
+        ) {
             e.presentation.isEnabledAndVisible = false
-        }
-        else {
+        } else {
             val provider = getAvailableCutProvider(e)
             e.presentation.isEnabled = provider != null && provider.isCutEnabled(e.dataContext)
             e.presentation.isVisible = provider != null && provider.isCutVisible(e.dataContext)

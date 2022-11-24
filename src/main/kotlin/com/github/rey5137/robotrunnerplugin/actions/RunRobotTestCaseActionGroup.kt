@@ -6,9 +6,7 @@ import com.intellij.execution.RunManager
 import com.intellij.ide.CutProvider
 import com.intellij.openapi.actionSystem.*
 import com.intellij.openapi.editor.EditorGutter
-import com.intellij.openapi.ide.CopyPasteManager
 import com.intellij.openapi.project.DumbService
-import java.awt.datatransfer.DataFlavor
 
 class RunRobotTestCaseActionGroup : ActionGroup() {
 
@@ -17,7 +15,9 @@ class RunRobotTestCaseActionGroup : ActionGroup() {
         val configurationMap = RunManager.getInstance(project)
             .getConfigurationSettingsList(RobotRunConfigurationType::class.java)
             .associateBy { it.uniqueID }
-        val value = CopyPasteManager.getInstance().getContents<String>(DataFlavor.stringFlavor) ?: ""
+
+        val dataContext = e.dataContext
+        val value = PlatformDataKeys.EDITOR.getData(dataContext)?.selectionModel?.selectedText ?: ""
         return RobotRunProjectSettingsState.getInstance(project).settingMap.entries.filter { it.value.testCaseEnable }
             .mapNotNull { configurationMap[it.key] }
             .map {

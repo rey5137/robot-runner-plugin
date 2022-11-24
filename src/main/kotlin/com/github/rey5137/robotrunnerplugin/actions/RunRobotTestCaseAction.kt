@@ -8,7 +8,6 @@ import com.intellij.execution.RunnerAndConfigurationSettings
 import com.intellij.execution.executors.DefaultRunExecutor
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
-import com.intellij.openapi.actionSystem.PlatformDataKeys
 
 class RunRobotTestCaseAction(
     private val runConfigurationSetting: RunnerAndConfigurationSettings?,
@@ -25,10 +24,6 @@ class RunRobotTestCaseAction(
     override fun actionPerformed(e: AnActionEvent) {
         if (runConfigurationSetting == null || values.isEmpty())
             return
-
-        val dataContext = e.dataContext
-        val provider = PlatformDataKeys.COPY_PROVIDER.getData(dataContext) ?: return
-        provider.performCopy(dataContext)
 
         val file = e.file ?: return
 

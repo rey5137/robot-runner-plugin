@@ -10,7 +10,6 @@ import com.intellij.execution.configurations.ConfigurationType
 import com.intellij.execution.impl.EditConfigurationsDialog
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
-import com.intellij.openapi.actionSystem.PlatformDataKeys
 
 class CreateRunRobotTestCaseConfigAction(private val values: List<String> = emptyList()) :
     AnAction(MyBundle.message("robot.run.action.label.new-config"),
@@ -19,10 +18,6 @@ class CreateRunRobotTestCaseConfigAction(private val values: List<String> = empt
 
     override fun actionPerformed(e: AnActionEvent) {
         val project = e.project ?: return
-
-        val dataContext = e.dataContext
-        val provider = PlatformDataKeys.COPY_PROVIDER.getData(dataContext) ?: return
-        provider.performCopy(dataContext)
 
         val file = e.file ?: return
 

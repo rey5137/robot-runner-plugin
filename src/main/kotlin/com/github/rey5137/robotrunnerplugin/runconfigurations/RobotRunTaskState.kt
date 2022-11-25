@@ -39,7 +39,8 @@ class RobotRunTaskState(
 
     override fun startProcess(): ProcessHandler {
         val options = configuration.options
-        if(options.showOutputView) {
+        val showOutputView = !options.usePabot && options.showOutputView
+        if(showOutputView) {
             robotOutputView = RobotOutputView(project)
             val port = findAvailablePort()
             server = Server(port) { method, payload ->
@@ -58,7 +59,18 @@ class RobotRunTaskState(
         val robotRunFile = sdk.sdkModificator.getRoots(OrderRootType.CLASSES)
             .mapNotNull { it.findRobotRunFile() }
             .firstOrNull() ?: throw ExecutionException("Cannot find Robot's run.py file")
-        commands += robotRunFile.path
+
+        if(options.usePabot) {
+            commands.addPair("-m", "pabot.pabot")
+            commands += "--command"
+            commands += sdk.homePath!!
+            commands += robotRunFile.path
+            commands += "--end-command"
+            options.pabotArguments.ifNotEmpty { value -> commands.addAll(value.parseCommandLineArguments()) }
+        }
+        else {
+            commands += robotRunFile.path
+        }
 
         if(rerunFailedCaseConfig == null)
             options.testNames.forEach { commands.addPair("-t", it) }
@@ -96,7 +108,7 @@ class RobotRunTaskState(
         options.runEmptySuite.ifEnable { commands.add("--runemptysuite") }
         options.extraArguments.ifNotEmpty { value -> commands.addAll(value.parseCommandLineArguments()) }
 
-        if(options.showOutputView) {
+        if(showOutputView) {
             commands.add("--listener")
             commands.add("${getListenerFilePath()}:${server.port}")
         }
@@ -141,7 +153,8 @@ class RobotRunTaskState(
     override fun execute(executor: Executor, runner: ProgramRunner<*>): ExecutionResult {
         val options = configuration.options
         val processHandler = startProcess()
-        val console = if(options.showOutputView)
+        val showOutputView = !options.usePabot && options.showOutputView
+        val console = if(showOutputView)
             RobotOutputConsoleView(project, createConsole(executor)!!, robotOutputView)
         else
             createConsole(executor)!!
@@ -156,7 +169,7 @@ class RobotRunTaskState(
                 rerunFailedCaseConfig,
             )
         )
-        if(options.showOutputView) {
+        if(showOutputView) {
             processHandler.addProcessListener(object : ProcessListener {
                 override fun startNotified(event: ProcessEvent) {}
 
@@ -229,6 +242,8 @@ class RobotRunTaskState(
                 }
             }
         }
+        if(builder.isNotEmpty())
+            args.add(builder.toString())
         return args.toList()
     }
 

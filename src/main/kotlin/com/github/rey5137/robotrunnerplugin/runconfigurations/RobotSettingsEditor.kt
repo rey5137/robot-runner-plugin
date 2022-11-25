@@ -39,6 +39,8 @@ class RobotSettingsEditor : SettingsEditor<RobotRunConfiguration>() {
     private lateinit var runEmptySuiteCheckBox: JBCheckBox
     private lateinit var extraArgumentsTextField: JBTextField
     private lateinit var showOutputViewCheckBox: JBCheckBox
+    private lateinit var usePabotCheckBox: JBCheckBox
+    private lateinit var pabotArgumentsTextField: JBTextField
 
     private val suitePathModel = DefaultListModel<String>()
     private val testNameModel = DefaultListModel<String>()
@@ -79,6 +81,8 @@ class RobotSettingsEditor : SettingsEditor<RobotRunConfiguration>() {
         runEmptySuiteCheckBox.isSelected = options.runEmptySuite
         extraArgumentsTextField.text = options.extraArguments
         showOutputViewCheckBox.isSelected = options.showOutputView
+        usePabotCheckBox.isSelected = options.usePabot
+        pabotArgumentsTextField.text = options.pabotArguments
     }
 
     override fun applyEditorTo(configuration: RobotRunConfiguration) {
@@ -111,6 +115,8 @@ class RobotSettingsEditor : SettingsEditor<RobotRunConfiguration>() {
         options.runEmptySuite = runEmptySuiteCheckBox.isSelected
         options.extraArguments = extraArgumentsTextField.text
         options.showOutputView = showOutputViewCheckBox.isSelected
+        options.usePabot = usePabotCheckBox.isSelected
+        options.pabotArguments = pabotArgumentsTextField.text
     }
 
     override fun createEditor(): JComponent = mainPanel
@@ -277,6 +283,13 @@ class RobotSettingsEditor : SettingsEditor<RobotRunConfiguration>() {
         }
         row {
             showOutputViewCheckBox = checkBox(MyBundle.message("robot.run.configuration.label.show-output-view"), false, MyBundle.message("robot.run.configuration.desc.show-output-view")).component
+        }
+        row {
+            usePabotCheckBox = checkBox(MyBundle.message("robot.run.configuration.label.use-pabot"), false, MyBundle.message("robot.run.configuration.desc.use-pabot")).component
+        }
+        row {
+            label(MyBundle.message("robot.run.configuration.label.pabot-arguments"))
+            pabotArgumentsTextField = textField({ "" }, {}).constraints(CCFlags.pushX).component
         }
     }
 

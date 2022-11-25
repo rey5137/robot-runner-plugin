@@ -37,7 +37,7 @@ fun String.findReportFilePath(): String? {
 }
 
 fun String.findNumberOfFailedCases(): Int? {
-    val regex = "^.*\\d+ tests? total, \\d+ passed, (\\d+) failed.*$".toRegex(option = RegexOption.DOT_MATCHES_ALL)
+    val regex = "^.*\\d+ tests?\\s*\\w+, \\d+ passed, (\\d+) failed.*$".toRegex(option = RegexOption.DOT_MATCHES_ALL)
     val result = regex.matchEntire(this)
     return if (result == null)
         null

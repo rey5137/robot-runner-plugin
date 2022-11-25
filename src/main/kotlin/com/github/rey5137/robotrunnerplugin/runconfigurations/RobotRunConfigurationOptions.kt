@@ -71,4 +71,10 @@ open class RobotRunConfigurationOptions : RunConfigurationOptions() {
     @get:OptionTag("showOutputView")
     var showOutputView by property(false)
 
+    @get:OptionTag("usePabot")
+    var usePabot by property(false)
+
+    @get:OptionTag("pabotArguments")
+    var pabotArguments by string("")
+
 }

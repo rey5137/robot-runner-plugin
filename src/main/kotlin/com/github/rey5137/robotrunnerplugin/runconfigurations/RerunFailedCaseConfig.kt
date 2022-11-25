@@ -5,5 +5,7 @@ data class RerunFailedCaseConfig(
     val logFile: String,
     val reportFile: String,
     val rerunTime: Int,
-    val testcases: List<String>
+    val testcases: List<String>,
+    val suffix: String,
+    val previousRerunConfig: RerunFailedCaseConfig? = null
 )

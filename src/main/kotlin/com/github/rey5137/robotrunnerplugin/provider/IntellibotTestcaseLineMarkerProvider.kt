@@ -22,13 +22,14 @@ import com.intellij.ui.awt.RelativePoint
 import com.millennialmedia.intellibot.psi.element.HeadingImpl
 import com.millennialmedia.intellibot.psi.element.KeywordDefinitionIdImpl
 import java.awt.event.MouseEvent
+import javax.swing.Icon
 
 
 class IntellibotTestcaseLineMarkerProvider : LineMarkerProviderDescriptor() {
 
-    override fun getName(): String {
-        return "Run testcase"
-    }
+    override fun getName(): String = "Run testcase"
+
+    override fun getIcon(): Icon = AllIcons.Actions.Execute
 
     override fun getLineMarkerInfo(element: PsiElement): LineMarkerInfo<*>? {
         return when (element) {

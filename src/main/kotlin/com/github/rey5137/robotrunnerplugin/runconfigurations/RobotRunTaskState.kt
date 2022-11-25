@@ -2,6 +2,7 @@ package com.github.rey5137.robotrunnerplugin.runconfigurations
 
 import com.github.rey5137.robotrunnerplugin.editors.RobotOutputView
 import com.github.rey5137.robotrunnerplugin.http.Server
+import com.github.rey5137.robotrunnerplugin.runconfigurations.actions.MergeRobotOutputAction
 import com.github.rey5137.robotrunnerplugin.runconfigurations.actions.OpenOutputFileAction
 import com.github.rey5137.robotrunnerplugin.runconfigurations.actions.RerunRobotFailedTestsAction
 import com.intellij.execution.DefaultExecutionResult
@@ -93,10 +94,9 @@ class RobotRunTaskState(
             }
         }
         else {
-            val suffix = "rerun_${rerunFailedCaseConfig.rerunTime}"
-            commands.addPair("-o", rerunFailedCaseConfig.outputFile.suffixFileName(suffix))
-            commands.addPair("-l", rerunFailedCaseConfig.logFile.suffixFileName(suffix))
-            commands.addPair("-r", rerunFailedCaseConfig.reportFile.suffixFileName(suffix))
+            commands.addPair("-o", rerunFailedCaseConfig.outputFile.suffixFileName(rerunFailedCaseConfig.suffix))
+            commands.addPair("-l", rerunFailedCaseConfig.logFile.suffixFileName(rerunFailedCaseConfig.suffix))
+            commands.addPair("-r", rerunFailedCaseConfig.reportFile.suffixFileName(rerunFailedCaseConfig.suffix))
         }
         options.logTitle.ifNotEmpty { commands.addPair("--logtitle", it) }
         options.reportTitle.ifNotEmpty { commands.addPair("--reporttitle", it) }
@@ -160,15 +160,32 @@ class RobotRunTaskState(
             createConsole(executor)!!
         console.attachToProcess(processHandler)
         val result = DefaultExecutionResult(console, processHandler, *createActions(console, processHandler, executor))
-        result.setRestartActions(
-            RerunRobotFailedTestsAction(
-                processHandler,
-                console,
-                environment,
-                configuration,
-                rerunFailedCaseConfig,
+        if(rerunFailedCaseConfig == null)
+            result.setRestartActions(
+                RerunRobotFailedTestsAction(
+                    processHandler,
+                    console,
+                    environment,
+                    configuration,
+                    rerunFailedCaseConfig,
+                )
             )
-        )
+        else
+            result.setRestartActions(
+                RerunRobotFailedTestsAction(
+                    processHandler,
+                    console,
+                    environment,
+                    configuration,
+                    rerunFailedCaseConfig,
+                ),
+                MergeRobotOutputAction(
+                    processHandler,
+                    environment,
+                    configuration,
+                    rerunFailedCaseConfig,
+                )
+            )
         if(showOutputView) {
             processHandler.addProcessListener(object : ProcessListener {
                 override fun startNotified(event: ProcessEvent) {}
@@ -205,16 +222,6 @@ class RobotRunTaskState(
     private inline fun Boolean.ifEnable(func: () -> Unit) {
         if (this)
             func()
-    }
-
-    private fun String.suffixFileName(value: String): String {
-        if (this.equals("None", ignoreCase = true))
-            return this
-        val index = this.lastIndexOf('.')
-        return if (index >= 0)
-            "${substring(0, index)}_$value${substring(index)}"
-        else
-            "${this}_$value"
     }
 
     private fun String.parseCommandLineArguments(): List<String> {

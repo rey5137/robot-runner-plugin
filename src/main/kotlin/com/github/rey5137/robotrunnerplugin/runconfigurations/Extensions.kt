@@ -37,7 +37,7 @@ fun String.findReportFilePath(): String? {
 }
 
 fun String.findNumberOfFailedCases(): Int? {
-    val regex = "^.*\\d+ tests?\\s*\\w+, \\d+ passed, (\\d+) failed.*$".toRegex(option = RegexOption.DOT_MATCHES_ALL)
+    val regex = "^.*\\d+ tests?\\s*\\w*\\s*, \\d+ passed, (\\d+) failed.*$".toRegex(option = RegexOption.DOT_MATCHES_ALL)
     val result = regex.matchEntire(this)
     return if (result == null)
         null
@@ -54,6 +54,16 @@ fun String.escapeCharsInTestName(): String {
         }
     }
     return builder.toString()
+}
+
+fun String.suffixFileName(value: String): String {
+    if (this.equals("None", ignoreCase = true))
+        return this
+    val index = this.lastIndexOf('.')
+    return if (index >= 0)
+        "${substring(0, index)}_$value${substring(index)}"
+    else
+        "${this}_$value"
 }
 
 fun findAvailablePort() : Int {

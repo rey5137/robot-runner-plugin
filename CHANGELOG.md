@@ -2,6 +2,16 @@
 
 # robot-runner-plugin Changelog
 
+## 0.4.0
+### Added
+- Gutter icon to run single testcase (support Intellibot plugin)
+- Execution option to run with pabot
+- Action to merge all output result files
+
+## 0.3.2
+### Fixed
+- Bug not work with python 3.9
+
 ## 0.3.1
 ### Fixed
 - Remove deprecated API usages

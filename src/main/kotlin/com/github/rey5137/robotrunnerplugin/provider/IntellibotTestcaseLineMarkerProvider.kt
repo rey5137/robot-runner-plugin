@@ -83,7 +83,7 @@ class IntellibotTestcaseLineMarkerProvider : LineMarkerProviderDescriptor() {
                     add(CreateRunRobotTestCaseConfigAction(values = values))
                 }
             val group = DefaultActionGroup(actions)
-            val context = SimpleDataContext.getProjectContext(null)
+            val context = SimpleDataContext.getProjectContext(elt.project)
             val popup = JBPopupFactory.getInstance()
                 .createActionGroupPopup(null, group, context, JBPopupFactory.ActionSelectionAid.SPEEDSEARCH, true)
             popup.show(RelativePoint(e))

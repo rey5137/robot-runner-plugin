@@ -2,6 +2,10 @@
 
 # robot-runner-plugin Changelog
 
+## 0.4.1
+### Fixed
+- Bug error when click run testcase icon
+
 ## 0.4.0
 ### Added
 - Gutter icon to run single testcase (support Intellibot plugin)

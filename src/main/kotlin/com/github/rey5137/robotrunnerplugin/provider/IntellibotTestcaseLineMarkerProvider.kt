@@ -10,20 +10,22 @@ import com.intellij.codeInsight.daemon.LineMarkerInfo
 import com.intellij.codeInsight.daemon.LineMarkerProviderDescriptor
 import com.intellij.execution.RunManager
 import com.intellij.icons.AllIcons
-import com.intellij.openapi.actionSystem.AnAction
-import com.intellij.openapi.actionSystem.DefaultActionGroup
-import com.intellij.openapi.actionSystem.Separator
+import com.intellij.openapi.actionSystem.*
 import com.intellij.openapi.actionSystem.impl.SimpleDataContext
 import com.intellij.openapi.editor.markup.GutterIconRenderer
+import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.popup.JBPopupFactory
+import com.intellij.openapi.wm.IdeFocusManager
+import com.intellij.openapi.wm.WindowManager
 import com.intellij.psi.PsiElement
-import com.intellij.psi.util.parentOfType
+import com.intellij.psi.util.parents
 import com.intellij.ui.awt.RelativePoint
-import com.millennialmedia.intellibot.psi.element.HeadingImpl
-import com.millennialmedia.intellibot.psi.element.KeywordDefinitionIdImpl
+import java.awt.Component
 import java.awt.event.MouseEvent
 import javax.swing.Icon
 
+private const val KEYWORD_CLASS = ".KeywordDefinitionIdImpl";
+private const val HEADING_CLASS = ".HeadingImpl";
 
 class IntellibotTestcaseLineMarkerProvider : LineMarkerProviderDescriptor() {
 
@@ -32,11 +34,13 @@ class IntellibotTestcaseLineMarkerProvider : LineMarkerProviderDescriptor() {
     override fun getIcon(): Icon = AllIcons.Actions.Execute
 
     override fun getLineMarkerInfo(element: PsiElement): LineMarkerInfo<*>? {
-        return when (element) {
-            is KeywordDefinitionIdImpl -> {
-                val isTestCaseId =
-                    element.parentOfType<HeadingImpl>()?.firstChild?.text?.contains("Test Cases", ignoreCase = true)
-                        ?: false
+        return when {
+            element.javaClass.name.endsWith(KEYWORD_CLASS) -> {
+                val isTestCaseId = element.parents.firstOrNull { it.javaClass.name.endsWith(HEADING_CLASS) }
+                    ?.firstChild
+                    ?.text
+                    ?.contains("Test Cases", ignoreCase = true)
+                    ?: false
                 return if (isTestCaseId)
                     LineMarkerInfo(
                         element,
@@ -48,7 +52,7 @@ class IntellibotTestcaseLineMarkerProvider : LineMarkerProviderDescriptor() {
                     )
                 else null
             }
-            is HeadingImpl -> {
+            element.javaClass.name.endsWith(HEADING_CLASS) -> {
                 return if (element.text.contains("Test Cases", ignoreCase = true))
                     LineMarkerInfo(
                         element,
@@ -83,14 +87,44 @@ class IntellibotTestcaseLineMarkerProvider : LineMarkerProviderDescriptor() {
                     add(CreateRunRobotTestCaseConfigAction(values = values))
                 }
             val group = DefaultActionGroup(actions)
-            val context = SimpleDataContext.getProjectContext(elt.project)
+            val context = createDataContext(elt.project)
             val popup = JBPopupFactory.getInstance()
                 .createActionGroupPopup(null, group, context, JBPopupFactory.ActionSelectionAid.SPEEDSEARCH, true)
             popup.show(RelativePoint(e))
         }
 
+        private fun createDataContext(project: Project): DataContext {
+            val projectContext = SimpleDataContext.getProjectContext(project)
+            if (PlatformDataKeys.CONTEXT_COMPONENT.getData(projectContext) == null) {
+                val prjFocusManager = IdeFocusManager.getInstance(project)
+                val prjComponent: Component? = prjFocusManager.focusOwner
+
+                return if (prjComponent != null) {
+                    wrapComponentIntoContext(prjComponent, projectContext)
+                } else {
+                    val projectFrame: Component? = WindowManager.getInstance().getFrame(project)
+                    if (projectFrame != null) {
+                        wrapComponentIntoContext(projectFrame, projectContext)
+                    } else {
+                        projectContext
+                    }
+                }
+            } else {
+                return projectContext
+            }
+        }
+
+        private fun wrapComponentIntoContext(component: Component, parent: DataContext): DataContext {
+            return SimpleDataContext.getSimpleContext(
+                mapOf(
+                    PlatformDataKeys.CONTEXT_COMPONENT.name to component
+                ),
+                parent
+            )
+        }
+
         private fun PsiElement.collectTestCases(values: MutableList<String>) {
-            if (this is KeywordDefinitionIdImpl)
+            if (this.javaClass.name.endsWith(KEYWORD_CLASS))
                 values.add(text)
             this.children.forEach { it.collectTestCases(values) }
         }

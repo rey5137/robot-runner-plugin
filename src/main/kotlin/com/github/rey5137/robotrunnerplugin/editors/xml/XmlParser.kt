@@ -34,7 +34,29 @@ fun VirtualFile.parseXml(): RobotElement {
                         currentElement.addTest(this)
                     }
                     TAG_KEYWORD -> startElement.toKeywordElement(keywordNameMap, keywordLibMap, docIndex++, robotElement).apply {
-                        currentElement.addKeyword(this)
+                        if (this.type == KEYWORD_TYPE_STEP) {
+                            currentElement.getStepKeywords()?.let { stepKeywords ->
+                                stepKeywords.forEach { it.updateStepStatus() }
+                                stepKeywords.clear()
+                                stepKeywords.add(this)
+                            }
+                            currentElement.addKeyword(this)
+                        } else if (!currentElement.isStepKeyword()) {
+                            if (this.type == KEYWORD_TYPE_TEARDOWN) {
+                                currentElement.getStepKeywords()?.let { stepKeywords ->
+                                    stepKeywords.forEach { it.updateStepStatus() }
+                                    stepKeywords.clear()
+                                }
+                                currentElement.addKeyword(this)
+                            } else {
+                                val stepKeywords = currentElement.getStepKeywords()
+                                if (stepKeywords != null && stepKeywords.isNotEmpty()) {
+                                    stepKeywords.last().addKeyword(this)
+                                } else
+                                    currentElement.addKeyword(this)
+                            }
+                        } else
+                            currentElement.addKeyword(this)
                     }
                     TAG_STATUS -> startElement.toStatusElement().apply {
                         currentElement.addStatus(this)
@@ -95,6 +117,14 @@ fun VirtualFile.parseXml(): RobotElement {
                         is ArgumentsElement -> (currentElement as KeywordElement).arguments = element.arguments
                         is AssignsElement -> (currentElement as KeywordElement).assigns = element.vars
                         is TagsElement -> currentElement.setTags(element)
+                        is TestElement, is KeywordElement -> {
+                            if(!element.hasTeardownKeywords()) {
+                                element.getStepKeywords()?.let { stepKeywords ->
+                                    stepKeywords.forEach { it.updateStepStatus() }
+                                    stepKeywords.clear()
+                                }
+                            }
+                        }
                     }
                 }
 
@@ -138,8 +168,7 @@ fun VirtualFile.extractFailedTestCases(): List<String> {
                     }
                 }
             }
-        }
-        else if (nextEvent.isEndElement) {
+        } else if (nextEvent.isEndElement) {
             if (skipCount > 0)
                 skipCount--
         }
@@ -166,6 +195,7 @@ private fun StartElement.toTestElement() = TestElement(
 private fun StartElement.toKeywordElement(keywordNameMap: MutableMap<String, Int>, keywordLibMap: MutableMap<String, Int>, docIndex: Long, robotElement: RobotElement): KeywordElement {
     val name = getAttributeByName(QName(TAG_NAME))?.value ?: ""
     val library = getAttributeByName(QName(TAG_LIBRARY))?.value ?: ""
+    val isStepKeyword = library == STEP_LIBRARY && name.equals(STEP_KEYWORD, ignoreCase = true)
     val nameIndex = keywordNameMap[name] ?: keywordNameMap.size.apply {
         keywordNameMap[name] = this
         robotElement.keywordNames.add(name)
@@ -174,13 +204,18 @@ private fun StartElement.toKeywordElement(keywordNameMap: MutableMap<String, Int
         keywordLibMap[library] = this
         robotElement.keywordLibraries.add(library)
     }
+    val type = when(isStepKeyword) {
+        true -> KEYWORD_TYPE_STEP
+        else -> getAttributeByName(QName(TAG_TYPE))?.value?.toUpperCase() ?: ""
+    }
+
     robotElement.docMap[docIndex] = getAttributeByName(QName(TAG_DOC))?.value ?: ""
     return KeywordElement(
         nameIndex = nameIndex,
         libraryIndex = libIndex,
         docIndex = docIndex,
-        type = getAttributeByName(QName(TAG_TYPE))?.value?.toUpperCase() ?: "",
-        robotElement = robotElement,
+        type = type,
+        robotElement = robotElement
     )
 }
 
@@ -196,6 +231,15 @@ private fun StartElement.toMessageElement(index: Long, robotElement: RobotElemen
     valueIndex = index,
     robotElement = robotElement
 )
+
+private fun KeywordElement.updateStepStatus() {
+    if (this.type == KEYWORD_TYPE_STEP) {
+        keywords.lastOrNull()?.let { keyword ->
+            this.status.status = keyword.status.status
+            this.status.endTime = keyword.status.endTime
+        }
+    }
+}
 
 private fun String.extractMessageTitle(): String {
     val end = Math.min(31, length - 1)

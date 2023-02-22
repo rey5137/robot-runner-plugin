@@ -92,7 +92,7 @@ class RobotOutputView(project: Project, private val srcFile: VirtualFile? = null
         jsonParser?.let { parser ->
             parser.addData(method, payload)
             when (method) {
-                METHOD_START_SUITE, METHOD_START_TEST, METHOD_START_KEYWORD -> {
+                METHOD_START_SUITE, METHOD_START_TEST -> {
                     val currentNodeWrapper = nodeWrapperStack!!.last()
                     val childNodeWrapper = TreeNodeWrapper(
                         node = DefaultMutableTreeNode(HighlightHolder(parser.currentElement)),
@@ -108,17 +108,63 @@ class RobotOutputView(project: Project, private val srcFile: VirtualFile? = null
                         )
                         if (currentNodeWrapper == robotTreeNodeWrapper)
                             treeModel.reload(currentNodeWrapper.node)
-                        if (method == METHOD_START_SUITE || method == METHOD_START_TEST)
-                            tree.expandPath(TreePath(currentNodeWrapper.node.path))
+                        tree.expandPath(TreePath(currentNodeWrapper.node.path))
+                    })
+                }
+                METHOD_START_KEYWORD -> {
+                    val currentNodeWrapper = nodeWrapperStack!!.last()
+                    val currentElement = currentNodeWrapper.node.getElement<Element>()
+                    val keywordElement = parser.currentElement as KeywordElement
+                    val childNodeWrapper = TreeNodeWrapper(
+                        node = DefaultMutableTreeNode(HighlightHolder(keywordElement)),
+                        children = mutableListOf()
+                    )
+                    var parentNodeWrapper = currentNodeWrapper
+                    val stepNodes: MutableList<DefaultMutableTreeNode> = mutableListOf()
+                    if (keywordElement.type == KEYWORD_TYPE_STEP) {
+                        currentNodeWrapper.stepChildren?.forEach { stepNodes.add(it.node) }
+                        currentNodeWrapper.stepChildren = mutableListOf(childNodeWrapper)
+                    }
+                    else if(!currentElement.isStepKeyword()) {
+                        if (keywordElement.type == KEYWORD_TYPE_TEARDOWN) {
+                            currentNodeWrapper.stepChildren?.forEach { stepNodes.add(it.node) }
+                            currentNodeWrapper.stepChildren = null
+                        }
+                        else if (currentNodeWrapper.hasStepChild)
+                            parentNodeWrapper = currentNodeWrapper.lastStepChild!!
+                    }
+
+                    parentNodeWrapper.children.add(childNodeWrapper)
+                    nodeWrapperStack!!.add(childNodeWrapper)
+
+                    UIUtil.invokeAndWaitIfNeeded(Runnable {
+                        treeModel.insertNodeInto(
+                            childNodeWrapper.node,
+                            parentNodeWrapper.node,
+                            parentNodeWrapper.children.size - 1
+                        )
+                        if (parentNodeWrapper == robotTreeNodeWrapper)
+                            treeModel.reload(parentNodeWrapper.node)
+                        (tree.lastSelectedPathComponent as DefaultMutableTreeNode?)?.let { selectedNode ->
+                            if(stepNodes.contains(selectedNode))
+                                detailsPanel.showDetails(selectedNode.getElement(), highlightInfo)
+                        }
                     })
                 }
                 METHOD_END_SUITE, METHOD_END_TEST, METHOD_END_KEYWORD -> {
                     val nodeWrapper = nodeWrapperStack!!.removeAt(nodeWrapperStack!!.size - 1)
+                    val element = nodeWrapper.node.getElement<Element>()
+                    val stepNodes: MutableList<DefaultMutableTreeNode> = mutableListOf()
+                    if(!element.hasTeardownKeywords()) {
+                        nodeWrapper.stepChildren?.forEach { stepNodes.add(it.node) }
+                        nodeWrapper.stepChildren = null
+                    }
                     UIUtil.invokeAndWaitIfNeeded(Runnable {
                         treeModel.nodeChanged(nodeWrapper.node)
-                        val selectedNode = tree.lastSelectedPathComponent as DefaultMutableTreeNode?
-                        if (nodeWrapper.node == selectedNode)
-                            detailsPanel.showDetails(selectedNode.getElement(), highlightInfo)
+                        (tree.lastSelectedPathComponent as DefaultMutableTreeNode?)?.let { selectedNode ->
+                            if(nodeWrapper.node == selectedNode || stepNodes.contains(selectedNode))
+                                detailsPanel.showDetails(selectedNode.getElement(), highlightInfo)
+                        }
                     })
                 }
                 METHOD_CLOSE -> {
@@ -505,6 +551,11 @@ class RobotOutputView(project: Project, private val srcFile: VirtualFile? = null
                             element.status.isRunning -> MyIcons.ForitemRunning
                             else -> MyIcons.ForitemFail
                         }
+                        KEYWORD_TYPE_STEP -> when {
+                            element.status.isPassed -> MyIcons.StepPass
+                            element.status.isRunning -> MyIcons.StepRunning
+                            else -> MyIcons.StepFail
+                        }
                         else -> when {
                             element.status.isPassed -> MyIcons.KeywordPass
                             element.status.isRunning -> MyIcons.KeywordRunning
@@ -521,7 +572,7 @@ class RobotOutputView(project: Project, private val srcFile: VirtualFile? = null
                     if (element.library.isNotBlank())
                         append("${element.library}.", SimpleTextAttributes.GRAY_SMALL_ATTRIBUTES)
                     append(element.name, SimpleTextAttributes.REGULAR_BOLD_ATTRIBUTES)
-                    if (element.arguments.isNotEmpty()) {
+                    if (element.type != KEYWORD_TYPE_STEP && element.arguments.isNotEmpty()) {
                         append(" ")
                         append(
                             element.arguments.joinToString(separator = ", "),

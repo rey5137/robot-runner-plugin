@@ -17,6 +17,10 @@
 Run Configuration to run Robot Framework test suites
 
 ## Change log
+### 0.4.3
+#### Added
+- Support grouping keywords by RobotStepLibrary.Step keyword
+
 ### 0.4.2
 #### Added
 - Gutter icon to run single testcase (support Intellibot #patched plugin)

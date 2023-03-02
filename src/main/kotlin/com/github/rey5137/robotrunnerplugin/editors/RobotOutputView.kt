@@ -179,6 +179,16 @@ class RobotOutputView(project: Project, private val srcFile: VirtualFile? = null
 
     }
 
+    fun getFailedTestcases(): List<String> {
+        val tests = mutableListOf<String>()
+        TreeUtil.treeNodeTraverser(robotTreeNodeWrapper!!.node).forEach { node ->
+            val element = (node as DefaultMutableTreeNode).getElementHolder<Element>().value
+            if (element is TestElement && !element.status.isPassed)
+                tests.add(element.name)
+        }
+        return tests
+    }
+
     fun dispose() {
         cleanUp()
     }

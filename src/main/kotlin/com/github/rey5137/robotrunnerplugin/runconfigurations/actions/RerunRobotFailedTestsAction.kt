@@ -44,7 +44,10 @@ class RerunRobotFailedTestsAction(
         if (processHandler.isProcessTerminated) {
             val text = console.text()
             val outputFile = text.findOutputFilePath() ?: return
-            val testcases = VfsUtil.findFileByIoFile(File(outputFile), true)?.extractFailedTestCases() ?: emptyList()
+            val testcases = if(console is RobotOutputConsoleView)
+                console.robotOutputView.getFailedTestcases()
+            else
+                VfsUtil.findFileByIoFile(File(outputFile), true)?.extractFailedTestCases() ?: emptyList()
             if (testcases.isEmpty())
                 return
 

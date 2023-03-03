@@ -225,10 +225,10 @@ fun Element.addString(element: StringElement) {
     }
 }
 
-fun Element.setTags(element: TagsElement) {
+fun Element.addTags(element: TagsElement) {
     when (this) {
-        is TestElement -> this.tags = element.tags
-        is KeywordElement -> this.tags = element.tags
+        is TestElement -> this.tags.addAll(element.tags)
+        is KeywordElement -> this.tags.addAll(element.tags)
     }
 }
 

@@ -63,7 +63,7 @@ fun VirtualFile.parseXml(): RobotElement {
                     TAG_ARGUMENTS -> ArgumentsElement()
                     TAG_ASSIGN -> AssignsElement()
                     TAG_TAGS -> TagsElement()
-                    TAG_ARGUMENT, TAG_VAR, TAG_TAG -> StringElement()
+                    TAG_ARGUMENT, TAG_VAR, TAG_TAG -> StringElement(xmlTag = startElement.name.localPart)
                     else -> {
                         skipCount++
                         continue
@@ -78,7 +78,7 @@ fun VirtualFile.parseXml(): RobotElement {
                 is StringElement -> currentElement.value.append(data)
                 is MessageElement,
                 is StatusElement -> {
-                    val newElement = StringElement()
+                    val newElement = StringElement(xmlTag = TAG_STATUS)
                     newElement.value.append(data)
                     currentElement = newElement
                     stack.add(currentElement)
@@ -107,31 +107,44 @@ fun VirtualFile.parseXml(): RobotElement {
                                     stack.removeAt(stack.size - 1)
                                     currentElement = stack.last()
                                 }
+                                is KeywordElement -> {
+                                    when (element.xmlTag) {
+                                        TAG_ARGUMENT -> currentElement.arguments.add(element.value.toString())
+                                        TAG_VAR -> currentElement.assigns.add(element.value.toString())
+                                        TAG_TAG -> currentElement.tags.add(element.value.toString())
+                                    }
+                                }
                                 else -> currentElement.addString(element)
                             }
                         }
-                        is ArgumentsElement -> {
-                            val keywordElement = currentElement as KeywordElement
-                            keywordElement.arguments = element.arguments
-                            if(keywordElement.type == KEYWORD_TYPE_STEP) {
-                                keywordElement.updateStepLevel()
-                                val parentElement = keywordElement.parent!!
+                        is ArgumentsElement -> (currentElement as KeywordElement).arguments.addAll(element.arguments)
+                        is AssignsElement -> (currentElement as KeywordElement).assigns.addAll(element.vars)
+                        is TagsElement -> currentElement.addTags(element)
+                        is TestElement -> {
+                            if(!element.hasTeardownKeywords()) {
+                                element.getStepKeywords()?.let { stepKeywords ->
+                                    stepKeywords.asReversed().forEach { it.updateStepStatus() }
+                                    stepKeywords.clear()
+                                }
+                            }
+                        }
+                        is KeywordElement -> {
+                            if(element.type == KEYWORD_TYPE_STEP) {
+                                element.updateStepLevel()
+                                val parentElement = element.parent!!
                                 val stepKeywords = parentElement.getStepKeywords()!!
-                                stepKeywords.remove(keywordElement)
-                                while(stepKeywords.isNotEmpty() && stepKeywords.last().stepLevel >= keywordElement.stepLevel) {
+                                stepKeywords.remove(element)
+                                while(stepKeywords.isNotEmpty() && stepKeywords.last().stepLevel >= element.stepLevel) {
                                     val lastStep = stepKeywords.removeAt(stepKeywords.size - 1)
                                     lastStep.updateStepStatus()
                                 }
                                 if(stepKeywords.isNotEmpty()) {
-                                    parentElement.removeKeyword(keywordElement)
-                                    stepKeywords.last().addKeyword(keywordElement)
+                                    parentElement.removeKeyword(element)
+                                    stepKeywords.last().addKeyword(element)
                                 }
-                                stepKeywords.add(keywordElement)
+                                stepKeywords.add(element)
                             }
-                        }
-                        is AssignsElement -> (currentElement as KeywordElement).assigns = element.vars
-                        is TagsElement -> currentElement.setTags(element)
-                        is TestElement, is KeywordElement -> {
+
                             if(!element.hasTeardownKeywords()) {
                                 element.getStepKeywords()?.let { stepKeywords ->
                                     stepKeywords.asReversed().forEach { it.updateStepStatus() }
@@ -268,5 +281,6 @@ data class AssignsElement(
 ) : Element
 
 data class StringElement(
-    var value: StringBuilder = StringBuilder()
+    var value: StringBuilder = StringBuilder(),
+    val xmlTag: String
 ) : Element

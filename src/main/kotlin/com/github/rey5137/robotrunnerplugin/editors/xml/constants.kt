@@ -191,6 +191,23 @@ fun Element.addKeyword(keyword: KeywordElement) {
         }
     }
 }
+fun Element.removeKeyword(keyword: KeywordElement) {
+    when (this) {
+        is SuiteElement -> {
+            children.remove(keyword)
+            keyword.parent = null
+        }
+        is TestElement -> {
+            keywords.remove(keyword)
+            keyword.parent = null
+        }
+        is KeywordElement -> {
+            keywords.remove(keyword)
+            keyword.parent = null
+        }
+    }
+}
+
 
 fun Element.addStatus(status: StatusElement) {
     when (this) {
@@ -242,4 +259,18 @@ fun Element.hasTeardownKeywords(): Boolean {
         is KeywordElement -> KEYWORD_TYPE_TEARDOWN == keywords.lastOrNull()?.type
         else -> false
     }
+}
+
+fun KeywordElement.updateStepStatus() {
+    if (this.type == KEYWORD_TYPE_STEP) {
+        keywords.lastOrNull()?.let { keyword ->
+            keyword.updateStepStatus()
+            this.status.status = keyword.status.status
+            this.status.endTime = keyword.status.endTime
+        }
+    }
+}
+
+fun KeywordElement.updateStepLevel() {
+    this.stepLevel = if (type != KEYWORD_TYPE_STEP || arguments.isEmpty()) 0 else arguments[0].split(".").count { it.isNotEmpty() }
 }

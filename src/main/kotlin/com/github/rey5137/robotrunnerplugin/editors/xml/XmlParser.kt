@@ -35,16 +35,12 @@ fun VirtualFile.parseXml(): RobotElement {
                     }
                     TAG_KEYWORD -> startElement.toKeywordElement(keywordNameMap, keywordLibMap, docIndex++, robotElement).apply {
                         if (this.type == KEYWORD_TYPE_STEP) {
-                            currentElement.getStepKeywords()?.let { stepKeywords ->
-                                stepKeywords.forEach { it.updateStepStatus() }
-                                stepKeywords.clear()
-                                stepKeywords.add(this)
-                            }
+                            currentElement.getStepKeywords()?.add(this)
                             currentElement.addKeyword(this)
                         } else if (!currentElement.isStepKeyword()) {
                             if (this.type == KEYWORD_TYPE_TEARDOWN) {
                                 currentElement.getStepKeywords()?.let { stepKeywords ->
-                                    stepKeywords.forEach { it.updateStepStatus() }
+                                    stepKeywords.asReversed().forEach { it.updateStepStatus() }
                                     stepKeywords.clear()
                                 }
                                 currentElement.addKeyword(this)
@@ -114,13 +110,31 @@ fun VirtualFile.parseXml(): RobotElement {
                                 else -> currentElement.addString(element)
                             }
                         }
-                        is ArgumentsElement -> (currentElement as KeywordElement).arguments = element.arguments
+                        is ArgumentsElement -> {
+                            val keywordElement = currentElement as KeywordElement
+                            keywordElement.arguments = element.arguments
+                            if(keywordElement.type == KEYWORD_TYPE_STEP) {
+                                keywordElement.updateStepLevel()
+                                val parentElement = keywordElement.parent!!
+                                val stepKeywords = parentElement.getStepKeywords()!!
+                                stepKeywords.remove(keywordElement)
+                                while(stepKeywords.isNotEmpty() && stepKeywords.last().stepLevel >= keywordElement.stepLevel) {
+                                    val lastStep = stepKeywords.removeAt(stepKeywords.size - 1)
+                                    lastStep.updateStepStatus()
+                                }
+                                if(stepKeywords.isNotEmpty()) {
+                                    parentElement.removeKeyword(keywordElement)
+                                    stepKeywords.last().addKeyword(keywordElement)
+                                }
+                                stepKeywords.add(keywordElement)
+                            }
+                        }
                         is AssignsElement -> (currentElement as KeywordElement).assigns = element.vars
                         is TagsElement -> currentElement.setTags(element)
                         is TestElement, is KeywordElement -> {
                             if(!element.hasTeardownKeywords()) {
                                 element.getStepKeywords()?.let { stepKeywords ->
-                                    stepKeywords.forEach { it.updateStepStatus() }
+                                    stepKeywords.asReversed().forEach { it.updateStepStatus() }
                                     stepKeywords.clear()
                                 }
                             }
@@ -231,15 +245,6 @@ private fun StartElement.toMessageElement(index: Long, robotElement: RobotElemen
     valueIndex = index,
     robotElement = robotElement
 )
-
-private fun KeywordElement.updateStepStatus() {
-    if (this.type == KEYWORD_TYPE_STEP) {
-        keywords.lastOrNull()?.let { keyword ->
-            this.status.status = keyword.status.status
-            this.status.endTime = keyword.status.endTime
-        }
-    }
-}
 
 private fun String.extractMessageTitle(): String {
     val end = Math.min(31, length - 1)

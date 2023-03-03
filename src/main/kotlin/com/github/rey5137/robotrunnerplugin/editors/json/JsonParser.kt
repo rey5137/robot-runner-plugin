@@ -15,6 +15,7 @@ class JsonParser(val robotElement: RobotElement) {
 
     fun addData(method: String, payload: JSONObject) {
         try {
+//            println("$method - $payload")
             when (method) {
                 METHOD_START_SUITE -> payload.toSuiteElement().apply {
                     currentElement.addSuite(this)
@@ -30,17 +31,28 @@ class JsonParser(val robotElement: RobotElement) {
                     docIndex++,
                     robotElement
                 ).apply {
+                    this.tags.addAll(payload.extractStringArray(FIELD_TAGS))
+                    this.arguments.addAll(payload.extractStringArray(FIELD_ARGS))
+                    this.assigns.addAll(payload.extractStringArray(FIELD_ASSIGN))
+
                     if (this.type == KEYWORD_TYPE_STEP) {
-                        currentElement.getStepKeywords()?.let { stepKeywords ->
-                            stepKeywords.forEach { it.updateStepStatus() }
-                            stepKeywords.clear()
+                        this.updateStepLevel()
+                        val stepKeywords = currentElement.getStepKeywords()
+                        if(stepKeywords != null) {
+                            while(stepKeywords.isNotEmpty() && stepKeywords.last().stepLevel >= this.stepLevel) {
+                                val lastStep = stepKeywords.removeAt(stepKeywords.size - 1)
+                                lastStep.updateStepStatus()
+                            }
+                            if(stepKeywords.isNotEmpty())
+                                stepKeywords.last().addKeyword(this)
                             stepKeywords.add(this)
                         }
-                        currentElement.addKeyword(this)
+                        if(this.parent == null)
+                            currentElement.addKeyword(this)
                     } else if (!currentElement.isStepKeyword()) {
                         if (this.type == KEYWORD_TYPE_TEARDOWN) {
                             currentElement.getStepKeywords()?.let { stepKeywords ->
-                                stepKeywords.forEach { it.updateStepStatus() }
+                                stepKeywords.asReversed().forEach { it.updateStepStatus() }
                                 stepKeywords.clear()
                             }
                             currentElement.addKeyword(this)
@@ -68,7 +80,7 @@ class JsonParser(val robotElement: RobotElement) {
                     (currentElement as TestElement).tags.addAll(payload.extractStringArray(FIELD_TAGS))
                     if(!currentElement.hasTeardownKeywords()) {
                         currentElement.getStepKeywords()?.let { stepKeywords ->
-                            stepKeywords.forEach { it.updateStepStatus() }
+                            stepKeywords.asReversed().forEach { it.updateStepStatus() }
                             stepKeywords.clear()
                         }
                     }
@@ -77,15 +89,12 @@ class JsonParser(val robotElement: RobotElement) {
                 METHOD_END_KEYWORD -> payload.toStatusElement().apply {
                     val keywordElement = currentElement as KeywordElement
                     keywordElement.status = this
-                    keywordElement.tags.addAll(payload.extractStringArray(FIELD_TAGS))
-                    keywordElement.arguments.addAll(payload.extractStringArray(FIELD_ARGS))
-                    keywordElement.assigns.addAll(payload.extractStringArray(FIELD_ASSIGN))
                     if(keywordElement.type == KEYWORD_TYPE_STEP) {
                         keywordElement.status.status = ""
                         keywordElement.status.endTime = ""
                     }
                     else if(!keywordElement.hasTeardownKeywords()) {
-                        keywordElement.stepKeywords.forEach { it.updateStepStatus() }
+                        keywordElement.stepKeywords.asReversed().forEach { it.updateStepStatus() }
                         keywordElement.stepKeywords.clear()
                     }
                     popElement()
@@ -174,16 +183,6 @@ private fun JSONObject.toStatusElement() = StatusElement(
         ""
     }
 )
-
-private fun KeywordElement.updateStepStatus() {
-    if (this.type == KEYWORD_TYPE_STEP) {
-        keywords.lastOrNull()?.let { keyword ->
-            this.status.status = keyword.status.status
-            this.status.endTime = keyword.status.endTime
-        }
-    }
-}
-
 
 private fun JSONObject.extractStringArray(field: String): List<String> {
     val array = getJSONObject(FIELD_ATTRS).getJSONArray(field)

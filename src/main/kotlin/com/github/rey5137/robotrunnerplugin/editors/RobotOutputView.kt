@@ -122,8 +122,18 @@ class RobotOutputView(project: Project, private val srcFile: VirtualFile? = null
                     var parentNodeWrapper = currentNodeWrapper
                     val stepNodes: MutableList<DefaultMutableTreeNode> = mutableListOf()
                     if (keywordElement.type == KEYWORD_TYPE_STEP) {
-                        currentNodeWrapper.stepChildren?.forEach { stepNodes.add(it.node) }
-                        currentNodeWrapper.stepChildren = mutableListOf(childNodeWrapper)
+                        val stepChildren = currentNodeWrapper.stepChildren
+                        if(stepChildren != null) {
+                            while (stepChildren.isNotEmpty() && stepChildren.last().node.getElement<KeywordElement>().stepLevel >= keywordElement.stepLevel) {
+                                val lastStep = stepChildren.removeAt(stepChildren.size - 1)
+                                stepNodes.add(lastStep.node)
+                            }
+                            if(stepChildren.isNotEmpty())
+                                parentNodeWrapper = stepChildren.last()
+                            stepChildren.add(childNodeWrapper)
+                        }
+                        else
+                            currentNodeWrapper.stepChildren = mutableListOf(childNodeWrapper)
                     }
                     else if(!currentElement.isStepKeyword()) {
                         if (keywordElement.type == KEYWORD_TYPE_TEARDOWN) {

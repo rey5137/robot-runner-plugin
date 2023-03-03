@@ -17,6 +17,12 @@
 Run Configuration to run Robot Framework test suites
 
 ## Change log
+
+### 0.4.4
+#### Added
+- Support nested Step keyword
+- Support new output format of Robot 6.0
+
 ### 0.4.3
 #### Added
 - Support grouping keywords by RobotStepLibrary.Step keyword

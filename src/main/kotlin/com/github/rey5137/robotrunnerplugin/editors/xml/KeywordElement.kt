@@ -21,8 +21,8 @@ data class KeywordElement(
         get() {
             val name = robotElement.keywordNames[nameIndex]
             if (type == KEYWORD_TYPE_STEP || type == KEYWORD_TYPE_END_STEP) {
-                val num = if (arguments.isNotEmpty()) arguments[0] else ""
-                val title = if(arguments.size >= 2) arguments[1] else ""
+                val num = findStepNum()
+                val title = findStepTitle()
                 return if(title.isNotEmpty())
                     "$num - $title"
                 else
@@ -40,6 +40,20 @@ data class KeywordElement(
 
     val doc: String
         get() = robotElement.docMap[docIndex] ?: ""
+
+    private fun findStepNum(): String {
+        val argument = arguments.find {
+            it.startsWith("num=", ignoreCase = true)
+        }
+        return argument?.substring("num=".length) ?: if (arguments.isNotEmpty()) arguments[0] else ""
+    }
+
+    private fun findStepTitle(): String {
+        val argument = arguments.find {
+            it.startsWith("title=", ignoreCase = true)
+        }
+        return argument?.substring("title=".length) ?: if (arguments.size >= 2) arguments[1] else ""
+    }
 
     override fun toString() = "KeywordElement[$name]"
 

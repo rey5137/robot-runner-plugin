@@ -5,7 +5,8 @@ import javax.swing.tree.DefaultMutableTreeNode
 data class TreeNodeWrapper(
     val node: DefaultMutableTreeNode,
     val children: MutableList<TreeNodeWrapper>,
-    var stepChildren: MutableList<TreeNodeWrapper>? = null
+    var stepChildren: MutableList<TreeNodeWrapper>? = null,
+    var parent: TreeNodeWrapper? = null
 ) {
 
     val hasStepChild

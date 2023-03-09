@@ -20,7 +20,7 @@ data class KeywordElement(
     override val name: String
         get() {
             val name = robotElement.keywordNames[nameIndex]
-            if (type == KEYWORD_TYPE_STEP) {
+            if (type == KEYWORD_TYPE_STEP || type == KEYWORD_TYPE_END_STEP) {
                 val num = if (arguments.isNotEmpty()) arguments[0] else ""
                 val title = if(arguments.size >= 2) arguments[1] else ""
                 return if(title.isNotEmpty())
@@ -33,7 +33,7 @@ data class KeywordElement(
 
     val library: String
         get() {
-            if (type == KEYWORD_TYPE_STEP)
+            if (type == KEYWORD_TYPE_STEP || type == KEYWORD_TYPE_END_STEP)
                 return ""
             return robotElement.keywordLibraries[libraryIndex]
         }

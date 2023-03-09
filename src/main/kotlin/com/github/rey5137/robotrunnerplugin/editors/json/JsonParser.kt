@@ -58,9 +58,9 @@ class JsonParser(val robotElement: RobotElement) {
                             currentElement.addKeyword(this)
                         } else {
                             val stepKeywords = currentElement.getStepKeywords()
-                            if (stepKeywords != null && stepKeywords.isNotEmpty()) {
+                            if (stepKeywords != null && stepKeywords.isNotEmpty())
                                 stepKeywords.last().addKeyword(this)
-                            } else
+                            else
                                 currentElement.addKeyword(this)
                         }
                     } else
@@ -92,6 +92,13 @@ class JsonParser(val robotElement: RobotElement) {
                     if(keywordElement.type == KEYWORD_TYPE_STEP) {
                         keywordElement.status.status = ""
                         keywordElement.status.endTime = ""
+                    }
+                    else if(keywordElement.type == KEYWORD_TYPE_END_STEP) {
+                        if(keywordElement.parent!!.isStepKeyword()) {
+                            val stepElement = keywordElement.parent as KeywordElement
+                            stepElement.updateStepStatus()
+                            stepElement.findStepRoot()?.getStepKeywords()?.remove(stepElement)
+                        }
                     }
                     else if(!keywordElement.hasTeardownKeywords()) {
                         keywordElement.stepKeywords.asReversed().forEach { it.updateStepStatus() }
@@ -139,6 +146,7 @@ private fun JSONObject.toKeywordElement(
     val name = getJSONObject(FIELD_ATTRS).getString(FIELD_KWNAME)
     val library = getJSONObject(FIELD_ATTRS).getString(FIELD_LIBNAME)
     val isStepKeyword = library == STEP_LIBRARY && name.equals(STEP_KEYWORD, ignoreCase = true)
+    val isEndStepKeyword = library == STEP_LIBRARY && name.equals(END_STEP_KEYWORD, ignoreCase = true)
     val nameIndex = keywordNameMap[name] ?: keywordNameMap.size.apply {
         keywordNameMap[name] = this
         robotElement.keywordNames.add(name)
@@ -147,8 +155,9 @@ private fun JSONObject.toKeywordElement(
         keywordLibMap[library] = this
         robotElement.keywordLibraries.add(library)
     }
-    val type = when(isStepKeyword) {
-        true -> KEYWORD_TYPE_STEP
+    val type = when {
+        isStepKeyword -> KEYWORD_TYPE_STEP
+        isEndStepKeyword -> KEYWORD_TYPE_END_STEP
         else -> getJSONObject(FIELD_ATTRS).getString(FIELD_TYPE).toUpperCase()
     }
     robotElement.docMap[docIndex] = getJSONObject(FIELD_ATTRS).getString(FIELD_DOC)
@@ -196,4 +205,12 @@ private fun String.extractMessageTitle(): String {
             return substring(0, it)
     }
     return substring(0, end + 1)
+}
+
+private fun KeywordElement.findStepRoot(): Element? {
+    var element: Element? = this
+    do {
+        element = element?.getParent()
+    } while(element != null && element.isStepKeyword())
+    return element
 }

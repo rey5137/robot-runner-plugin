@@ -96,7 +96,8 @@ class RobotOutputView(project: Project, private val srcFile: VirtualFile? = null
                     val currentNodeWrapper = nodeWrapperStack!!.last()
                     val childNodeWrapper = TreeNodeWrapper(
                         node = DefaultMutableTreeNode(HighlightHolder(parser.currentElement)),
-                        children = mutableListOf()
+                        children = mutableListOf(),
+                        parent = currentNodeWrapper
                     )
                     currentNodeWrapper.children.add(childNodeWrapper)
                     nodeWrapperStack!!.add(childNodeWrapper)
@@ -145,6 +146,7 @@ class RobotOutputView(project: Project, private val srcFile: VirtualFile? = null
                     }
 
                     parentNodeWrapper.children.add(childNodeWrapper)
+                    childNodeWrapper.parent = parentNodeWrapper
                     nodeWrapperStack!!.add(childNodeWrapper)
 
                     UIUtil.invokeAndWaitIfNeeded(Runnable {
@@ -165,7 +167,15 @@ class RobotOutputView(project: Project, private val srcFile: VirtualFile? = null
                     val nodeWrapper = nodeWrapperStack!!.removeAt(nodeWrapperStack!!.size - 1)
                     val element = nodeWrapper.node.getElement<Element>()
                     val stepNodes: MutableList<DefaultMutableTreeNode> = mutableListOf()
-                    if(!element.hasTeardownKeywords()) {
+                    if(element is KeywordElement && element.type == KEYWORD_TYPE_END_STEP) {
+                        val parentNodeWrapper = nodeWrapper.parent!!
+                        val parentElement = parentNodeWrapper.node.getElement<Element>()
+                        if(parentElement.isStepKeyword()) {
+                            stepNodes.add(parentNodeWrapper.node)
+                            parentNodeWrapper.findStepRoot()?.stepChildren?.remove(parentNodeWrapper)
+                        }
+                    }
+                    else if(!element.hasTeardownKeywords()) {
                         nodeWrapper.stepChildren?.forEach { stepNodes.add(it.node) }
                         nodeWrapper.stepChildren = null
                     }
@@ -451,7 +461,7 @@ class RobotOutputView(project: Project, private val srcFile: VirtualFile? = null
                 highlight = HighlightType.CONTAINED
             children.add(nodeWrapper)
         }
-        return TreeNodeWrapper(node = oldNodeWrapper.copyNode(HighlightHolder(this, highlight)), children = children)
+        return TreeNodeWrapper(node = oldNodeWrapper.copyNode(HighlightHolder(this, highlight)), children = children, parent = oldNodeWrapper?.parent)
     }
 
     private fun KeywordElement.toNode(oldNodeWrapper: TreeNodeWrapper? = null): TreeNodeWrapper {
@@ -463,7 +473,7 @@ class RobotOutputView(project: Project, private val srcFile: VirtualFile? = null
                 highlight = HighlightType.CONTAINED
             children.add(nodeWrapper)
         }
-        return TreeNodeWrapper(node = oldNodeWrapper.copyNode(HighlightHolder(this, highlight)), children = children)
+        return TreeNodeWrapper(node = oldNodeWrapper.copyNode(HighlightHolder(this, highlight)), children = children, parent = oldNodeWrapper?.parent)
     }
 
     private fun TreeNodeWrapper?.copyNode(obj: Any) =
@@ -477,6 +487,13 @@ class RobotOutputView(project: Project, private val srcFile: VirtualFile? = null
         return children[index]
     }
 
+    private fun TreeNodeWrapper.findStepRoot(): TreeNodeWrapper? {
+        var nodeWrapper: TreeNodeWrapper? = this
+        do {
+            nodeWrapper = nodeWrapper?.parent
+        } while(nodeWrapper != null && nodeWrapper.node.getElement<Element>().isStepKeyword())
+        return nodeWrapper
+    }
 
     private fun <T : Element> DefaultMutableTreeNode.getElementHolder() = userObject as HighlightHolder<T>
 
@@ -576,6 +593,11 @@ class RobotOutputView(project: Project, private val srcFile: VirtualFile? = null
                             element.status.isRunning -> MyIcons.StepRunning
                             else -> MyIcons.StepFail
                         }
+                        KEYWORD_TYPE_END_STEP -> when {
+                            element.status.isPassed -> MyIcons.EndStepPass
+                            element.status.isRunning -> MyIcons.EndStepRunning
+                            else -> MyIcons.EndStepFail
+                        }
                         else -> when {
                             element.status.isPassed -> MyIcons.KeywordPass
                             element.status.isRunning -> MyIcons.KeywordRunning
@@ -592,7 +614,7 @@ class RobotOutputView(project: Project, private val srcFile: VirtualFile? = null
                     if (element.library.isNotBlank())
                         append("${element.library}.", SimpleTextAttributes.GRAY_SMALL_ATTRIBUTES)
                     append(element.name, SimpleTextAttributes.REGULAR_BOLD_ATTRIBUTES)
-                    if (element.type != KEYWORD_TYPE_STEP && element.arguments.isNotEmpty()) {
+                    if (element.type != KEYWORD_TYPE_STEP && element.type != KEYWORD_TYPE_END_STEP && element.arguments.isNotEmpty()) {
                         append(" ")
                         append(
                             element.arguments.joinToString(separator = ", "),

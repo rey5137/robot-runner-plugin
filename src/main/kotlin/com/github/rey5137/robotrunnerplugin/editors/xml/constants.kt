@@ -39,6 +39,7 @@ const val KEYWORD_TYPE_TEARDOWN = "TEARDOWN"
 const val KEYWORD_TYPE_FOR = "FOR"
 const val KEYWORD_TYPE_FORITEM = "FORITEM"
 const val KEYWORD_TYPE_STEP = "STEP"
+const val KEYWORD_TYPE_END_STEP = "ENDSTEP"
 
 
 const val STEP_LIBRARY = "RobotStepLibrary"
@@ -273,4 +274,13 @@ fun KeywordElement.updateStepStatus() {
 
 fun KeywordElement.updateStepLevel() {
     this.stepLevel = if (type != KEYWORD_TYPE_STEP || arguments.isEmpty()) 0 else arguments[0].split(".").count { it.isNotEmpty() }
+}
+
+fun Element.getParent(): Element? {
+    return when(this) {
+        is KeywordElement -> this.parent
+        is TestElement -> this.parent
+        is SuiteElement -> this.parent
+        else -> null
+    }
 }

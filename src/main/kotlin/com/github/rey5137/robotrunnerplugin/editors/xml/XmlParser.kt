@@ -144,8 +144,14 @@ fun VirtualFile.parseXml(): RobotElement {
                                 }
                                 stepKeywords.add(element)
                             }
-
-                            if(!element.hasTeardownKeywords()) {
+                            else if(element.type == KEYWORD_TYPE_END_STEP) {
+                                if(element.parent!!.isStepKeyword()) {
+                                    val stepElement = element.parent as KeywordElement
+                                    stepElement.updateStepStatus()
+                                    stepElement.findStepRoot()?.getStepKeywords()?.remove(stepElement)
+                                }
+                            }
+                            else if(!element.hasTeardownKeywords()) {
                                 element.getStepKeywords()?.let { stepKeywords ->
                                     stepKeywords.asReversed().forEach { it.updateStepStatus() }
                                     stepKeywords.clear()
@@ -223,6 +229,7 @@ private fun StartElement.toKeywordElement(keywordNameMap: MutableMap<String, Int
     val name = getAttributeByName(QName(TAG_NAME))?.value ?: ""
     val library = getAttributeByName(QName(TAG_LIBRARY))?.value ?: ""
     val isStepKeyword = library == STEP_LIBRARY && name.equals(STEP_KEYWORD, ignoreCase = true)
+    val isEndStepKeyword = library == STEP_LIBRARY && name.equals(END_STEP_KEYWORD, ignoreCase = true)
     val nameIndex = keywordNameMap[name] ?: keywordNameMap.size.apply {
         keywordNameMap[name] = this
         robotElement.keywordNames.add(name)
@@ -231,8 +238,9 @@ private fun StartElement.toKeywordElement(keywordNameMap: MutableMap<String, Int
         keywordLibMap[library] = this
         robotElement.keywordLibraries.add(library)
     }
-    val type = when(isStepKeyword) {
-        true -> KEYWORD_TYPE_STEP
+    val type = when {
+        isStepKeyword -> KEYWORD_TYPE_STEP
+        isEndStepKeyword -> KEYWORD_TYPE_END_STEP
         else -> getAttributeByName(QName(TAG_TYPE))?.value?.toUpperCase() ?: ""
     }
 
@@ -258,6 +266,14 @@ private fun StartElement.toMessageElement(index: Long, robotElement: RobotElemen
     valueIndex = index,
     robotElement = robotElement
 )
+
+private fun KeywordElement.findStepRoot(): Element? {
+    var element: Element? = this
+    do {
+        element = element?.getParent()
+    } while(element != null && element.isStepKeyword())
+    return element
+}
 
 private fun String.extractMessageTitle(): String {
     val end = Math.min(31, length - 1)

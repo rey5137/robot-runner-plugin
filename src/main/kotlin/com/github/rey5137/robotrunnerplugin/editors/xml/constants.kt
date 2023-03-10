@@ -273,7 +273,7 @@ fun KeywordElement.updateStepStatus() {
 }
 
 fun KeywordElement.updateStepLevel() {
-    this.stepLevel = if (type != KEYWORD_TYPE_STEP || arguments.isEmpty()) 0 else arguments[0].split(".").count { it.isNotEmpty() }
+    this.stepLevel = if (type != KEYWORD_TYPE_STEP || arguments.isEmpty()) 0 else this.findStepNum().split(".").count { it.isNotEmpty() }
 }
 
 fun Element.getParent(): Element? {

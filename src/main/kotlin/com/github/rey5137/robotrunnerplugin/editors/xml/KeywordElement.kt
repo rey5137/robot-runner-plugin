@@ -41,7 +41,7 @@ data class KeywordElement(
     val doc: String
         get() = robotElement.docMap[docIndex] ?: ""
 
-    private fun findStepNum(): String {
+    fun findStepNum(): String {
         val argument = arguments.find {
             it.startsWith("num=", ignoreCase = true)
         }

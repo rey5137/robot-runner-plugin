@@ -4,6 +4,10 @@
         <codeInsight.lineMarkerProvider
                 language="Robot"
                 implementationClass="com.github.rey5137.robotrunnerplugin.provider.IntellibotTestcaseLineMarkerProvider"/>
+
+        <lang.foldingBuilder
+                language="Robot"
+                implementationClass="com.github.rey5137.robotrunnerplugin.provider.IntellibotStepFoldingBuilder"/>
     </extensions>
 
 </idea-plugin>

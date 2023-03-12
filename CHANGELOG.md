@@ -2,6 +2,11 @@
 
 # robot-runner-plugin Changelog
 
+## 0.4.5
+### Added
+- Support End step keyword
+- Support step folding in robot script
+
 ## 0.4.4
 ### Added
 - Support nested Step keyword

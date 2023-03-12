@@ -30,7 +30,12 @@ class IntellibotStepFoldingBuilder : FoldingBuilderEx(), DumbAware {
 
         actualRoot.visitElement { element ->
             if (element.getSimpleClass() == KEYWORD_DEFINITION_CLASS) {
-                element.toStepRoot()?.let { stepRoots.add(it) }
+                try {
+                    element.toStepRoot()?.let { stepRoots.add(it) }
+                }
+                catch (ex: Exception) {
+                    ex.printStackTrace()
+                }
                 true
             } else
                 false
@@ -85,6 +90,13 @@ class IntellibotStepFoldingBuilder : FoldingBuilderEx(), DumbAware {
                     else
                         stepRoot?.children?.add(newStep)
                     stack.add(newStep)
+                } else if (element.isEndStepStatement()) {
+                    stepRoot?.stack?.let {
+                        if(it.isNotEmpty()) {
+                            val step = it.removeAt(it.size - 1)
+                            step.textEnd = element.textRange.endOffset
+                        }
+                    }
                 }
                 true
             } else
@@ -93,14 +105,14 @@ class IntellibotStepFoldingBuilder : FoldingBuilderEx(), DumbAware {
 
         var element = this.lastChild
         var endOffset = this.textRange.endOffset
-        if(element != null) {
-            if(element.getSimpleClass() == BRACKET_SETTING_CLASS) {
+        if (element != null) {
+            if (element.getSimpleClass() == BRACKET_SETTING_CLASS) {
                 element = element.findPreviousNonWhiteSpaceElement()
             }
             val previousElement = element.findPreviousNonWhiteSpaceElement()
-            if(previousElement != null && previousElement.getSimpleClass() == BRACKET_SETTING_CLASS)
+            if (previousElement != null && previousElement.getSimpleClass() == BRACKET_SETTING_CLASS)
                 element = previousElement.findPreviousKeywordElement()
-            if(element != null)
+            if (element != null)
                 endOffset = element.textRange.endOffset
         }
 
@@ -115,12 +127,11 @@ class IntellibotStepFoldingBuilder : FoldingBuilderEx(), DumbAware {
         do {
             element = element?.findPreviousNonWhiteSpaceElement()
             val previousElement = element?.findPreviousNonWhiteSpaceElement()
-            if(previousElement != null && previousElement.getSimpleClass() == BRACKET_SETTING_CLASS) {
+            if (previousElement != null && previousElement.getSimpleClass() == BRACKET_SETTING_CLASS) {
                 element = previousElement
-            }
-            else
+            } else
                 break
-        } while(element != null)
+        } while (element != null)
         return element
     }
 
@@ -128,8 +139,7 @@ class IntellibotStepFoldingBuilder : FoldingBuilderEx(), DumbAware {
         var element: PsiElement? = this
         do {
             element = element?.prevSibling
-        }
-        while(element is PsiWhiteSpace)
+        } while (element is PsiWhiteSpace)
         return element
     }
 
@@ -151,6 +161,15 @@ class IntellibotStepFoldingBuilder : FoldingBuilderEx(), DumbAware {
             e.getSimpleClass() == KEYWORD_INVOKABLE_CLASS
                     && (e.text.equals("Step", ignoreCase = true)
                     || e.text.equals("RobotStepLibrary.Step", ignoreCase = true))
+        }
+        return child != null
+    }
+
+    private fun PsiElement.isEndStepStatement(): Boolean {
+        val child = this.children.firstOrNull { e ->
+            e.getSimpleClass() == KEYWORD_INVOKABLE_CLASS
+                    && (e.text.equals("End step", ignoreCase = true)
+                    || e.text.equals("RobotStepLibrary.End step", ignoreCase = true))
         }
         return child != null
     }

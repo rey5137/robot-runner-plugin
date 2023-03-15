@@ -18,6 +18,10 @@ Run Configuration to run Robot Framework test suites
 
 ## Change log
 
+### 0.4.6
+#### Fixed
+- Bug cannot open file in Assigment table
+
 ### 0.4.5
 #### Added
 - Support End step keyword

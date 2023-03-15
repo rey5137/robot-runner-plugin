@@ -38,7 +38,7 @@ class AssignmentModel : AbstractTableModel() {
 
     fun getAssignmentHolder(rowIndex: Int) = items[rowIndex].assignmentHolder
 
-    fun getVariableModel(rowIndex: Int) = items[rowIndex].variableModel
+    fun getVariableModel(rowIndex: Int) = if (rowIndex >= 0 && rowIndex < items.size) items[rowIndex].variableModel else null
 
     fun getItem(rowIndex: Int) = items[rowIndex]
 

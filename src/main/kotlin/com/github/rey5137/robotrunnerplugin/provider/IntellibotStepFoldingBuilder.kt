@@ -139,7 +139,7 @@ class IntellibotStepFoldingBuilder : FoldingBuilderEx(), DumbAware {
         var element: PsiElement? = this
         do {
             element = element?.prevSibling
-        } while (element is PsiWhiteSpace)
+        } while (element is PsiWhiteSpace && element.text.isNullOrBlank())
         return element
     }
 

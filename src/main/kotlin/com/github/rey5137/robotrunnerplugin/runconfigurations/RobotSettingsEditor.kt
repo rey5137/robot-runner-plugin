@@ -12,7 +12,6 @@ import com.intellij.openapi.ui.*
 import com.intellij.ui.SimpleListCellRenderer
 import com.intellij.ui.ToolbarDecorator
 import com.intellij.ui.components.*
-import com.intellij.ui.layout.CCFlags
 import com.intellij.ui.layout.panel
 import com.intellij.ui.table.JBTable
 import java.awt.Dimension
@@ -146,11 +145,11 @@ class RobotSettingsEditor : SettingsEditor<RobotRunConfiguration>() {
                             text = if (sdk == null) "" else "${sdk.name} (${sdk.homePath})"
                         }
                     }
-                ).constraints(CCFlags.growX, CCFlags.pushX).component
+                ).constraints(this.growX, this.pushX).component
             }
 
             row {
-                tabs().constraints(CCFlags.growX, CCFlags.pushX)
+                tabs().constraints(this.growX, this.pushX)
             }
         }
     }
@@ -166,21 +165,21 @@ class RobotSettingsEditor : SettingsEditor<RobotRunConfiguration>() {
         row {
             cell(isVerticalFlow = true) {
                 label(MyBundle.message("robot.run.configuration.label.test-names"))
-                namePanel(testNameModel, "Test name", MyBundle.message("robot.run.configuration.desc.multi.test-names"), MyBundle.message("robot.run.configuration.desc.single.test-names"))().constraints(CCFlags.pushX)
+                namePanel(testNameModel, "Test name", MyBundle.message("robot.run.configuration.desc.multi.test-names"), MyBundle.message("robot.run.configuration.desc.single.test-names"))().constraints(this.pushX)
             }
             cell(isVerticalFlow = true) {
                 label(MyBundle.message("robot.run.configuration.label.suite-names"))
-                namePanel(suiteNameModel, "Suite name", MyBundle.message("robot.run.configuration.desc.multi.test-names"), MyBundle.message("robot.run.configuration.desc.single.test-names"))().constraints(CCFlags.pushX)
+                namePanel(suiteNameModel, "Suite name", MyBundle.message("robot.run.configuration.desc.multi.test-names"), MyBundle.message("robot.run.configuration.desc.single.test-names"))().constraints(this.pushX)
             }
         }
         row {
             cell(isVerticalFlow = true) {
                 label(MyBundle.message("robot.run.configuration.label.included-tags"))
-                namePanel(includeTagModel, "Tag", MyBundle.message("robot.run.configuration.desc.multi.tags"), MyBundle.message("robot.run.configuration.desc.single.tags"))().constraints(CCFlags.pushX)
+                namePanel(includeTagModel, "Tag", MyBundle.message("robot.run.configuration.desc.multi.tags"), MyBundle.message("robot.run.configuration.desc.single.tags"))().constraints(this.pushX)
             }
             cell(isVerticalFlow = true) {
                 label(MyBundle.message("robot.run.configuration.label.excluded-tags"))
-                namePanel(excludeTagModel, "Tag", MyBundle.message("robot.run.configuration.desc.multi.tags"), MyBundle.message("robot.run.configuration.desc.single.tags"))().constraints(CCFlags.pushX)
+                namePanel(excludeTagModel, "Tag", MyBundle.message("robot.run.configuration.desc.multi.tags"), MyBundle.message("robot.run.configuration.desc.single.tags"))().constraints(this.pushX)
             }
         }
     }
@@ -246,7 +245,7 @@ class RobotSettingsEditor : SettingsEditor<RobotRunConfiguration>() {
         row {
             cell(isVerticalFlow = true, isFullWidth = true) {
                 label("")
-                variablesPanel(variablesModel)().constraints(CCFlags.pushX, CCFlags.pushY)
+                variablesPanel(variablesModel)().constraints(this.pushX, this.pushY)
             }
         }
     }
@@ -279,7 +278,7 @@ class RobotSettingsEditor : SettingsEditor<RobotRunConfiguration>() {
         }
         row {
             label(MyBundle.message("robot.run.configuration.label.extra-arguments"))
-            extraArgumentsTextField = textField({ "" }, {}).constraints(CCFlags.pushX).component
+            extraArgumentsTextField = textField({ "" }, {}).constraints(this.pushX).component
         }
         row {
             showOutputViewCheckBox = checkBox(MyBundle.message("robot.run.configuration.label.show-output-view"), false, MyBundle.message("robot.run.configuration.desc.show-output-view")).component
@@ -289,7 +288,7 @@ class RobotSettingsEditor : SettingsEditor<RobotRunConfiguration>() {
         }
         row {
             label(MyBundle.message("robot.run.configuration.label.pabot-arguments"))
-            pabotArgumentsTextField = textField({ "" }, {}).constraints(CCFlags.pushX).component
+            pabotArgumentsTextField = textField({ "" }, {}).constraints(this.pushX).component
         }
     }
 

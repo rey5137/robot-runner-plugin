@@ -12,7 +12,8 @@ import com.intellij.openapi.ui.*
 import com.intellij.ui.SimpleListCellRenderer
 import com.intellij.ui.ToolbarDecorator
 import com.intellij.ui.components.*
-import com.intellij.ui.layout.panel
+import com.intellij.ui.dsl.builder.panel
+import com.intellij.ui.dsl.gridLayout.HorizontalAlign
 import com.intellij.ui.table.JBTable
 import java.awt.Dimension
 import javax.swing.*
@@ -72,7 +73,7 @@ class RobotSettingsEditor : SettingsEditor<RobotRunConfiguration>() {
         timestampOutputsCheckBox.isSelected = options.timestampOutputs
         splitLogsCheckBox.isSelected = options.splitLog
         suffixWithConfigNameCheckBox.isSelected = options.suffixWithConfigName
-        ((variablesModel.rowCount -1) downTo 0).forEach { variablesModel.removeRow(it) }
+        ((variablesModel.rowCount - 1) downTo 0).forEach { variablesModel.removeRow(it) }
         options.variables.forEach { (key, value) -> variablesModel.addRow(arrayOf(key, value)) }
         logLevelBox.selectedItem = options.logLevel
         defaultLogLevelBox.selectedItem = options.defaultLogLevel
@@ -105,7 +106,7 @@ class RobotSettingsEditor : SettingsEditor<RobotRunConfiguration>() {
         (0 until variablesModel.rowCount).forEach {
             val key = variablesModel.getValueAt(it, 0) as String?
             val value = variablesModel.getValueAt(it, 1) as String?
-            if(!key.isNullOrEmpty() && !value.isNullOrEmpty())
+            if (!key.isNullOrEmpty() && !value.isNullOrEmpty())
                 options.variables[key] = value
         }
         options.logLevel = logLevelBox.selectedItem as String
@@ -130,10 +131,7 @@ class RobotSettingsEditor : SettingsEditor<RobotRunConfiguration>() {
 
         return panel {
             row(label = MyBundle.message("robot.run.configuration.label.interpreter")) {
-                sdkComboBox = comboBox(
-                    DefaultComboBoxModel(pythonSdks.toTypedArray()),
-                    { null },
-                    { },
+                sdkComboBox = comboBox(DefaultComboBoxModel(pythonSdks.toTypedArray()),
                     object : SimpleListCellRenderer<Sdk>() {
                         override fun customize(
                             list: JList<out Sdk>,
@@ -145,150 +143,145 @@ class RobotSettingsEditor : SettingsEditor<RobotRunConfiguration>() {
                             text = if (sdk == null) "" else "${sdk.name} (${sdk.homePath})"
                         }
                     }
-                ).constraints(this.growX, this.pushX).component
+                ).horizontalAlign(HorizontalAlign.FILL).component
             }
 
             row {
-                tabs().constraints(this.growX, this.pushX)
+                cell(tabs).horizontalAlign(HorizontalAlign.FILL)
             }
         }
     }
 
     private fun buildTestSuitesPanel() = panel {
+        row(MyBundle.message("robot.run.configuration.label.paths")) {
+            cell(suitePanel()).horizontalAlign(HorizontalAlign.FILL)
+        }
+
         row {
-            cell(isVerticalFlow = true, isFullWidth = true) {
-                label("")
-                label(MyBundle.message("robot.run.configuration.label.paths"))
-                suitePanel()()
-            }
+            label(MyBundle.message("robot.run.configuration.label.test-names")).resizableColumn()
+            label(MyBundle.message("robot.run.configuration.label.suite-names")).resizableColumn()
         }
         row {
-            cell(isVerticalFlow = true) {
-                label(MyBundle.message("robot.run.configuration.label.test-names"))
-                namePanel(testNameModel, "Test name", MyBundle.message("robot.run.configuration.desc.multi.test-names"), MyBundle.message("robot.run.configuration.desc.single.test-names"))().constraints(this.pushX)
-            }
-            cell(isVerticalFlow = true) {
-                label(MyBundle.message("robot.run.configuration.label.suite-names"))
-                namePanel(suiteNameModel, "Suite name", MyBundle.message("robot.run.configuration.desc.multi.test-names"), MyBundle.message("robot.run.configuration.desc.single.test-names"))().constraints(this.pushX)
-            }
+            cell(namePanel(testNameModel, "Test name", MyBundle.message("robot.run.configuration.desc.multi.test-names"), MyBundle.message("robot.run.configuration.desc.single.test-names")))
+                .horizontalAlign(HorizontalAlign.FILL)
+                .resizableColumn()
+            cell(namePanel(suiteNameModel, "Suite name", MyBundle.message("robot.run.configuration.desc.multi.test-names"), MyBundle.message("robot.run.configuration.desc.single.test-names")))
+                .horizontalAlign(HorizontalAlign.FILL)
+                .resizableColumn()
+        }
+
+        row {
+            label(MyBundle.message("robot.run.configuration.label.included-tags")).resizableColumn()
+            label(MyBundle.message("robot.run.configuration.label.excluded-tags")).resizableColumn()
         }
         row {
-            cell(isVerticalFlow = true) {
-                label(MyBundle.message("robot.run.configuration.label.included-tags"))
-                namePanel(includeTagModel, "Tag", MyBundle.message("robot.run.configuration.desc.multi.tags"), MyBundle.message("robot.run.configuration.desc.single.tags"))().constraints(this.pushX)
-            }
-            cell(isVerticalFlow = true) {
-                label(MyBundle.message("robot.run.configuration.label.excluded-tags"))
-                namePanel(excludeTagModel, "Tag", MyBundle.message("robot.run.configuration.desc.multi.tags"), MyBundle.message("robot.run.configuration.desc.single.tags"))().constraints(this.pushX)
-            }
+            cell(namePanel(includeTagModel, "Tag", MyBundle.message("robot.run.configuration.desc.multi.tags"), MyBundle.message("robot.run.configuration.desc.single.tags")))
+                .horizontalAlign(HorizontalAlign.FILL)
+                .resizableColumn()
+            cell(namePanel(excludeTagModel, "Tag", MyBundle.message("robot.run.configuration.desc.multi.tags"), MyBundle.message("robot.run.configuration.desc.single.tags")))
+                .horizontalAlign(HorizontalAlign.FILL)
+                .resizableColumn()
         }
     }
 
     private fun buildOutputPanel() = panel {
-        row {
-            label("")
-        }
-        row {
-            label(MyBundle.message("robot.run.configuration.label.output-dir"))
+        row(MyBundle.message("robot.run.configuration.label.output-dir")) {
             outputDirTextField = textFieldWithBrowseButton(
                 browseDialogTitle = "Output directory",
-                value = null,
                 project = null,
                 fileChooserDescriptor = FileChooserDescriptorFactory.createSingleFolderDescriptor(),
-            ).component
+            ).horizontalAlign(HorizontalAlign.FILL).component
         }
-        row {
-            label(MyBundle.message("robot.run.configuration.label.output-file"))
+        row(MyBundle.message("robot.run.configuration.label.output-file")) {
             outputFileTextField = textFieldWithBrowseButton(
                 browseDialogTitle = "Output file",
-                value = null,
                 project = null,
                 fileChooserDescriptor = FileChooserDescriptorFactory.createSingleFolderDescriptor(),
-            ).component
+            ).horizontalAlign(HorizontalAlign.FILL).component
         }
-        row {
-            label(MyBundle.message("robot.run.configuration.label.log-file"))
+        row(MyBundle.message("robot.run.configuration.label.log-file")) {
             logFileTextField = textFieldWithBrowseButton(
                 browseDialogTitle = "Log file",
-                value = null,
                 project = null,
                 fileChooserDescriptor = FileChooserDescriptorFactory.createSingleFolderDescriptor(),
-            ).component
+            ).horizontalAlign(HorizontalAlign.FILL).component
         }
-        row {
-            label(MyBundle.message("robot.run.configuration.label.log-title"))
-            logTitleTextField = textField({ "" }, {}).component
+        row(MyBundle.message("robot.run.configuration.label.log-title")) {
+            logTitleTextField = textField().horizontalAlign(HorizontalAlign.FILL).component
         }
-        row {
-            label(MyBundle.message("robot.run.configuration.label.report-file"))
+        row(MyBundle.message("robot.run.configuration.label.report-file")) {
             reportFileTextField = textFieldWithBrowseButton(
                 browseDialogTitle = "Report file",
-                value = null,
                 project = null,
                 fileChooserDescriptor = FileChooserDescriptorFactory.createSingleFolderDescriptor(),
-            ).component
+            ).horizontalAlign(HorizontalAlign.FILL).component
+        }
+        row(MyBundle.message("robot.run.configuration.label.report-title")) {
+            reportTitleTextField = textField().horizontalAlign(HorizontalAlign.FILL).component
         }
         row {
-            label(MyBundle.message("robot.run.configuration.label.report-title"))
-            reportTitleTextField = textField({ "" }, {}).component
+            timestampOutputsCheckBox = checkBox(MyBundle.message("robot.run.configuration.label.output-timestamp")).component
         }
         row {
-            cell(isVerticalFlow = true) {
-                timestampOutputsCheckBox = checkBox(MyBundle.message("robot.run.configuration.label.output-timestamp")).component
-                splitLogsCheckBox = checkBox(MyBundle.message("robot.run.configuration.label.log-split")).component
-                suffixWithConfigNameCheckBox = checkBox(MyBundle.message("robot.run.configuration.label.output-suffix-config-name")).component
-            }
+            splitLogsCheckBox = checkBox(MyBundle.message("robot.run.configuration.label.log-split")).component
+        }
+        row {
+            suffixWithConfigNameCheckBox = checkBox(MyBundle.message("robot.run.configuration.label.output-suffix-config-name")).component
         }
     }
 
     private fun buildVariablesPanel() = panel {
         row {
-            cell(isVerticalFlow = true, isFullWidth = true) {
-                label("")
-                variablesPanel(variablesModel)().constraints(this.pushX, this.pushY)
-            }
+            cell(variablesPanel(variablesModel)).horizontalAlign(HorizontalAlign.FILL)
         }
     }
 
     private fun buildExecutionPanel() = panel {
-        row { label("") }
         row {
-            cell(isVerticalFlow = true) {
-                label(MyBundle.message("robot.run.configuration.label.log-level"))
-                logLevelBox = comboBox(
-                    DefaultComboBoxModel(arrayOf("INFO", "DEBUG", "TRACE")),
-                    { "INFO" },
-                    { }
-                ).component
+            panel {
+                row(MyBundle.message("robot.run.configuration.label.log-level")) {
+                    logLevelBox = comboBox(
+                        DefaultComboBoxModel(arrayOf("INFO", "DEBUG", "TRACE")),
+                    ).component
+                }
             }
-            cell(isVerticalFlow = true) {
-                label(MyBundle.message("robot.run.configuration.label.default-log-level"))
-                defaultLogLevelBox = comboBox(
-                    DefaultComboBoxModel(arrayOf("INFO", "DEBUG", "TRACE")),
-                    { "INFO" },
-                    { }
-                ).component
+            panel {
+                row(MyBundle.message("robot.run.configuration.label.default-log-level")) {
+                    defaultLogLevelBox = comboBox(
+                        DefaultComboBoxModel(arrayOf("INFO", "DEBUG", "TRACE")),
+                    ).component
+                }
             }
         }
         row {
-            dryRunCheckBox = checkBox(MyBundle.message("robot.run.configuration.label.dry-run"), false, MyBundle.message("robot.run.configuration.desc.dry-run")).component
+            dryRunCheckBox = checkBox(MyBundle.message("robot.run.configuration.label.dry-run")).component
+        }
+//        row {
+//            rowComment(MyBundle.message("robot.run.configuration.desc.dry-run"))
+//        }
+        row {
+            runEmptySuiteCheckBox = checkBox(MyBundle.message("robot.run.configuration.label.run-empty")).component
+        }
+//        row {
+//            rowComment(MyBundle.message("robot.run.configuration.desc.run-empty"))
+//        }
+        row(MyBundle.message("robot.run.configuration.label.extra-arguments")) {
+            extraArgumentsTextField = textField().horizontalAlign(HorizontalAlign.FILL).component
         }
         row {
-            runEmptySuiteCheckBox = checkBox(MyBundle.message("robot.run.configuration.label.run-empty"), false, MyBundle.message("robot.run.configuration.desc.run-empty")).component
+            showOutputViewCheckBox = checkBox(MyBundle.message("robot.run.configuration.label.show-output-view")).component
         }
+//        row {
+//            rowComment(MyBundle.message("robot.run.configuration.desc.show-output-view"))
+//        }
         row {
-            label(MyBundle.message("robot.run.configuration.label.extra-arguments"))
-            extraArgumentsTextField = textField({ "" }, {}).constraints(this.pushX).component
+            usePabotCheckBox = checkBox(MyBundle.message("robot.run.configuration.label.use-pabot")).component
         }
-        row {
-            showOutputViewCheckBox = checkBox(MyBundle.message("robot.run.configuration.label.show-output-view"), false, MyBundle.message("robot.run.configuration.desc.show-output-view")).component
-        }
-        row {
-            usePabotCheckBox = checkBox(MyBundle.message("robot.run.configuration.label.use-pabot"), false, MyBundle.message("robot.run.configuration.desc.use-pabot")).component
-        }
-        row {
-            label(MyBundle.message("robot.run.configuration.label.pabot-arguments"))
-            pabotArgumentsTextField = textField({ "" }, {}).constraints(this.pushX).component
+//        row {
+//            rowComment(MyBundle.message("robot.run.configuration.desc.use-pabot"))
+//        }
+        row(MyBundle.message("robot.run.configuration.label.pabot-arguments")) {
+            pabotArgumentsTextField = textField().horizontalAlign(HorizontalAlign.FILL).component
         }
     }
 
@@ -298,7 +291,6 @@ class RobotSettingsEditor : SettingsEditor<RobotRunConfiguration>() {
         suitesPathList.model = suitePathModel
 
         val decorator = ToolbarDecorator.createDecorator(suitesPathList)
-        decorator.setPreferredSize(Dimension(20000, 100))
         decorator.setMinimumSize(Dimension(300, 50))
         decorator.setAddAction {
             val fileDescriptor =
@@ -316,19 +308,18 @@ class RobotSettingsEditor : SettingsEditor<RobotRunConfiguration>() {
     private fun namePanel(model: DefaultListModel<String>, title: String, addMessage: String, editMessage: String): JPanel {
         val list = JBList(model)
         val decorator = ToolbarDecorator.createDecorator(list)
-        decorator.setPreferredSize(Dimension(20000, 50))
         decorator.setAddAction {
             val (name, wrapWord, escapeSpecialChars) = showMultilineInput(addMessage, title)
-            if(name.isNotBlank())
+            if (name.isNotBlank())
                 model.addAll(name.split("\n")
                     .filter { it.isNotBlank() }
-                    .map { if(escapeSpecialChars) it.escapeCharsInTestName() else it }
-                    .map { if(wrapWord) "*$it*" else it }
+                    .map { if (escapeSpecialChars) it.escapeCharsInTestName() else it }
+                    .map { if (wrapWord) "*$it*" else it }
                 )
         }
         decorator.setEditAction {
             val name = Messages.showInputDialog(null, editMessage, title, null, list.selectedValue, null) ?: ""
-            if(name.isNotBlank())
+            if (name.isNotBlank())
                 model.setElementAt(name, list.selectedIndex)
         }
         decorator.setToolbarPosition(ActionToolbarPosition.RIGHT)
@@ -345,9 +336,9 @@ class RobotSettingsEditor : SettingsEditor<RobotRunConfiguration>() {
         val panel = panel {
             row { label(message) }
             row {
-                JBScrollPane(textArea).apply {
+                cell(JBScrollPane(textArea).apply {
                     minimumSize = Dimension(textArea.preferredSize.width, textArea.preferredSize.height + 5)
-                }()
+                }).horizontalAlign(HorizontalAlign.FILL)
             }
             row {
                 wrapCheckbox = checkBox(MyBundle.message("robot.run.configuration.label.wrap-value")).component
@@ -361,7 +352,7 @@ class RobotSettingsEditor : SettingsEditor<RobotRunConfiguration>() {
         builder.removeAllActions()
         builder.addOkAction()
         builder.addCancelAction()
-        return if(builder.show() == DialogWrapper.OK_EXIT_CODE)
+        return if (builder.show() == DialogWrapper.OK_EXIT_CODE)
             MultilineInput(
                 text = textArea.text,
                 wrapWord = wrapCheckbox.isSelected,
@@ -383,7 +374,7 @@ class RobotSettingsEditor : SettingsEditor<RobotRunConfiguration>() {
         decorator.setAddAction { model.addRow(arrayOf("", "")) }
         decorator.setRemoveAction { table.selectedRows.reversed().forEach { model.removeRow(it) } }
         decorator.setToolbarPosition(ActionToolbarPosition.RIGHT)
-        decorator.setPreferredSize(Dimension(200000, 200))
+        decorator.setPreferredSize(Dimension(100, 300))
         return decorator.createPanel()
     }
 

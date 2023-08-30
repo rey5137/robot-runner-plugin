@@ -17,7 +17,8 @@ import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.ui.*
 import com.intellij.ui.components.JBCheckBox
 import com.intellij.ui.components.JBTextField
-import com.intellij.ui.layout.panel
+import com.intellij.ui.dsl.builder.columns
+import com.intellij.ui.dsl.builder.panel
 import com.intellij.ui.tree.TreeVisitor
 import com.intellij.ui.treeStructure.Tree
 import com.intellij.util.ui.JBDimension
@@ -506,7 +507,7 @@ class RobotOutputView(project: Project, private val srcFile: VirtualFile? = null
         lateinit var regexCheckbox: JBCheckBox
         val panel = panel {
             row {
-                textField = textField({ "" }, {}, 30).component
+                textField = textField().columns(30).component
             }
             row {
                 caseCheckbox = checkBox(MyBundle.message("robot.output.editor.label.case-sensitive")).component

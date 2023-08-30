@@ -20,6 +20,7 @@ import com.intellij.openapi.fileChooser.FileChooserFactory
 import com.intellij.openapi.fileChooser.FileSaverDescriptor
 import com.intellij.openapi.project.DumbAwareAction
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.ui.*
 import com.intellij.ui.components.JBCheckBox
 import com.intellij.ui.components.JBLabel
@@ -118,7 +119,7 @@ class RobotRunProjectSettingsComponent(private val project: Project) {
                         "json"
                     )
                     val dialog = FileChooserFactory.getInstance().createSaveFileDialog(descriptor, null)
-                    val fileWrapper = dialog.save(null, "robot_run_configurations.json")
+                    val fileWrapper = dialog.save(null as VirtualFile, "robot_run_configurations.json")
                     if (fileWrapper != null)
                         exportSettings(fileWrapper.file)
                 }

@@ -20,7 +20,7 @@ class ValueTableCellRenderer(private val assignmentModel: AssignmentModel) :
 
     private val stringCellRenderer = object : ColoredTableCellRenderer() {
         override fun customizeCellRenderer(
-            table: JTable?,
+            table: JTable,
             value: Any?,
             selected: Boolean,
             hasFocus: Boolean,

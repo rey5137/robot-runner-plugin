@@ -11,7 +11,7 @@ import java.beans.PropertyChangeListener
 import javax.swing.JComponent
 
 
-class RobotOutputFileEditor(project: Project, srcFile: VirtualFile) : UserDataHolderBase(), FileEditor {
+class RobotOutputFileEditor(project: Project, private val srcFile: VirtualFile) : UserDataHolderBase(), FileEditor {
 
     private val myComponent = RobotOutputView(project, srcFile)
 
@@ -36,5 +36,9 @@ class RobotOutputFileEditor(project: Project, srcFile: VirtualFile) : UserDataHo
     override fun removePropertyChangeListener(listener: PropertyChangeListener) {}
 
     override fun getCurrentLocation(): FileEditorLocation? = null
+
+    override fun getFile(): VirtualFile {
+        return srcFile
+    }
 
 }

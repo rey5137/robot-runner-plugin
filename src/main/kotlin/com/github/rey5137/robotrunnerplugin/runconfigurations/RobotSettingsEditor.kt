@@ -153,7 +153,10 @@ class RobotSettingsEditor : SettingsEditor<RobotRunConfiguration>() {
     }
 
     private fun buildTestSuitesPanel() = panel {
-        row(MyBundle.message("robot.run.configuration.label.paths")) {
+        row {
+            label(MyBundle.message("robot.run.configuration.label.paths"))
+        }
+        row {
             cell(suitePanel()).horizontalAlign(HorizontalAlign.FILL)
         }
 

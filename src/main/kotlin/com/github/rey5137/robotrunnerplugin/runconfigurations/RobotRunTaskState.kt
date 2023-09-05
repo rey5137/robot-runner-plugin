@@ -2,6 +2,7 @@ package com.github.rey5137.robotrunnerplugin.runconfigurations
 
 import com.github.rey5137.robotrunnerplugin.editors.RobotOutputView
 import com.github.rey5137.robotrunnerplugin.http.Server
+import com.github.rey5137.robotrunnerplugin.runconfigurations.actions.MergeRobotOutputAction
 import com.github.rey5137.robotrunnerplugin.runconfigurations.actions.OpenOutputFileAction
 import com.github.rey5137.robotrunnerplugin.runconfigurations.actions.RerunRobotFailedTestsAction
 import com.intellij.execution.DefaultExecutionResult
@@ -25,6 +26,8 @@ import com.intellij.openapi.vfs.VirtualFile
 import java.io.File
 import java.io.FileOutputStream
 
+const val LISTENER_FILE = "RobotRunnerPluginListener000003002.py"
+
 class RobotRunTaskState(
     private val project: Project,
     private val configuration: RobotRunConfiguration,
@@ -37,7 +40,8 @@ class RobotRunTaskState(
 
     override fun startProcess(): ProcessHandler {
         val options = configuration.options
-        if(options.showOutputView) {
+        val showOutputView = !options.usePabot && options.showOutputView
+        if(showOutputView) {
             robotOutputView = RobotOutputView(project)
             val port = findAvailablePort()
             server = Server(port) { method, payload ->
@@ -56,7 +60,18 @@ class RobotRunTaskState(
         val robotRunFile = sdk.sdkModificator.getRoots(OrderRootType.CLASSES)
             .mapNotNull { it.findRobotRunFile() }
             .firstOrNull() ?: throw ExecutionException("Cannot find Robot's run.py file")
-        commands += robotRunFile.path
+
+        if(options.usePabot) {
+            commands.addPair("-m", "pabot.pabot")
+            commands += "--command"
+            commands += sdk.homePath!!
+            commands += robotRunFile.path
+            commands += "--end-command"
+            options.pabotArguments.ifNotEmpty { value -> commands.addAll(value.parseCommandLineArguments()) }
+        }
+        else {
+            commands += robotRunFile.path
+        }
 
         if(rerunFailedCaseConfig == null)
             options.testNames.forEach { commands.addPair("-t", it) }
@@ -79,10 +94,9 @@ class RobotRunTaskState(
             }
         }
         else {
-            val suffix = "rerun_${rerunFailedCaseConfig.rerunTime}"
-            commands.addPair("-o", rerunFailedCaseConfig.outputFile.suffixFileName(suffix))
-            commands.addPair("-l", rerunFailedCaseConfig.logFile.suffixFileName(suffix))
-            commands.addPair("-r", rerunFailedCaseConfig.reportFile.suffixFileName(suffix))
+            commands.addPair("-o", rerunFailedCaseConfig.outputFile.suffixFileName(rerunFailedCaseConfig.suffix))
+            commands.addPair("-l", rerunFailedCaseConfig.logFile.suffixFileName(rerunFailedCaseConfig.suffix))
+            commands.addPair("-r", rerunFailedCaseConfig.reportFile.suffixFileName(rerunFailedCaseConfig.suffix))
         }
         options.logTitle.ifNotEmpty { commands.addPair("--logtitle", it) }
         options.reportTitle.ifNotEmpty { commands.addPair("--reporttitle", it) }
@@ -94,7 +108,7 @@ class RobotRunTaskState(
         options.runEmptySuite.ifEnable { commands.add("--runemptysuite") }
         options.extraArguments.ifNotEmpty { value -> commands.addAll(value.parseCommandLineArguments()) }
 
-        if(options.showOutputView) {
+        if(showOutputView) {
             commands.add("--listener")
             commands.add("${getListenerFilePath()}:${server.port}")
         }
@@ -113,9 +127,9 @@ class RobotRunTaskState(
         val folder = File(FileUtilRt.getTempDirectory(), "RobotRunnerPlugin")
         if(!folder.exists())
             folder.mkdirs()
-        val file = File(folder, "RobotRunnerPluginListener.py")
+        val file = File(folder, LISTENER_FILE)
         if(!file.exists()) {
-            val inputStream = javaClass.getResourceAsStream("/scripts/RobotRunnerPluginListener.py")
+            val inputStream = javaClass.getResourceAsStream("/scripts/$LISTENER_FILE")
             val fileOutputStream = FileOutputStream(file)
             val buffer = ByteArray(32768)
             var length: Int
@@ -139,22 +153,40 @@ class RobotRunTaskState(
     override fun execute(executor: Executor, runner: ProgramRunner<*>): ExecutionResult {
         val options = configuration.options
         val processHandler = startProcess()
-        val console = if(options.showOutputView)
+        val showOutputView = !options.usePabot && options.showOutputView
+        val console = if(showOutputView)
             RobotOutputConsoleView(project, createConsole(executor)!!, robotOutputView)
         else
             createConsole(executor)!!
         console.attachToProcess(processHandler)
         val result = DefaultExecutionResult(console, processHandler, *createActions(console, processHandler, executor))
-        result.setRestartActions(
-            RerunRobotFailedTestsAction(
-                processHandler,
-                console,
-                environment,
-                configuration,
-                rerunFailedCaseConfig,
+        if(rerunFailedCaseConfig == null)
+            result.setRestartActions(
+                RerunRobotFailedTestsAction(
+                    processHandler,
+                    console,
+                    environment,
+                    configuration,
+                    rerunFailedCaseConfig,
+                )
             )
-        )
-        if(options.showOutputView) {
+        else
+            result.setRestartActions(
+                RerunRobotFailedTestsAction(
+                    processHandler,
+                    console,
+                    environment,
+                    configuration,
+                    rerunFailedCaseConfig,
+                ),
+                MergeRobotOutputAction(
+                    processHandler,
+                    environment,
+                    configuration,
+                    rerunFailedCaseConfig,
+                )
+            )
+        if(showOutputView) {
             processHandler.addProcessListener(object : ProcessListener {
                 override fun startNotified(event: ProcessEvent) {}
 
@@ -192,16 +224,6 @@ class RobotRunTaskState(
             func()
     }
 
-    private fun String.suffixFileName(value: String): String {
-        if (this.equals("None", ignoreCase = true))
-            return this
-        val index = this.lastIndexOf('.')
-        return if (index >= 0)
-            "${substring(0, index)}_$value${substring(index)}"
-        else
-            "${this}_$value"
-    }
-
     private fun String.parseCommandLineArguments(): List<String> {
         val args = mutableListOf<String>()
         val builder = StringBuilder()
@@ -227,6 +249,8 @@ class RobotRunTaskState(
                 }
             }
         }
+        if(builder.isNotEmpty())
+            args.add(builder.toString())
         return args.toList()
     }
 

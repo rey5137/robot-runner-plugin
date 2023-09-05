@@ -7,9 +7,11 @@ data class StatusElement(
     var message: String = "",
 ) : Element {
 
-    val isPassed = "PASS".equals(status, ignoreCase = true)
+    val isPassed
+        get() = "PASS".equals(status, ignoreCase = true)
 
-    val isRunning = status.isEmpty()
+    val isRunning
+        get() = status.isEmpty()
 
     override fun toString() = "StatusElement"
 }

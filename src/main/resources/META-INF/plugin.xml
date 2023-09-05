@@ -6,6 +6,8 @@
     <!-- Product and plugin compatibility requirements -->
     <!-- https://plugins.jetbrains.com/docs/intellij/plugin-compatibility.html -->
     <depends>com.intellij.modules.platform</depends>
+    <depends optional="true" config-file="com.github.rey5137.robot-runner-plugin-intellibot.xml">com.millennialmedia.intellibot</depends>
+    <depends optional="true" config-file="com.github.rey5137.robot-runner-plugin-intellibot-patched.xml">com.millennialmedia.intellibot@lte2000</depends>
 
     <extensions defaultExtensionNs="com.intellij">
         <applicationService serviceImplementation="com.github.rey5137.robotrunnerplugin.services.MyApplicationService"/>

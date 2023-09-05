@@ -1,6 +1,5 @@
 package icons
 
-import com.intellij.icons.AllIcons
 import com.intellij.openapi.util.IconLoader
 import com.intellij.ui.LayeredIcon
 
@@ -64,6 +63,12 @@ object MyIcons {
     val LabelPass = IconLoader.getIcon("/icons/labelPass.svg", javaClass)
 
     @JvmField
+    val LabelStep = IconLoader.getIcon("/icons/labelStep.svg", javaClass)
+
+    @JvmField
+    val LabelEndStep = IconLoader.getIcon("/icons/labelEndStep.svg", javaClass)
+
+    @JvmField
     val LabelFail = IconLoader.getIcon("/icons/labelFail.svg", javaClass)
 
     @JvmField
@@ -122,6 +127,24 @@ object MyIcons {
 
     @JvmField
     val KeywordFail = LayeredIcon(ElementFail2, LabelKeyword)
+
+    @JvmField
+    val StepPass = LayeredIcon(ElementPass, LabelStep)
+
+    @JvmField
+    val StepRunning = LayeredIcon(ElementRunning, LabelStep)
+
+    @JvmField
+    val StepFail = LayeredIcon(ElementFail, LabelStep)
+
+    @JvmField
+    val EndStepPass = LayeredIcon(ElementPass2, LabelEndStep)
+
+    @JvmField
+    val EndStepRunning = LayeredIcon(ElementRunning2, LabelEndStep)
+
+    @JvmField
+    val EndStepFail = LayeredIcon(ElementFail2, LabelEndStep)
 
     @JvmField
     val KeywordRunning = LayeredIcon(ElementRunning2, LabelKeyword)

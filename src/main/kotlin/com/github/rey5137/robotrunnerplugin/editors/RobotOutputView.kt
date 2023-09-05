@@ -17,7 +17,8 @@ import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.ui.*
 import com.intellij.ui.components.JBCheckBox
 import com.intellij.ui.components.JBTextField
-import com.intellij.ui.layout.panel
+import com.intellij.ui.dsl.builder.columns
+import com.intellij.ui.dsl.builder.panel
 import com.intellij.ui.tree.TreeVisitor
 import com.intellij.ui.treeStructure.Tree
 import com.intellij.util.ui.JBDimension
@@ -92,11 +93,12 @@ class RobotOutputView(project: Project, private val srcFile: VirtualFile? = null
         jsonParser?.let { parser ->
             parser.addData(method, payload)
             when (method) {
-                METHOD_START_SUITE, METHOD_START_TEST, METHOD_START_KEYWORD -> {
+                METHOD_START_SUITE, METHOD_START_TEST -> {
                     val currentNodeWrapper = nodeWrapperStack!!.last()
                     val childNodeWrapper = TreeNodeWrapper(
                         node = DefaultMutableTreeNode(HighlightHolder(parser.currentElement)),
-                        children = mutableListOf()
+                        children = mutableListOf(),
+                        parent = currentNodeWrapper
                     )
                     currentNodeWrapper.children.add(childNodeWrapper)
                     nodeWrapperStack!!.add(childNodeWrapper)
@@ -108,17 +110,82 @@ class RobotOutputView(project: Project, private val srcFile: VirtualFile? = null
                         )
                         if (currentNodeWrapper == robotTreeNodeWrapper)
                             treeModel.reload(currentNodeWrapper.node)
-                        if (method == METHOD_START_SUITE || method == METHOD_START_TEST)
-                            tree.expandPath(TreePath(currentNodeWrapper.node.path))
+                        tree.expandPath(TreePath(currentNodeWrapper.node.path))
+                    })
+                }
+                METHOD_START_KEYWORD -> {
+                    val currentNodeWrapper = nodeWrapperStack!!.last()
+                    val currentElement = currentNodeWrapper.node.getElement<Element>()
+                    val keywordElement = parser.currentElement as KeywordElement
+                    val childNodeWrapper = TreeNodeWrapper(
+                        node = DefaultMutableTreeNode(HighlightHolder(keywordElement)),
+                        children = mutableListOf()
+                    )
+                    var parentNodeWrapper = currentNodeWrapper
+                    val stepNodes: MutableList<DefaultMutableTreeNode> = mutableListOf()
+                    if (keywordElement.type == KEYWORD_TYPE_STEP) {
+                        val stepChildren = currentNodeWrapper.stepChildren
+                        if(stepChildren != null) {
+                            while (stepChildren.isNotEmpty() && stepChildren.last().node.getElement<KeywordElement>().stepLevel >= keywordElement.stepLevel) {
+                                val lastStep = stepChildren.removeAt(stepChildren.size - 1)
+                                stepNodes.add(lastStep.node)
+                            }
+                            if(stepChildren.isNotEmpty())
+                                parentNodeWrapper = stepChildren.last()
+                            stepChildren.add(childNodeWrapper)
+                        }
+                        else
+                            currentNodeWrapper.stepChildren = mutableListOf(childNodeWrapper)
+                    }
+                    else if(!currentElement.isStepKeyword()) {
+                        if (keywordElement.type == KEYWORD_TYPE_TEARDOWN) {
+                            currentNodeWrapper.stepChildren?.forEach { stepNodes.add(it.node) }
+                            currentNodeWrapper.stepChildren = null
+                        }
+                        else if (currentNodeWrapper.hasStepChild)
+                            parentNodeWrapper = currentNodeWrapper.lastStepChild!!
+                    }
+
+                    parentNodeWrapper.children.add(childNodeWrapper)
+                    childNodeWrapper.parent = parentNodeWrapper
+                    nodeWrapperStack!!.add(childNodeWrapper)
+
+                    UIUtil.invokeAndWaitIfNeeded(Runnable {
+                        treeModel.insertNodeInto(
+                            childNodeWrapper.node,
+                            parentNodeWrapper.node,
+                            parentNodeWrapper.children.size - 1
+                        )
+                        if (parentNodeWrapper == robotTreeNodeWrapper)
+                            treeModel.reload(parentNodeWrapper.node)
+                        (tree.lastSelectedPathComponent as DefaultMutableTreeNode?)?.let { selectedNode ->
+                            if(stepNodes.contains(selectedNode))
+                                detailsPanel.showDetails(selectedNode.getElement(), highlightInfo)
+                        }
                     })
                 }
                 METHOD_END_SUITE, METHOD_END_TEST, METHOD_END_KEYWORD -> {
                     val nodeWrapper = nodeWrapperStack!!.removeAt(nodeWrapperStack!!.size - 1)
+                    val element = nodeWrapper.node.getElement<Element>()
+                    val stepNodes: MutableList<DefaultMutableTreeNode> = mutableListOf()
+                    if(element is KeywordElement && element.type == KEYWORD_TYPE_END_STEP) {
+                        val parentNodeWrapper = nodeWrapper.parent!!
+                        val parentElement = parentNodeWrapper.node.getElement<Element>()
+                        if(parentElement.isStepKeyword()) {
+                            stepNodes.add(parentNodeWrapper.node)
+                            parentNodeWrapper.findStepRoot()?.stepChildren?.remove(parentNodeWrapper)
+                        }
+                    }
+                    else if(!element.hasTeardownKeywords()) {
+                        nodeWrapper.stepChildren?.forEach { stepNodes.add(it.node) }
+                        nodeWrapper.stepChildren = null
+                    }
                     UIUtil.invokeAndWaitIfNeeded(Runnable {
                         treeModel.nodeChanged(nodeWrapper.node)
-                        val selectedNode = tree.lastSelectedPathComponent as DefaultMutableTreeNode
-                        if (nodeWrapper.node == selectedNode)
-                            detailsPanel.showDetails(selectedNode.getElement(), highlightInfo)
+                        (tree.lastSelectedPathComponent as DefaultMutableTreeNode?)?.let { selectedNode ->
+                            if(nodeWrapper.node == selectedNode || stepNodes.contains(selectedNode))
+                                detailsPanel.showDetails(selectedNode.getElement(), highlightInfo)
+                        }
                     })
                 }
                 METHOD_CLOSE -> {
@@ -131,6 +198,16 @@ class RobotOutputView(project: Project, private val srcFile: VirtualFile? = null
             }
         }
 
+    }
+
+    fun getFailedTestcases(): List<String> {
+        val tests = mutableListOf<String>()
+        TreeUtil.treeNodeTraverser(robotTreeNodeWrapper!!.node).forEach { node ->
+            val element = (node as DefaultMutableTreeNode).getElementHolder<Element>().value
+            if (element is TestElement && !element.status.isPassed)
+                tests.add(element.name)
+        }
+        return tests
     }
 
     fun dispose() {
@@ -385,7 +462,7 @@ class RobotOutputView(project: Project, private val srcFile: VirtualFile? = null
                 highlight = HighlightType.CONTAINED
             children.add(nodeWrapper)
         }
-        return TreeNodeWrapper(node = oldNodeWrapper.copyNode(HighlightHolder(this, highlight)), children = children)
+        return TreeNodeWrapper(node = oldNodeWrapper.copyNode(HighlightHolder(this, highlight)), children = children, parent = oldNodeWrapper?.parent)
     }
 
     private fun KeywordElement.toNode(oldNodeWrapper: TreeNodeWrapper? = null): TreeNodeWrapper {
@@ -397,7 +474,7 @@ class RobotOutputView(project: Project, private val srcFile: VirtualFile? = null
                 highlight = HighlightType.CONTAINED
             children.add(nodeWrapper)
         }
-        return TreeNodeWrapper(node = oldNodeWrapper.copyNode(HighlightHolder(this, highlight)), children = children)
+        return TreeNodeWrapper(node = oldNodeWrapper.copyNode(HighlightHolder(this, highlight)), children = children, parent = oldNodeWrapper?.parent)
     }
 
     private fun TreeNodeWrapper?.copyNode(obj: Any) =
@@ -411,6 +488,13 @@ class RobotOutputView(project: Project, private val srcFile: VirtualFile? = null
         return children[index]
     }
 
+    private fun TreeNodeWrapper.findStepRoot(): TreeNodeWrapper? {
+        var nodeWrapper: TreeNodeWrapper? = this
+        do {
+            nodeWrapper = nodeWrapper?.parent
+        } while(nodeWrapper != null && nodeWrapper.node.getElement<Element>().isStepKeyword())
+        return nodeWrapper
+    }
 
     private fun <T : Element> DefaultMutableTreeNode.getElementHolder() = userObject as HighlightHolder<T>
 
@@ -423,7 +507,7 @@ class RobotOutputView(project: Project, private val srcFile: VirtualFile? = null
         lateinit var regexCheckbox: JBCheckBox
         val panel = panel {
             row {
-                textField = textField({ "" }, {}, 30).component
+                textField = textField().columns(30).component
             }
             row {
                 caseCheckbox = checkBox(MyBundle.message("robot.output.editor.label.case-sensitive")).component
@@ -505,6 +589,16 @@ class RobotOutputView(project: Project, private val srcFile: VirtualFile? = null
                             element.status.isRunning -> MyIcons.ForitemRunning
                             else -> MyIcons.ForitemFail
                         }
+                        KEYWORD_TYPE_STEP -> when {
+                            element.status.isPassed -> MyIcons.StepPass
+                            element.status.isRunning -> MyIcons.StepRunning
+                            else -> MyIcons.StepFail
+                        }
+                        KEYWORD_TYPE_END_STEP -> when {
+                            element.status.isPassed -> MyIcons.EndStepPass
+                            element.status.isRunning -> MyIcons.EndStepRunning
+                            else -> MyIcons.EndStepFail
+                        }
                         else -> when {
                             element.status.isPassed -> MyIcons.KeywordPass
                             element.status.isRunning -> MyIcons.KeywordRunning
@@ -521,7 +615,7 @@ class RobotOutputView(project: Project, private val srcFile: VirtualFile? = null
                     if (element.library.isNotBlank())
                         append("${element.library}.", SimpleTextAttributes.GRAY_SMALL_ATTRIBUTES)
                     append(element.name, SimpleTextAttributes.REGULAR_BOLD_ATTRIBUTES)
-                    if (element.arguments.isNotEmpty()) {
+                    if (element.type != KEYWORD_TYPE_STEP && element.type != KEYWORD_TYPE_END_STEP && element.arguments.isNotEmpty()) {
                         append(" ")
                         append(
                             element.arguments.joinToString(separator = ", "),

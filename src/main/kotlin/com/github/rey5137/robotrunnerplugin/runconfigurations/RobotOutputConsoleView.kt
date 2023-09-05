@@ -50,7 +50,7 @@ class RobotOutputConsoleView(val project: Project,
         consoleView.scrollTo(offset)
     }
 
-    override fun attachToProcess(processHandler: ProcessHandler?) {
+    override fun attachToProcess(processHandler: ProcessHandler) {
         consoleView.attachToProcess(processHandler)
     }
 

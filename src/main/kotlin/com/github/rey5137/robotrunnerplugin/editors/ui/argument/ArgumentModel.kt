@@ -48,7 +48,7 @@ class ArgumentModel : AbstractTableModel() {
 
     fun getInputArgumentHolders(index: Int) = items[index].inputs
 
-    fun getVariableModel(index: Int) = items[index].variableModel
+    fun getVariableModel(index: Int) = if (index >= 0 && index < items.size) items[index].variableModel else null
 
     fun getItem(index: Int) = items[index]
 

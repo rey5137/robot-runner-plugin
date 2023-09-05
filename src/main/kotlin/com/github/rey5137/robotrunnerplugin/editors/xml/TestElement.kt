@@ -4,6 +4,7 @@ data class TestElement(
     var id: String = "",
     override var name: String = "",
     var keywords: MutableList<KeywordElement> = ArrayList(),
+    val stepKeywords: MutableList<KeywordElement> = mutableListOf(),
     override var tags: MutableList<String> = ArrayList(),
     override var status: StatusElement = StatusElement(),
     override var parent: Element? = null,

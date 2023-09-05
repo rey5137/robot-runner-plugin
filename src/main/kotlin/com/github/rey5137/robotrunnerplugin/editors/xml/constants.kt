@@ -38,6 +38,13 @@ const val KEYWORD_TYPE_SETUP = "SETUP"
 const val KEYWORD_TYPE_TEARDOWN = "TEARDOWN"
 const val KEYWORD_TYPE_FOR = "FOR"
 const val KEYWORD_TYPE_FORITEM = "FORITEM"
+const val KEYWORD_TYPE_STEP = "STEP"
+const val KEYWORD_TYPE_END_STEP = "ENDSTEP"
+
+
+const val STEP_LIBRARY = "RobotStepLibrary"
+const val STEP_KEYWORD = "Step"
+const val END_STEP_KEYWORD = "End step"
 
 interface Element
 
@@ -185,6 +192,23 @@ fun Element.addKeyword(keyword: KeywordElement) {
         }
     }
 }
+fun Element.removeKeyword(keyword: KeywordElement) {
+    when (this) {
+        is SuiteElement -> {
+            children.remove(keyword)
+            keyword.parent = null
+        }
+        is TestElement -> {
+            keywords.remove(keyword)
+            keyword.parent = null
+        }
+        is KeywordElement -> {
+            keywords.remove(keyword)
+            keyword.parent = null
+        }
+    }
+}
+
 
 fun Element.addStatus(status: StatusElement) {
     when (this) {
@@ -202,15 +226,61 @@ fun Element.addString(element: StringElement) {
     }
 }
 
-fun Element.setTags(element: TagsElement) {
+fun Element.addTags(element: TagsElement) {
     when (this) {
-        is TestElement -> this.tags = element.tags
-        is KeywordElement -> this.tags = element.tags
+        is TestElement -> this.tags.addAll(element.tags)
+        is KeywordElement -> this.tags.addAll(element.tags)
     }
 }
 
 fun Element.addMessage(element: MessageElement) {
     when (this) {
         is KeywordElement -> this.messages.add(element)
+    }
+}
+
+fun Element.getStepKeywords(): MutableList<KeywordElement>? {
+    return when(this) {
+        is TestElement -> this.stepKeywords
+        is KeywordElement -> this.stepKeywords
+        else -> null
+    }
+}
+
+fun Element.isStepKeyword(): Boolean {
+    return when(this) {
+        is KeywordElement -> this.type == KEYWORD_TYPE_STEP
+        else -> false
+    }
+}
+
+fun Element.hasTeardownKeywords(): Boolean {
+    return when(this) {
+        is TestElement -> KEYWORD_TYPE_TEARDOWN == keywords.lastOrNull()?.type
+        is KeywordElement -> KEYWORD_TYPE_TEARDOWN == keywords.lastOrNull()?.type
+        else -> false
+    }
+}
+
+fun KeywordElement.updateStepStatus() {
+    if (this.type == KEYWORD_TYPE_STEP) {
+        keywords.lastOrNull()?.let { keyword ->
+            keyword.updateStepStatus()
+            this.status.status = keyword.status.status
+            this.status.endTime = keyword.status.endTime
+        }
+    }
+}
+
+fun KeywordElement.updateStepLevel() {
+    this.stepLevel = if (type != KEYWORD_TYPE_STEP || arguments.isEmpty()) 0 else this.findStepNum().split(".").count { it.isNotEmpty() }
+}
+
+fun Element.getParent(): Element? {
+    return when(this) {
+        is KeywordElement -> this.parent
+        is TestElement -> this.parent
+        is SuiteElement -> this.parent
+        else -> null
     }
 }

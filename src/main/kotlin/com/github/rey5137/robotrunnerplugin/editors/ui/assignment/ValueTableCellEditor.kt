@@ -19,11 +19,11 @@ class ValueTableCellEditor(project: Project, private val parentTable: JBTable, p
         setDefaultEditor(Any::class.java, VariableCellEditor(this@ValueTableCellEditor))
         addMouseListener(object : MouseAdapter() {
             override fun mousePressed(e: MouseEvent) {
-                e.isArrowClicked { _, _ -> clearSelection() }
+                e.isIconClicked { _, _ -> clearSelection() }
             }
 
             override fun mouseClicked(e: MouseEvent) {
-                e.isArrowClicked { model, row ->
+                e.isIconClicked { model, row ->
                     val item = model.getItem(row)
                     if(item.isFilePath)
                         project.openFile(item.variable.value.toString())
@@ -39,7 +39,7 @@ class ValueTableCellEditor(project: Project, private val parentTable: JBTable, p
                 }
             }
 
-            private fun MouseEvent.isArrowClicked(func: (model: VariableModel, row: Int) -> Unit) {
+            private fun MouseEvent.isIconClicked(func: (model: VariableModel, row: Int) -> Unit) {
                 val variableModel = model as VariableModel
                 val row = rowAtPoint(point)
                 val item = variableModel.getItem(row)

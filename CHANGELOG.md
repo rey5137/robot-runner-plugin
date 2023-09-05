@@ -2,6 +2,50 @@
 
 # robot-runner-plugin Changelog
 
+## 0.5.0
+### Fixed
+- Fix UI bug on new IntelliJ versions
+
+## 0.4.6
+### Fixed
+- Bug cannot open file in Assigment table
+
+## 0.4.5
+### Added
+- Support End step keyword
+- Support step folding in robot script
+
+## 0.4.4
+### Added
+- Support nested Step keyword
+- Support new output format of Robot 6.0
+
+## 0.4.3
+### Added
+- Support grouping keywords by RobotStepLibrary.Step keyword
+
+## 0.4.2
+### Added
+- Gutter icon to run single testcase (support Intellibot #patched plugin)
+
+## 0.4.1
+### Fixed
+- Bug error when click run testcase icon
+
+## 0.4.0
+### Added
+- Gutter icon to run single testcase (support Intellibot plugin)
+- Execution option to run with pabot
+- Action to merge all output result files
+
+## 0.3.2
+### Fixed
+- Bug not work with python 3.9
+
+## 0.3.1
+### Fixed
+- Remove deprecated API usages
+
 ## 0.3.0
 ### Added
 - Output view in Run configuration tab

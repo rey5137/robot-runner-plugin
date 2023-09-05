@@ -52,7 +52,7 @@ class AssignmentTable(project: Project, private val assignmentModel: AssignmentM
                     else {
                         val item = assignmentModel.getItem(row)
                         if(item.isFilePath)
-                            project.openFile(item.assignmentHolder.value.toString())
+                            project.openFile(item.assignmentHolder.value.value.toString())
                     }
                 }
             }

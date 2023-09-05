@@ -34,7 +34,25 @@ fun VirtualFile.parseXml(): RobotElement {
                         currentElement.addTest(this)
                     }
                     TAG_KEYWORD -> startElement.toKeywordElement(keywordNameMap, keywordLibMap, docIndex++, robotElement).apply {
-                        currentElement.addKeyword(this)
+                        if (this.type == KEYWORD_TYPE_STEP) {
+                            currentElement.getStepKeywords()?.add(this)
+                            currentElement.addKeyword(this)
+                        } else if (!currentElement.isStepKeyword()) {
+                            if (this.type == KEYWORD_TYPE_TEARDOWN) {
+                                currentElement.getStepKeywords()?.let { stepKeywords ->
+                                    stepKeywords.asReversed().forEach { it.updateStepStatus() }
+                                    stepKeywords.clear()
+                                }
+                                currentElement.addKeyword(this)
+                            } else {
+                                val stepKeywords = currentElement.getStepKeywords()
+                                if (stepKeywords != null && stepKeywords.isNotEmpty()) {
+                                    stepKeywords.last().addKeyword(this)
+                                } else
+                                    currentElement.addKeyword(this)
+                            }
+                        } else
+                            currentElement.addKeyword(this)
                     }
                     TAG_STATUS -> startElement.toStatusElement().apply {
                         currentElement.addStatus(this)
@@ -45,7 +63,7 @@ fun VirtualFile.parseXml(): RobotElement {
                     TAG_ARGUMENTS -> ArgumentsElement()
                     TAG_ASSIGN -> AssignsElement()
                     TAG_TAGS -> TagsElement()
-                    TAG_ARGUMENT, TAG_VAR, TAG_TAG -> StringElement()
+                    TAG_ARGUMENT, TAG_VAR, TAG_TAG -> StringElement(xmlTag = startElement.name.localPart)
                     else -> {
                         skipCount++
                         continue
@@ -60,7 +78,7 @@ fun VirtualFile.parseXml(): RobotElement {
                 is StringElement -> currentElement.value.append(data)
                 is MessageElement,
                 is StatusElement -> {
-                    val newElement = StringElement()
+                    val newElement = StringElement(xmlTag = TAG_STATUS)
                     newElement.value.append(data)
                     currentElement = newElement
                     stack.add(currentElement)
@@ -89,12 +107,57 @@ fun VirtualFile.parseXml(): RobotElement {
                                     stack.removeAt(stack.size - 1)
                                     currentElement = stack.last()
                                 }
+                                is KeywordElement -> {
+                                    when (element.xmlTag) {
+                                        TAG_ARGUMENT -> currentElement.arguments.add(element.value.toString())
+                                        TAG_VAR -> currentElement.assigns.add(element.value.toString())
+                                        TAG_TAG -> currentElement.tags.add(element.value.toString())
+                                    }
+                                }
                                 else -> currentElement.addString(element)
                             }
                         }
-                        is ArgumentsElement -> (currentElement as KeywordElement).arguments = element.arguments
-                        is AssignsElement -> (currentElement as KeywordElement).assigns = element.vars
-                        is TagsElement -> currentElement.setTags(element)
+                        is ArgumentsElement -> (currentElement as KeywordElement).arguments.addAll(element.arguments)
+                        is AssignsElement -> (currentElement as KeywordElement).assigns.addAll(element.vars)
+                        is TagsElement -> currentElement.addTags(element)
+                        is TestElement -> {
+                            if(!element.hasTeardownKeywords()) {
+                                element.getStepKeywords()?.let { stepKeywords ->
+                                    stepKeywords.asReversed().forEach { it.updateStepStatus() }
+                                    stepKeywords.clear()
+                                }
+                            }
+                        }
+                        is KeywordElement -> {
+                            if(element.type == KEYWORD_TYPE_STEP) {
+                                element.updateStepLevel()
+                                val parentElement = element.parent!!
+                                val stepKeywords = parentElement.getStepKeywords()!!
+                                stepKeywords.remove(element)
+                                while(stepKeywords.isNotEmpty() && stepKeywords.last().stepLevel >= element.stepLevel) {
+                                    val lastStep = stepKeywords.removeAt(stepKeywords.size - 1)
+                                    lastStep.updateStepStatus()
+                                }
+                                if(stepKeywords.isNotEmpty()) {
+                                    parentElement.removeKeyword(element)
+                                    stepKeywords.last().addKeyword(element)
+                                }
+                                stepKeywords.add(element)
+                            }
+                            else if(element.type == KEYWORD_TYPE_END_STEP) {
+                                if(element.parent!!.isStepKeyword()) {
+                                    val stepElement = element.parent as KeywordElement
+                                    stepElement.updateStepStatus()
+                                    stepElement.findStepRoot()?.getStepKeywords()?.remove(stepElement)
+                                }
+                            }
+                            else if(!element.hasTeardownKeywords()) {
+                                element.getStepKeywords()?.let { stepKeywords ->
+                                    stepKeywords.asReversed().forEach { it.updateStepStatus() }
+                                    stepKeywords.clear()
+                                }
+                            }
+                        }
                     }
                 }
 
@@ -138,8 +201,7 @@ fun VirtualFile.extractFailedTestCases(): List<String> {
                     }
                 }
             }
-        }
-        else if (nextEvent.isEndElement) {
+        } else if (nextEvent.isEndElement) {
             if (skipCount > 0)
                 skipCount--
         }
@@ -166,6 +228,8 @@ private fun StartElement.toTestElement() = TestElement(
 private fun StartElement.toKeywordElement(keywordNameMap: MutableMap<String, Int>, keywordLibMap: MutableMap<String, Int>, docIndex: Long, robotElement: RobotElement): KeywordElement {
     val name = getAttributeByName(QName(TAG_NAME))?.value ?: ""
     val library = getAttributeByName(QName(TAG_LIBRARY))?.value ?: ""
+    val isStepKeyword = library == STEP_LIBRARY && name.equals(STEP_KEYWORD, ignoreCase = true)
+    val isEndStepKeyword = library == STEP_LIBRARY && name.equals(END_STEP_KEYWORD, ignoreCase = true)
     val nameIndex = keywordNameMap[name] ?: keywordNameMap.size.apply {
         keywordNameMap[name] = this
         robotElement.keywordNames.add(name)
@@ -174,13 +238,19 @@ private fun StartElement.toKeywordElement(keywordNameMap: MutableMap<String, Int
         keywordLibMap[library] = this
         robotElement.keywordLibraries.add(library)
     }
+    val type = when {
+        isStepKeyword -> KEYWORD_TYPE_STEP
+        isEndStepKeyword -> KEYWORD_TYPE_END_STEP
+        else -> getAttributeByName(QName(TAG_TYPE))?.value?.toUpperCase() ?: ""
+    }
+
     robotElement.docMap[docIndex] = getAttributeByName(QName(TAG_DOC))?.value ?: ""
     return KeywordElement(
         nameIndex = nameIndex,
         libraryIndex = libIndex,
         docIndex = docIndex,
-        type = getAttributeByName(QName(TAG_TYPE))?.value?.toUpperCase() ?: "",
-        robotElement = robotElement,
+        type = type,
+        robotElement = robotElement
     )
 }
 
@@ -196,6 +266,14 @@ private fun StartElement.toMessageElement(index: Long, robotElement: RobotElemen
     valueIndex = index,
     robotElement = robotElement
 )
+
+private fun KeywordElement.findStepRoot(): Element? {
+    var element: Element? = this
+    do {
+        element = element?.getParent()
+    } while(element != null && element.isStepKeyword())
+    return element
+}
 
 private fun String.extractMessageTitle(): String {
     val end = Math.min(31, length - 1)
@@ -219,5 +297,6 @@ data class AssignsElement(
 ) : Element
 
 data class StringElement(
-    var value: StringBuilder = StringBuilder()
+    var value: StringBuilder = StringBuilder(),
+    val xmlTag: String
 ) : Element

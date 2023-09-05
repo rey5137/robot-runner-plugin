@@ -64,6 +64,10 @@ data class RobotRunConfigurationExportData(
     var extraArguments: String = "",
     @SerializedName("show_output_view")
     var showOutputView: Boolean = false,
+    @SerializedName("use_pabot")
+    var usePabot: Boolean = false,
+    @SerializedName("pabot_arguments")
+    var pabotArguments: String = "",
 )
 
 fun buildRobotRunConfigurationExportData(
@@ -97,6 +101,8 @@ fun buildRobotRunConfigurationExportData(
         runEmptySuite = options.runEmptySuite,
         extraArguments = options.extraArguments ?: "",
         showOutputView = options.showOutputView,
+        usePabot = options.usePabot,
+        pabotArguments = options.pabotArguments ?: "",
     )
 
 fun RobotRunConfigurationExportData.setRobotRunConfigurationOptions(options: RobotRunConfigurationOptions) {
@@ -122,4 +128,6 @@ fun RobotRunConfigurationExportData.setRobotRunConfigurationOptions(options: Rob
     options.runEmptySuite = runEmptySuite
     options.extraArguments = extraArguments
     options.showOutputView = showOutputView
+    options.usePabot = usePabot
+    options.pabotArguments = pabotArguments
 }

@@ -4,14 +4,12 @@ import com.github.rey5137.robotrunnerplugin.editors.ui.setHighlightBorder
 import com.github.rey5137.robotrunnerplugin.editors.xml.*
 import com.intellij.ui.ColoredTableCellRenderer
 import com.intellij.ui.SimpleTextAttributes
-import java.awt.Color
-import javax.swing.BorderFactory
 import javax.swing.JTable
 
 class AssignmentTableCellRenderer(private val model: AssignmentModel) : ColoredTableCellRenderer() {
 
     override fun customizeCellRenderer(
-        table: JTable?,
+        table: JTable,
         value: Any?,
         selected: Boolean,
         hasFocus: Boolean,

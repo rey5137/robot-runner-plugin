@@ -1,3 +1,5 @@
 .gradle
 .idea
 build
+/step_lib/dist/
+/step_lib/robotframework_step_library.egg-info/

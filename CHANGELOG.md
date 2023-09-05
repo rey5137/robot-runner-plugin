@@ -2,6 +2,10 @@
 
 # robot-runner-plugin Changelog
 
+## 0.5.0
+### Fixed
+- Fix UI bug on new IntelliJ versions
+
 ## 0.4.6
 ### Fixed
 - Bug cannot open file in Assigment table

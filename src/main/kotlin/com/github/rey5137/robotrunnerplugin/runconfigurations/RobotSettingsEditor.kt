@@ -305,7 +305,10 @@ class RobotSettingsEditor : SettingsEditor<RobotRunConfiguration>() {
                 }
             }
         }
-        return decorator.createPanel()
+        decorator.setToolbarPosition(ActionToolbarPosition.RIGHT)
+        return decorator.createPanel().apply {
+            preferredSize = Dimension(100, 120)
+        }
     }
 
     private fun namePanel(model: DefaultListModel<String>, title: String, addMessage: String, editMessage: String): JPanel {
@@ -328,7 +331,9 @@ class RobotSettingsEditor : SettingsEditor<RobotRunConfiguration>() {
         decorator.setToolbarPosition(ActionToolbarPosition.RIGHT)
         decorator.disableUpAction()
         decorator.disableDownAction()
-        return decorator.createPanel()
+        return decorator.createPanel().apply {
+            preferredSize = Dimension(100, 120)
+        }
     }
 
     private fun showMultilineInput(message: String, title: String): MultilineInput {
@@ -377,8 +382,9 @@ class RobotSettingsEditor : SettingsEditor<RobotRunConfiguration>() {
         decorator.setAddAction { model.addRow(arrayOf("", "")) }
         decorator.setRemoveAction { table.selectedRows.reversed().forEach { model.removeRow(it) } }
         decorator.setToolbarPosition(ActionToolbarPosition.RIGHT)
-        decorator.setPreferredSize(Dimension(100, 300))
-        return decorator.createPanel()
+        return decorator.createPanel().apply {
+            preferredSize = Dimension(100, 300)
+        }
     }
 
     private fun String?.toSdk(): Sdk? = ProjectJdkTable.getInstance().allJdks.firstOrNull { it.homePath == this }

@@ -18,6 +18,11 @@ Run Configuration to run Robot Framework test suites
 
 ## Change log
 
+### 0.5.0
+#### Fixed
+- Fix UI bug on new IntelliJ versions
+
+
 ### 0.4.6
 #### Fixed
 - Bug cannot open file in Assigment table

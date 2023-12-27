@@ -12,8 +12,8 @@ import com.intellij.openapi.ui.*
 import com.intellij.ui.SimpleListCellRenderer
 import com.intellij.ui.ToolbarDecorator
 import com.intellij.ui.components.*
+import com.intellij.ui.dsl.builder.Align
 import com.intellij.ui.dsl.builder.panel
-import com.intellij.ui.dsl.gridLayout.HorizontalAlign
 import com.intellij.ui.table.JBTable
 import java.awt.Dimension
 import javax.swing.*
@@ -143,11 +143,11 @@ class RobotSettingsEditor : SettingsEditor<RobotRunConfiguration>() {
                             text = if (sdk == null) "" else "${sdk.name} (${sdk.homePath})"
                         }
                     }
-                ).horizontalAlign(HorizontalAlign.FILL).component
+                ).align(Align.FILL).component
             }
 
             row {
-                cell(tabs).horizontalAlign(HorizontalAlign.FILL)
+                cell(tabs).align(Align.FILL)
             }
         }
     }
@@ -157,7 +157,7 @@ class RobotSettingsEditor : SettingsEditor<RobotRunConfiguration>() {
             label(MyBundle.message("robot.run.configuration.label.paths"))
         }
         row {
-            cell(suitePanel()).horizontalAlign(HorizontalAlign.FILL)
+            cell(suitePanel()).align(Align.FILL)
         }
 
         row {
@@ -166,10 +166,10 @@ class RobotSettingsEditor : SettingsEditor<RobotRunConfiguration>() {
         }
         row {
             cell(namePanel(testNameModel, "Test name", MyBundle.message("robot.run.configuration.desc.multi.test-names"), MyBundle.message("robot.run.configuration.desc.single.test-names")))
-                .horizontalAlign(HorizontalAlign.FILL)
+                .align(Align.FILL)
                 .resizableColumn()
             cell(namePanel(suiteNameModel, "Suite name", MyBundle.message("robot.run.configuration.desc.multi.test-names"), MyBundle.message("robot.run.configuration.desc.single.test-names")))
-                .horizontalAlign(HorizontalAlign.FILL)
+                .align(Align.FILL)
                 .resizableColumn()
         }
 
@@ -179,10 +179,10 @@ class RobotSettingsEditor : SettingsEditor<RobotRunConfiguration>() {
         }
         row {
             cell(namePanel(includeTagModel, "Tag", MyBundle.message("robot.run.configuration.desc.multi.tags"), MyBundle.message("robot.run.configuration.desc.single.tags")))
-                .horizontalAlign(HorizontalAlign.FILL)
+                .align(Align.FILL)
                 .resizableColumn()
             cell(namePanel(excludeTagModel, "Tag", MyBundle.message("robot.run.configuration.desc.multi.tags"), MyBundle.message("robot.run.configuration.desc.single.tags")))
-                .horizontalAlign(HorizontalAlign.FILL)
+                .align(Align.FILL)
                 .resizableColumn()
         }
     }
@@ -193,34 +193,34 @@ class RobotSettingsEditor : SettingsEditor<RobotRunConfiguration>() {
                 browseDialogTitle = "Output directory",
                 project = null,
                 fileChooserDescriptor = FileChooserDescriptorFactory.createSingleFolderDescriptor(),
-            ).horizontalAlign(HorizontalAlign.FILL).component
+            ).align(Align.FILL).component
         }
         row(MyBundle.message("robot.run.configuration.label.output-file")) {
             outputFileTextField = textFieldWithBrowseButton(
                 browseDialogTitle = "Output file",
                 project = null,
                 fileChooserDescriptor = FileChooserDescriptorFactory.createSingleFolderDescriptor(),
-            ).horizontalAlign(HorizontalAlign.FILL).component
+            ).align(Align.FILL).component
         }
         row(MyBundle.message("robot.run.configuration.label.log-file")) {
             logFileTextField = textFieldWithBrowseButton(
                 browseDialogTitle = "Log file",
                 project = null,
                 fileChooserDescriptor = FileChooserDescriptorFactory.createSingleFolderDescriptor(),
-            ).horizontalAlign(HorizontalAlign.FILL).component
+            ).align(Align.FILL).component
         }
         row(MyBundle.message("robot.run.configuration.label.log-title")) {
-            logTitleTextField = textField().horizontalAlign(HorizontalAlign.FILL).component
+            logTitleTextField = textField().align(Align.FILL).component
         }
         row(MyBundle.message("robot.run.configuration.label.report-file")) {
             reportFileTextField = textFieldWithBrowseButton(
                 browseDialogTitle = "Report file",
                 project = null,
                 fileChooserDescriptor = FileChooserDescriptorFactory.createSingleFolderDescriptor(),
-            ).horizontalAlign(HorizontalAlign.FILL).component
+            ).align(Align.FILL).component
         }
         row(MyBundle.message("robot.run.configuration.label.report-title")) {
-            reportTitleTextField = textField().horizontalAlign(HorizontalAlign.FILL).component
+            reportTitleTextField = textField().align(Align.FILL).component
         }
         row {
             timestampOutputsCheckBox = checkBox(MyBundle.message("robot.run.configuration.label.output-timestamp")).component
@@ -235,7 +235,7 @@ class RobotSettingsEditor : SettingsEditor<RobotRunConfiguration>() {
 
     private fun buildVariablesPanel() = panel {
         row {
-            cell(variablesPanel(variablesModel)).horizontalAlign(HorizontalAlign.FILL)
+            cell(variablesPanel(variablesModel)).align(Align.FILL)
         }
     }
 
@@ -269,7 +269,7 @@ class RobotSettingsEditor : SettingsEditor<RobotRunConfiguration>() {
 //            rowComment(MyBundle.message("robot.run.configuration.desc.run-empty"))
 //        }
         row(MyBundle.message("robot.run.configuration.label.extra-arguments")) {
-            extraArgumentsTextField = textField().horizontalAlign(HorizontalAlign.FILL).component
+            extraArgumentsTextField = textField().align(Align.FILL).component
         }
         row {
             showOutputViewCheckBox = checkBox(MyBundle.message("robot.run.configuration.label.show-output-view")).component
@@ -284,7 +284,7 @@ class RobotSettingsEditor : SettingsEditor<RobotRunConfiguration>() {
 //            rowComment(MyBundle.message("robot.run.configuration.desc.use-pabot"))
 //        }
         row(MyBundle.message("robot.run.configuration.label.pabot-arguments")) {
-            pabotArgumentsTextField = textField().horizontalAlign(HorizontalAlign.FILL).component
+            pabotArgumentsTextField = textField().align(Align.FILL).component
         }
     }
 
@@ -346,7 +346,7 @@ class RobotSettingsEditor : SettingsEditor<RobotRunConfiguration>() {
             row {
                 cell(JBScrollPane(textArea).apply {
                     minimumSize = Dimension(textArea.preferredSize.width, textArea.preferredSize.height + 5)
-                }).horizontalAlign(HorizontalAlign.FILL)
+                }).align(Align.FILL)
             }
             row {
                 wrapCheckbox = checkBox(MyBundle.message("robot.run.configuration.label.wrap-value")).component

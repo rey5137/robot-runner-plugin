@@ -1,7 +1,7 @@
 package com.github.rey5137.robotrunnerplugin.editors.xml
 
+import junit.framework.TestCase.assertEquals
 import org.junit.Test
-import kotlin.test.assertEquals
 
 class MessageParserTest {
 

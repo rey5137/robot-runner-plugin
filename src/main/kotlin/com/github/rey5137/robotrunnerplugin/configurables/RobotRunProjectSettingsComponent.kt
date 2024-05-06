@@ -120,7 +120,7 @@ class RobotRunProjectSettingsComponent(private val project: Project) {
                         "json"
                     )
                     val dialog = FileChooserFactory.getInstance().createSaveFileDialog(descriptor, null)
-                    val fileWrapper = dialog.save(null as VirtualFile, "robot_run_configurations.json")
+                    val fileWrapper = dialog.save(null as VirtualFile?, "robot_run_configurations.json")
                     if (fileWrapper != null)
                         exportSettings(fileWrapper.file)
                 }

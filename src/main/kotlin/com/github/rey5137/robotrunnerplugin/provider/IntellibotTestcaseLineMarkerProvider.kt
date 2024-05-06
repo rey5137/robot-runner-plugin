@@ -1,8 +1,10 @@
 package com.github.rey5137.robotrunnerplugin.provider
 
 import com.github.rey5137.robotrunnerplugin.MyBundle
+import com.github.rey5137.robotrunnerplugin.MyNotifier
 import com.github.rey5137.robotrunnerplugin.actions.CreateRunRobotTestCaseConfigAction
 import com.github.rey5137.robotrunnerplugin.actions.RunRobotTestCaseAction
+import com.github.rey5137.robotrunnerplugin.actions.findLocalFile
 import com.github.rey5137.robotrunnerplugin.configurables.RobotRunProjectSettingsState
 import com.github.rey5137.robotrunnerplugin.runconfigurations.RobotRunConfigurationType
 import com.intellij.codeInsight.daemon.GutterIconNavigationHandler
@@ -10,6 +12,7 @@ import com.intellij.codeInsight.daemon.LineMarkerInfo
 import com.intellij.codeInsight.daemon.LineMarkerProviderDescriptor
 import com.intellij.execution.RunManager
 import com.intellij.icons.AllIcons
+import com.intellij.notification.NotificationType
 import com.intellij.openapi.actionSystem.*
 import com.intellij.openapi.actionSystem.impl.SimpleDataContext
 import com.intellij.openapi.editor.markup.GutterIconRenderer
@@ -34,6 +37,7 @@ class IntellibotTestcaseLineMarkerProvider : LineMarkerProviderDescriptor() {
     override fun getIcon(): Icon = AllIcons.Actions.Execute
 
     override fun getLineMarkerInfo(element: PsiElement): LineMarkerInfo<*>? {
+
         return when {
             element.javaClass.name.endsWith(KEYWORD_CLASS) -> {
                 val isTestCaseId = element.parents.firstOrNull { it.javaClass.name.endsWith(HEADING_CLASS) }
@@ -77,14 +81,15 @@ class IntellibotTestcaseLineMarkerProvider : LineMarkerProviderDescriptor() {
                 .associateBy { it.uniqueID }
             val values = mutableListOf<String>()
             elt.collectTestCases(values)
+            val files = listOfNotNull(findLocalFile(elt.containingFile.virtualFile))
             val actions = RobotRunProjectSettingsState.getInstance(project).settingMap.entries
                 .filter { it.value.testCaseEnable }
                 .mapNotNull { configurationMap[it.key] }
-                .map { RunRobotTestCaseAction(runConfigurationSetting = it, values = values) as AnAction }
+                .map { RunRobotTestCaseAction(runConfigurationSetting = it, values = values, files = files) as AnAction }
                 .toMutableList()
                 .apply {
                     add(Separator(null))
-                    add(CreateRunRobotTestCaseConfigAction(values = values))
+                    add(CreateRunRobotTestCaseConfigAction(values = values, files = files))
                 }
             val group = DefaultActionGroup(actions)
             val context = createDataContext(elt.project)

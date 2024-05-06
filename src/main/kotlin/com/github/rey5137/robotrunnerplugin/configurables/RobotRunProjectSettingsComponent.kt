@@ -12,6 +12,7 @@ import com.intellij.execution.impl.EditConfigurationsDialog
 import com.intellij.icons.AllIcons.ToolbarDecorator.Export
 import com.intellij.icons.AllIcons.ToolbarDecorator.Import
 import com.intellij.notification.NotificationType
+import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.CustomShortcutSet
 import com.intellij.openapi.application.ApplicationManager
@@ -123,6 +124,8 @@ class RobotRunProjectSettingsComponent(private val project: Project) {
                     if (fileWrapper != null)
                         exportSettings(fileWrapper.file)
                 }
+
+                override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.BGT
             })
             .addExtraAction(object : DumbAwareActionButton(
                 MyBundle.message("robot.run.settings.label.import-settings"),
@@ -136,6 +139,8 @@ class RobotRunProjectSettingsComponent(private val project: Project) {
                     if (files.isNotEmpty())
                         importSettings(File(files[0].path))
                 }
+
+                override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.BGT
             })
         val panel = decorator.createPanel()
         return FormBuilder.createFormBuilder()

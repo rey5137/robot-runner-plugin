@@ -2,7 +2,7 @@
 
 # robot-runner-plugin Changelog
 
-## [Unreleased]
+## 0.6.0
 ### Fixed
 - Fix UI bug on 2023.3 IntelliJ version
 

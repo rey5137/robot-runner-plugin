@@ -1,7 +1,7 @@
 package com.github.rey5137.robotrunnerplugin.editors.xml
 
+import junit.framework.TestCase.assertEquals
 import org.junit.Test
-import kotlin.test.assertEquals
 
 class AssignmentParserTest {
 
@@ -150,12 +150,12 @@ class AssignmentParserTest {
                     name = "a2",
                     value = listOf(
                         Variable(
-                            name = "",
+                            name = "[0]",
                             value = null,
                             type = DataType.NONE,
                         ),
                         Variable(
-                            name = "",
+                            name = "[1]",
                             value = false,
                             type = DataType.BOOL,
                         ),

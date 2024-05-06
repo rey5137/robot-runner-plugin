@@ -215,7 +215,7 @@ class RobotOutputView(project: Project, private val srcFile: VirtualFile? = null
     }
 
     private fun buildLeftPanel(): JPanel {
-        tree.ui = MyTreeUI()
+        tree.setUI(MyTreeUI())
         tree.isRootVisible = false
         tree.showsRootHandles = true
         tree.cellRenderer = MyTreeCellRenderer()
@@ -261,6 +261,8 @@ class RobotOutputView(project: Project, private val srcFile: VirtualFile? = null
                 }, e.dataContext, JBPopupFactory.ActionSelectionAid.SPEEDSEARCH, false)
                     .show(preferredPopupPoint!!)
             }
+
+            override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.BGT
         }
         refreshActionButton = object : AnActionButton(
             MyBundle.message("robot.output.editor.label.refresh"),
@@ -269,6 +271,8 @@ class RobotOutputView(project: Project, private val srcFile: VirtualFile? = null
             override fun actionPerformed(e: AnActionEvent) {
                 refresh()
             }
+
+            override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.BGT
         }
         searchActionButton = object : DumbAwareActionButton(
             MyBundle.message("robot.output.editor.label.deep-search"),
@@ -298,6 +302,8 @@ class RobotOutputView(project: Project, private val srcFile: VirtualFile? = null
                 }, e.dataContext, JBPopupFactory.ActionSelectionAid.SPEEDSEARCH, false)
                     .show(preferredPopupPoint!!)
             }
+
+            override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.BGT
         }
         filterActionButton.isEnabled = srcFile != null
         refreshActionButton.isEnabled = srcFile != null
@@ -317,15 +323,19 @@ class RobotOutputView(project: Project, private val srcFile: VirtualFile? = null
                 override fun actionPerformed(e: AnActionEvent) {
                     TreeUtil.collapseAll(tree, 0)
                 }
+
+                override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.BGT
             })
             .addExtraAction(object :
                 AnActionButton(MyBundle.message("robot.output.editor.label.expand-all"), AllIcons.Actions.Expandall) {
                 override fun actionPerformed(e: AnActionEvent) {
-                    tree.ui = null
+                    tree.setUI(null)
                     TreeUtil.expandAll(tree) {
-                        tree.ui = MyTreeUI()
+                        tree.setUI(MyTreeUI())
                     }
                 }
+
+                override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.BGT
             })
             .addExtraAction(object : AnActionButton(
                 MyBundle.message("robot.output.editor.label.copy-test-case-name"),
@@ -341,6 +351,8 @@ class RobotOutputView(project: Project, private val srcFile: VirtualFile? = null
                     val stringSelection = StringSelection(tests.joinToString(separator = "\n"))
                     Toolkit.getDefaultToolkit().systemClipboard.setContents(stringSelection, null)
                 }
+
+                override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.BGT
             })
             .addExtraAction(searchActionButton)
         val panel = JPanel(BorderLayout())
@@ -388,9 +400,9 @@ class RobotOutputView(project: Project, private val srcFile: VirtualFile? = null
         treeModel.reload()
 
         if (keepExpanded) {
-            tree.ui = null
+            tree.setUI(null)
             TreeUtil.restoreExpandedPaths(tree, expandedPaths)
-            tree.ui = MyTreeUI()
+            tree.setUI(MyTreeUI())
             restoreSelectionNode(selectedPaths)
         } else {
             TreeUtil.promiseExpand(tree) { path ->

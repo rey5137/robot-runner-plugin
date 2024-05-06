@@ -7,6 +7,7 @@ import com.github.rey5137.robotrunnerplugin.runconfigurations.RobotRunConfigurat
 import com.intellij.execution.RunManagerEx
 import com.intellij.execution.configurations.ConfigurationType
 import com.intellij.execution.impl.EditConfigurationsDialog
+import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 
@@ -30,4 +31,6 @@ class CreateRunRobotTestSuiteConfigAction :
 
         EditConfigurationsDialog(project).show()
     }
+
+    override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.BGT
 }

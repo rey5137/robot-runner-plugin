@@ -41,6 +41,7 @@ private fun List<Argument<*>>.parseRobotArgumentInputs(inputs: List<String>): Li
                                 else -> holder.addInput(value = input, rawInput = input)
                             }
                         }
+                        else -> {}
                     }
                 }
                 name == null -> arrayHolder?.addInput(value = input, rawInput = input)

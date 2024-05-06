@@ -28,4 +28,6 @@ class RunRobotTestSuiteActionGroup : ActionGroup() {
         e.presentation.isEnabledAndVisible = e.project != null && e.files.isNotEmpty()
     }
 
+    override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.BGT
+
 }

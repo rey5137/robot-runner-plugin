@@ -57,4 +57,6 @@ class RunRobotTestCaseActionGroup : ActionGroup() {
         } else provider
     }
 
+    override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.BGT
+
 }

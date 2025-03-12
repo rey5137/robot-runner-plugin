@@ -158,7 +158,7 @@ private fun JSONObject.toKeywordElement(
     val type = when {
         isStepKeyword -> KEYWORD_TYPE_STEP
         isEndStepKeyword -> KEYWORD_TYPE_END_STEP
-        else -> getJSONObject(FIELD_ATTRS).getString(FIELD_TYPE).toUpperCase()
+        else -> getJSONObject(FIELD_ATTRS).getString(FIELD_TYPE).uppercase()
     }
     robotElement.docMap[docIndex] = getJSONObject(FIELD_ATTRS).getString(FIELD_DOC)
     return KeywordElement(
@@ -175,7 +175,7 @@ private fun JSONObject.toMessageElement(index: Long, robotElement: RobotElement)
     robotElement.messageMap[index] = message
     return MessageElement(
         timestamp = getString(FIELD_TIMESTAMP),
-        level = getString(FIELD_LEVEL).toUpperCase(),
+        level = getString(FIELD_LEVEL).uppercase(),
         valueIndex = index,
         robotElement = robotElement,
         title = message.extractMessageTitle()

@@ -4,6 +4,7 @@ data class StatusElement(
     var status: String = "",
     var startTime: String = "",
     var endTime: String = "",
+    var elapsed: String = "",
     var message: String = "",
 ) : Element {
 

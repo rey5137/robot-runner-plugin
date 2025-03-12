@@ -14,6 +14,7 @@ const val TAG_ID = "id"
 const val TAG_NAME = "name"
 const val TAG_SOURCE = "source"
 const val TAG_LIBRARY = "library"
+const val TAG_OWNER = "owner"
 const val TAG_ARGUMENTS = "arguments"
 const val TAG_TAGS = "tags"
 const val TAG_ARGUMENT = "arg"
@@ -21,9 +22,12 @@ const val TAG_TAG = "tag"
 const val TAG_DOC = "doc"
 const val TAG_MESSAGE = "msg"
 const val TAG_TIMESTAMP = "timestamp"
+const val TAG_TIME = "time"
 const val TAG_LEVEL = "level"
 const val TAG_START_TIME = "starttime"
 const val TAG_END_TIME = "endtime"
+const val TAG_START = "start"
+const val TAG_ELAPSED = "elapsed"
 const val TAG_ASSIGN = "assign"
 const val TAG_VAR = "var"
 const val TAG_TYPE = "type"
@@ -268,6 +272,7 @@ fun KeywordElement.updateStepStatus() {
             keyword.updateStepStatus()
             this.status.status = keyword.status.status
             this.status.endTime = keyword.status.endTime
+            this.status.elapsed = keyword.status.elapsed
         }
     }
 }

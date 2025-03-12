@@ -227,7 +227,7 @@ private fun StartElement.toTestElement() = TestElement(
 
 private fun StartElement.toKeywordElement(keywordNameMap: MutableMap<String, Int>, keywordLibMap: MutableMap<String, Int>, docIndex: Long, robotElement: RobotElement): KeywordElement {
     val name = getAttributeByName(QName(TAG_NAME))?.value ?: ""
-    val library = getAttributeByName(QName(TAG_LIBRARY))?.value ?: ""
+    val library = getAttributeByName(QName(TAG_LIBRARY))?.value ?: (getAttributeByName(QName(TAG_OWNER))?.value ?: "")
     val isStepKeyword = library == STEP_LIBRARY && name.equals(STEP_KEYWORD, ignoreCase = true)
     val isEndStepKeyword = library == STEP_LIBRARY && name.equals(END_STEP_KEYWORD, ignoreCase = true)
     val nameIndex = keywordNameMap[name] ?: keywordNameMap.size.apply {
@@ -241,7 +241,7 @@ private fun StartElement.toKeywordElement(keywordNameMap: MutableMap<String, Int
     val type = when {
         isStepKeyword -> KEYWORD_TYPE_STEP
         isEndStepKeyword -> KEYWORD_TYPE_END_STEP
-        else -> getAttributeByName(QName(TAG_TYPE))?.value?.toUpperCase() ?: ""
+        else -> getAttributeByName(QName(TAG_TYPE))?.value?.uppercase() ?: ""
     }
 
     robotElement.docMap[docIndex] = getAttributeByName(QName(TAG_DOC))?.value ?: ""
@@ -256,13 +256,14 @@ private fun StartElement.toKeywordElement(keywordNameMap: MutableMap<String, Int
 
 private fun StartElement.toStatusElement() = StatusElement(
     status = getAttributeByName(QName(TAG_STATUS))?.value ?: "",
-    startTime = getAttributeByName(QName(TAG_START_TIME))?.value ?: "",
+    startTime = getAttributeByName(QName(TAG_START_TIME))?.value ?: (getAttributeByName(QName(TAG_START))?.value ?: ""),
     endTime = getAttributeByName(QName(TAG_END_TIME))?.value ?: "",
+    elapsed = getAttributeByName(QName(TAG_ELAPSED))?.value ?: "",
 )
 
 private fun StartElement.toMessageElement(index: Long, robotElement: RobotElement) = MessageElement(
-    timestamp = getAttributeByName(QName(TAG_TIMESTAMP))?.value ?: "",
-    level = getAttributeByName(QName(TAG_LEVEL))?.value?.toUpperCase() ?: "",
+    timestamp = getAttributeByName(QName(TAG_TIMESTAMP))?.value ?: (getAttributeByName(QName(TAG_TIME))?.value ?: ""),
+    level = getAttributeByName(QName(TAG_LEVEL))?.value?.uppercase() ?: "",
     valueIndex = index,
     robotElement = robotElement
 )
